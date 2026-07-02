@@ -71,6 +71,67 @@ export async function fetchOpenGigs(
   }));
 }
 
+export async function fetchGigById(
+  client: SupabaseClient,
+  gigId: string,
+): Promise<OpenGig | null> {
+  const { data, error } = await client
+    .from("gigs")
+    .select(
+      "id, title, description, starts_at, ends_at, price_cents, address, category_id, poster:poster_id (name)",
+    )
+    .eq("id", gigId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  const row = data as unknown as GigRow;
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    startsAt: row.starts_at,
+    endsAt: row.ends_at,
+    priceCents: row.price_cents,
+    address: row.address,
+    categoryId: row.category_id,
+    posterName: row.poster?.name ?? "Anunciante",
+  };
+}
+
+export type AcceptGigResult =
+  | "accepted"
+  | "unauthorized"
+  | "not_found"
+  | "own_gig"
+  | "already_taken"
+  | "schedule_conflict"
+  | "invalid_request"
+  | "network_error";
+
+/** Calls the accept-gig Edge Function (atomic claim + conflict check). */
+export async function acceptGig(
+  client: SupabaseClient,
+  gigId: string,
+): Promise<AcceptGigResult> {
+  const { data, error } = await client.functions.invoke("accept-gig", {
+    body: { gigId },
+  });
+  if (error) {
+    // Non-2xx responses land here; the body still carries our result code.
+    try {
+      const context = (error as { context?: Response }).context;
+      if (context) {
+        const body = (await context.json()) as { code?: AcceptGigResult };
+        if (body.code) return body.code;
+      }
+    } catch {
+      // fall through
+    }
+    return "network_error";
+  }
+  return (data as { code?: AcceptGigResult })?.code ?? "network_error";
+}
+
 export async function createGig(
   client: SupabaseClient,
   posterId: string,
