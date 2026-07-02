@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 3: Buscar vagas e Anunciar vaga</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --roxo-med:#6D4FAE; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  h2.section{font-size:17px;margin:34px 0 4px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:780px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .head{background:var(--roxo);color:#fff;padding:26px 16px 14px;border-radius:0 0 22px 22px}
+  .head .t{font-size:18px;font-weight:800}
+  .body{flex:1;padding:12px 14px;overflow:hidden;display:flex;flex-direction:column;gap:9px}
+  .search{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;color:#9aa1ab}
+  .chips{display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden}
+  .chip{border:1.5px solid var(--line);border-radius:99px;padding:5px 11px;font-size:12px;font-weight:600;color:var(--ink2);white-space:nowrap}
+  .chip.on{background:var(--roxo);border-color:var(--roxo);color:#fff}
+  .card{border:1px solid var(--line);border-radius:14px;padding:11px 12px}
+  .card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .card .title{font-size:13.5px;font-weight:700}
+  .card .meta{font-size:11.5px;color:var(--ink2);margin-top:2px}
+  .card .price{font-size:15px;font-weight:800;color:var(--roxo);white-space:nowrap}
+  .card .who{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11.5px;color:var(--ink2)}
+  .card .who .av{width:20px;height:20px;border-radius:50%;background:var(--lilas);color:var(--roxo-deep);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .tile{background:var(--lilas);border-radius:16px;padding:16px 12px;text-align:center}
+  .tile .ic{font-size:24px}
+  .tile .nm{font-size:12.5px;font-weight:700;color:var(--roxo-deep);margin-top:6px}
+  .group-h{font-size:12px;font-weight:800;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+  .dstrip{display:flex;gap:5px}
+  .dday{flex:1;text-align:center;border-radius:10px;padding:5px 0;font-size:10px;color:var(--ink2)}
+  .dday b{display:block;font-size:13px;color:var(--ink)}
+  .dday.on{background:var(--roxo);color:#e6defb}
+  .dday.on b{color:#fff}
+  .field{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;color:#9aa1ab}
+  .field b{color:var(--ink);font-weight:600}
+  .lbl{font-size:11.5px;font-weight:700;color:var(--ink2);margin-bottom:-4px}
+  .btn{border-radius:13px;padding:13px 0;text-align:center;font-weight:800;font-size:14px;background:var(--roxo);color:#fff}
+  .dots{display:flex;gap:5px;margin-bottom:2px}
+  .dot{width:22px;height:4px;border-radius:99px;background:#E9E2F8}
+  .dot.on{background:var(--roxo)}
+  .fieldrow{display:flex;gap:8px}
+  .fieldrow .field{flex:1}
+  .preview-h{font-size:11.5px;font-weight:700;color:var(--ink2)}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 3 de design</h1>
+  <p class="sub">As duas telas do coração do marketplace. Escolha <b>uma opção de cada seção</b> (pode misturar, ex.: "Buscar 2 + Anunciar 1").</p>
+
+  <h2 class="section">Seção 1 — Buscar vagas</h2>
+  <p class="sub">Como o trabalhador encontra um bico.</p>
+  <div class="row">
+
+    <!-- S1 -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Buscar serviços</div></div>
+        <div class="body">
+          <div class="search">🔎 Buscar por serviço ou palavra…</div>
+          <div class="chips"><span class="chip on">Todas</span><span class="chip">Domésticos</span><span class="chip">Saúde</span><span class="chip">Entretenim…</span></div>
+          <div class="chips"><span class="chip">📅 Hoje ▾</span><span class="chip">🕐 Qualquer horário ▾</span></div>
+          <div class="card">
+            <div class="top"><div><div class="title">Babá para 2 crianças</div><div class="meta">Domésticos · qui 2 · 15h–22h · Centro</div></div><div class="price">R$ 160</div></div>
+            <div class="who"><span class="av">A</span> Ana Souza · ★ 4,9 · 132 serviços</div>
+          </div>
+          <div class="card">
+            <div class="top"><div><div class="title">Faxina apartamento 60m²</div><div class="meta">Domésticos · qui 2 · 14h–17h · Boa Vista</div></div><div class="price">R$ 120</div></div>
+            <div class="who"><span class="av">C</span> Carlos Lima · ★ 4,7 · 58 serviços</div>
+          </div>
+          <div class="card">
+            <div class="top"><div><div class="title">Cuidador de idoso (noite)</div><div class="meta">Saúde · sex 3 · 19h–7h · Centro</div></div><div class="price">R$ 280</div></div>
+            <div class="who"><span class="av">M</span> Marta Reis · ★ 5,0 · 210 serviços</div>
+          </div>
+        </div>
+      </div>
+      <h3>Buscar 1 — Lista com filtros</h3>
+      <span class="tag">estilo iFood/Uber</span>
+      <p>Tudo em uma tela: busca por texto, filtros de categoria/data/horário e a lista direta de vagas. Rápido para quem sabe o que quer; a tela é mais densa.</p>
+    </div>
+
+    <!-- S2 -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">O que você quer fazer?</div></div>
+        <div class="body">
+          <div class="tile-grid">
+            <div class="tile"><div class="ic">🏠</div><div class="nm">Serviços domésticos</div></div>
+            <div class="tile"><div class="ic">🩺</div><div class="nm">Saúde</div></div>
+            <div class="tile"><div class="ic">🎉</div><div class="nm">Entretenimento</div></div>
+            <div class="tile"><div class="ic">🧒</div><div class="nm">Cuidado de crianças</div></div>
+            <div class="tile"><div class="ic">🍽️</div><div class="nm">Eventos</div></div>
+            <div class="tile"><div class="ic">➕</div><div class="nm">Outros</div></div>
+          </div>
+          <div class="group-h" style="margin-top:6px">Perto do seu horário livre</div>
+          <div class="card">
+            <div class="top"><div><div class="title">Faxina apartamento 60m²</div><div class="meta">qui 2 · 14h–17h</div></div><div class="price">R$ 120</div></div>
+          </div>
+        </div>
+      </div>
+      <h3>Buscar 2 — Categorias primeiro · recomendada</h3>
+      <span class="tag">mais simples</span>
+      <p>Primeiro a pessoa toca no tipo de serviço (cartões grandes com ícone), depois vê a lista da categoria. Menos leitura, decisão de cada vez — ideal para baixa escolaridade.</p>
+    </div>
+
+    <!-- S3 -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Vagas para seu horário</div></div>
+        <div class="body">
+          <div class="dstrip"><span class="dday">seg<b>29</b></span><span class="dday">ter<b>30</b></span><span class="dday">qua<b>1</b></span><span class="dday on">qui<b>2</b></span><span class="dday">sex<b>3</b></span><span class="dday">sáb<b>4</b></span></div>
+          <div class="group-h">Tarde</div>
+          <div class="card">
+            <div class="top"><div><div class="title">Faxina apartamento 60m²</div><div class="meta">14h–17h · Domésticos</div></div><div class="price">R$ 120</div></div>
+          </div>
+          <div class="card">
+            <div class="top"><div><div class="title">Babá para 2 crianças</div><div class="meta">15h–22h · Cuidado de crianças</div></div><div class="price">R$ 160</div></div>
+          </div>
+          <div class="group-h">Noite</div>
+          <div class="card">
+            <div class="top"><div><div class="title">Garçom para festa</div><div class="meta">18h–23h · Eventos</div></div><div class="price">R$ 200</div></div>
+          </div>
+        </div>
+      </div>
+      <h3>Buscar 3 — Pela agenda</h3>
+      <span class="tag">integrada ao calendário</span>
+      <p>Escolhe o dia em cima e vê as vagas agrupadas por período (manhã/tarde/noite). Reforça o conceito "preencha seu horário livre", mas esconde a busca por categoria.</p>
+    </div>
+  </div>
+
+  <h2 class="section">Seção 2 — Anunciar vaga</h2>
+  <p class="sub">Como o anunciante cria uma vaga.</p>
+  <div class="row">
+
+    <!-- P1 -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Anunciar vaga</div></div>
+        <div class="body">
+          <div class="lbl">CATEGORIA</div>
+          <div class="field"><b>🏠 Serviços domésticos ▾</b></div>
+          <div class="lbl">O QUE PRECISA SER FEITO?</div>
+          <div class="field">Ex.: Faxina completa em apartamento…</div>
+          <div class="lbl">QUANDO?</div>
+          <div class="fieldrow"><div class="field"><b>qui, 2 jul ▾</b></div><div class="field"><b>14h – 17h ▾</b></div></div>
+          <div class="lbl">QUANTO VAI PAGAR?</div>
+          <div class="field"><b>R$ 120,00</b></div>
+          <div class="lbl">ONDE?</div>
+          <div class="field">Endereço do serviço</div>
+          <div style="flex:1"></div>
+          <div class="btn">Publicar vaga</div>
+        </div>
+      </div>
+      <h3>Anunciar 1 — Formulário único</h3>
+      <span class="tag">rápido</span>
+      <p>Tudo em uma tela, na ordem natural: o quê → quando → quanto → onde. Poucos toques para quem já sabe; rolagem em telas pequenas.</p>
+    </div>
+
+    <!-- P2 -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Anunciar vaga</div></div>
+        <div class="body">
+          <div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+          <div style="font-size:19px;font-weight:800;letter-spacing:-.02em">Que tipo de serviço você precisa?</div>
+          <div class="tile-grid" style="margin-top:4px">
+            <div class="tile"><div class="ic">🏠</div><div class="nm">Serviços domésticos</div></div>
+            <div class="tile"><div class="ic">🩺</div><div class="nm">Saúde</div></div>
+            <div class="tile"><div class="ic">🧒</div><div class="nm">Cuidado de crianças</div></div>
+            <div class="tile"><div class="ic">🍽️</div><div class="nm">Eventos</div></div>
+          </div>
+          <div style="flex:1"></div>
+          <div class="btn">Continuar</div>
+        </div>
+      </div>
+      <h3>Anunciar 2 — Passo a passo</h3>
+      <span class="tag">uma pergunta por vez</span>
+      <p>4 telas curtas: categoria → descrição → data/horário → valor+endereço, com prévia no final. Mais guiado e à prova de erro; mais toques no total.</p>
+    </div>
+
+    <!-- P3 -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Anunciar vaga</div></div>
+        <div class="body">
+          <div class="field"><b>🏠 Domésticos ▾</b></div>
+          <div class="field">Faxina apartamento 60m²</div>
+          <div class="fieldrow"><div class="field"><b>qui, 2 jul</b></div><div class="field"><b>14h–17h</b></div></div>
+          <div class="fieldrow"><div class="field"><b>R$ 120,00</b></div><div class="field">Endereço</div></div>
+          <div class="preview-h">PRÉVIA — é assim que os trabalhadores vão ver:</div>
+          <div class="card" style="border-color:var(--roxo);border-width:1.5px">
+            <div class="top"><div><div class="title">Faxina apartamento 60m²</div><div class="meta">Domésticos · qui 2 · 14h–17h · Boa Vista</div></div><div class="price">R$ 120</div></div>
+            <div class="who"><span class="av">D</span> David · ★ novo na plataforma</div>
+          </div>
+          <div style="flex:1"></div>
+          <div class="btn">Publicar vaga</div>
+        </div>
+      </div>
+      <h3>Anunciar 3 — Formulário com prévia · recomendada</h3>
+      <span class="tag">confiança antes de publicar</span>
+      <p>Formulário compacto e, embaixo, a prévia ao vivo do anúncio exatamente como aparecerá na busca. Evita erros de valor/horário e ensina o usuário sem texto de ajuda.</p>
+    </div>
+  </div>
+</body>
+</html>

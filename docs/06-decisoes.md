@@ -61,3 +61,16 @@ entrar/criar conta na mesma tela, login Google via OAuth (redirect na web,
 fluxo PKCE com navegador no nativo). Requisito de configuração: ativar o
 provedor Google no painel do Supabase quando o projeto for criado.
 Alternativa descartada: fluxo passo a passo (opção B) e social-first (C).
+
+## D-007 — Telas Buscar vagas e Anunciar vaga
+**Data:** 2026-07-02 · **Decidido por:** David
+
+Rodada 3 (`docs/design/rodada-03-buscar-anunciar.html`):
+- **Buscar vagas — opção 2, "categorias primeiro":** grade de cartões grandes
+  por tipo de serviço (ícone + nome); tocar numa categoria abre a lista de
+  vagas dela. Uma decisão por vez, mínimo de leitura.
+- **Anunciar vaga — opção 3, "formulário com prévia":** formulário compacto
+  (categoria → descrição → quando → quanto → onde) com prévia ao vivo do
+  anúncio exatamente como aparecerá na busca, antes de publicar.
+Alternativas descartadas: busca por lista com filtros e por agenda;
+anúncio em formulário único sem prévia e em passo a passo.
