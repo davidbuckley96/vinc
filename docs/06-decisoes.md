@@ -49,3 +49,15 @@ arredondados, identidade forte inspirada em fintechs brasileiras (Nubank),
 fundo branco e cartões suaves em lilás. Tokens implementados em
 `apps/mobile/src/constants/theme.ts` (modo claro e escuro). Alternativas
 descartadas: A (azul neutro estilo Uber) e B (verde acolhedor estilo iFood).
+
+## D-006 — Entrada/cadastro: tela única com e-mail/senha + Google
+**Data:** 2026-07-02 · **Decidido por:** David
+
+Na rodada 2 de design (`docs/design/rodada-02-entrada-cadastro.html`), David
+escolheu a opção A (tela única com e-mail e senha) **acrescida de entrada com
+Google** ("entrar ou cadastrar com o Google"), pedindo a implementação da
+funcionalidade. Implementado em `apps/mobile/src/features/auth/`: alternância
+entrar/criar conta na mesma tela, login Google via OAuth (redirect na web,
+fluxo PKCE com navegador no nativo). Requisito de configuração: ativar o
+provedor Google no painel do Supabase quando o projeto for criado.
+Alternativa descartada: fluxo passo a passo (opção B) e social-first (C).

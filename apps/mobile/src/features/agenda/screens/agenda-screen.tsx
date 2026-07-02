@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
+import { useSession } from '@/features/auth/session-context';
 import { useTheme } from '@/hooks/use-theme';
 
 import { DateStrip } from '../components/date-strip';
@@ -22,6 +23,7 @@ import { getMockCommitments } from '../mock';
 export function AgendaScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const { userName } = useSession();
   const [view, setView] = useState<AgendaView>('day');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
 
@@ -40,13 +42,17 @@ export function AgendaScreen() {
           <SafeAreaView edges={['top']}>
             <View style={styles.headerRow}>
               <View>
-                <Text style={[styles.hello, { color: theme.onPrimary }]}>Olá! 👋</Text>
+                <Text style={[styles.hello, { color: theme.onPrimary }]}>
+                  {userName ? `Olá, ${userName.split(' ')[0]}! 👋` : 'Olá! 👋'}
+                </Text>
                 <Text style={[styles.date, { color: theme.onPrimaryMuted }]}>
                   {formatLongDate(selectedDate)}
                 </Text>
               </View>
               <View style={[styles.avatar, { backgroundColor: theme.background }]}>
-                <Text style={[styles.avatarLabel, { color: theme.primary }]}>V</Text>
+                <Text style={[styles.avatarLabel, { color: theme.primary }]}>
+                  {(userName ?? 'V').trim().charAt(0).toUpperCase()}
+                </Text>
               </View>
             </View>
             <ViewSwitcher value={view} onChange={setView} />

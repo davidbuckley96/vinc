@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 2: Entrada e Cadastro</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:36px;max-width:780px;line-height:1.5}
+  .row{display:flex;gap:36px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:320px}
+  .option h2{font-size:15px;margin:18px 2px 4px}
+  .option p{font-size:13px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:8px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:320px;height:640px;border-radius:36px;overflow:hidden;box-shadow:0 12px 40px rgba(17,20,24,.14),0 0 0 10px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .statusbar{display:flex;justify-content:space-between;font-size:12px;font-weight:600;padding:12px 22px 6px}
+  .body{flex:1;display:flex;flex-direction:column;padding:0 24px}
+  .logo{width:56px;height:56px;border-radius:16px;background:var(--roxo);color:#fff;font-weight:800;font-size:26px;display:flex;align-items:center;justify-content:center}
+  .field{border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;font-size:15px;color:#9aa1ab;margin-bottom:12px}
+  .field b{color:var(--ink);font-weight:500}
+  .btn{border-radius:14px;padding:15px 0;text-align:center;font-weight:700;font-size:15px}
+  .btn-primary{background:var(--roxo);color:#fff}
+  .btn-outline{border:1.5px solid var(--roxo);color:var(--roxo)}
+  .btn-neutral{border:1.5px solid var(--line);color:var(--ink);display:flex;align-items:center;justify-content:center;gap:8px}
+  .link{color:var(--roxo);font-weight:600}
+  .muted{color:var(--ink2);font-size:12.5px;text-align:center}
+  .dots{display:flex;gap:6px;justify-content:flex-start;margin:10px 0 26px}
+  .dot{width:26px;height:4px;border-radius:99px;background:#E9E2F8}
+  .dot.on{background:var(--roxo)}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 2 de design: entrada e cadastro</h1>
+  <p class="sub">Três abordagens para o primeiro contato do usuário com o app, todas no visual C aprovado.
+  A diferença é o <b>método de acesso</b> e o <b>ritmo do fluxo</b> — decisão importante porque o cadastro é a
+  primeira barreira para usuários de baixa escolaridade.</p>
+
+  <div class="row">
+
+    <!-- A: tela única -->
+    <div class="option">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 100%</span></div>
+        <div class="body">
+          <div style="height:34px"></div>
+          <div class="logo">V</div>
+          <div style="height:18px"></div>
+          <div style="font-size:24px;font-weight:800;letter-spacing:-.02em">Bem-vindo ao Vinc</div>
+          <div style="font-size:14px;color:var(--ink2);margin:6px 0 26px;line-height:1.45">Trabalhos por horário, pagamento garantido pelo app.</div>
+          <div class="field">E-mail</div>
+          <div class="field">Senha</div>
+          <div style="text-align:right;font-size:12.5px;margin:-4px 0 16px"><span class="link">Esqueci a senha</span></div>
+          <div class="btn btn-primary">Entrar</div>
+          <div style="height:12px"></div>
+          <div class="btn btn-outline">Criar conta grátis</div>
+          <div style="flex:1"></div>
+          <div class="muted" style="padding-bottom:22px">Ao continuar, você concorda com os Termos de Uso.</div>
+        </div>
+      </div>
+      <h2>Opção A — Tela única clássica</h2>
+      <span class="tag">e-mail + senha</span>
+      <p>Tudo em uma tela: e-mail, senha, entrar ou criar conta. Familiar e rápido para quem já usa apps,
+      porém o formulário inteiro de uma vez pode intimidar quem tem pouca prática.</p>
+    </div>
+
+    <!-- B: passo a passo -->
+    <div class="option">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 100%</span></div>
+        <div class="body">
+          <div style="height:10px"></div>
+          <div style="font-size:15px;color:var(--roxo);font-weight:700">‹ Voltar</div>
+          <div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
+          <div style="font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.25">Qual é o seu nome?</div>
+          <div style="font-size:14px;color:var(--ink2);margin:8px 0 24px;line-height:1.45">É assim que anunciantes e trabalhadores vão te conhecer.</div>
+          <div class="field" style="border-color:var(--roxo)"><b>Maria da Silva</b></div>
+          <div style="flex:1"></div>
+          <div class="btn btn-primary">Continuar</div>
+          <div style="height:26px"></div>
+        </div>
+      </div>
+      <h2>Opção B — Passo a passo · recomendada</h2>
+      <span class="tag">e-mail + senha, uma pergunta por tela</span>
+      <p>Cadastro em 3 telas curtas (nome → e-mail → senha), uma pergunta por vez, letra grande e botão
+      único — o padrão do WhatsApp. É o fluxo mais amigável para baixa escolaridade e vira mais telas,
+      porém cada uma é trivial.</p>
+    </div>
+
+    <!-- C: social primeiro -->
+    <div class="option">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 100%</span></div>
+        <div class="body">
+          <div style="height:60px"></div>
+          <div style="display:flex;justify-content:center"><div class="logo" style="width:72px;height:72px;font-size:34px;border-radius:20px">V</div></div>
+          <div style="height:20px"></div>
+          <div style="font-size:24px;font-weight:800;text-align:center;letter-spacing:-.02em">Vinc</div>
+          <div style="font-size:14px;color:var(--ink2);text-align:center;margin:6px 0 34px;line-height:1.45">Preencha seus horários livres<br>com trabalhos perto de você.</div>
+          <div class="btn btn-neutral"><span style="font-weight:800;color:#4285F4">G</span> Continuar com Google</div>
+          <div style="height:12px"></div>
+          <div class="btn btn-primary">Continuar com e-mail</div>
+          <div style="flex:1"></div>
+          <div class="muted" style="padding-bottom:22px">Ao continuar, você concorda com os Termos de Uso.</div>
+        </div>
+      </div>
+      <h2>Opção C — Social primeiro</h2>
+      <span class="tag">Google + e-mail</span>
+      <p>Um toque para entrar com a conta Google (que quase todo Android já tem), com e-mail como
+      alternativa. Menos fricção de senha, mas exige configurar o login Google (e Apple, para publicar
+      no iOS) — um pouco mais de setup e dependência.</p>
+    </div>
+
+  </div>
+</body>
+</html>
