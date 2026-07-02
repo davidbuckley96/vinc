@@ -77,9 +77,21 @@
   `accept-gig` (atômica, com checagem de conflito reusando o `core`);
   agenda da home agora usa dados reais do usuário logado (mock apenas em
   modo demonstração).
-- **Pendências do David:** deploy da função (`supabase functions deploy
-  accept-gig`); verificação do checklist de conexão/OAuth na máquina dele
-  (cadastro e-mail, login Google, publicar vaga); liberar `supabase.co` na
-  rede do ambiente remoto para testes end-to-end do Claude.
+- **Verificação de backend (2026-07-02, rede do ambiente liberada):**
+  ✅ API do Supabase alcançável; ✅ migration 0001 aplicada (tabelas
+  profiles/categories/gigs existem, RLS bloqueando leitura anônima como
+  projetado); ✅ provedor Google ATIVO e e-mail/senha ativo (confirmação de
+  e-mail exigida); ✅ app real no navegador conversando com a API real
+  (erro de credenciais traduzido renderizado). Obs. técnica: o Chromium de
+  teste não fala com o proxy de rede do ambiente diretamente — as chamadas
+  ao Supabase são roteadas pela camada Node do Playwright (`page.route` →
+  `context.request`), padrão já usado nos scripts de verificação.
+- **Pendências do David:** (1) deploy da função — `git pull` +
+  `supabase functions deploy accept-gig` na máquina dele (o clone estava
+  desatualizado no 1º intento) OU adicionar `SUPABASE_ACCESS_TOKEN` nas
+  variáveis do ambiente para o Claude fazer deploys; (2) para testes
+  autenticados end-to-end do Claude: desativar "Confirm email"
+  (Authentication → Sign In / Providers → Email) durante o desenvolvimento
+  ou criar 2 usuários de teste confirmados no painel.
 - Próximos passos da Fase 1: editar/excluir vaga própria; ciclo de vida do
   serviço (iniciar/concluir/confirmar); carteira simulada.
