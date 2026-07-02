@@ -1,0 +1,12 @@
+{
+  "name": "vinc",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "app": "pnpm --filter @vinc/mobile start",
+    "web": "pnpm --filter @vinc/mobile web",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint"
+  }
+}

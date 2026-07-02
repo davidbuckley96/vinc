@@ -5,8 +5,8 @@
 
 ## Fase 0 — Fundação
 - [x] Base documental (`docs/`, `CLAUDE.md`)
-- [ ] Esqueleto do monorepo (pnpm + Expo + packages + supabase)
-- [ ] CI básico (typecheck, lint, testes)
+- [x] Esqueleto do monorepo (pnpm + Expo + packages + supabase)
+- [x] CI básico (typecheck, testes)
 - [ ] Escolha da direção visual (rodada de opções de design) e tokens do design system
 
 ## Fase 1 — MVP (pagamentos simulados)
@@ -44,8 +44,12 @@
 
 **Última atualização:** 2026-07-02
 
-- Fase 0 em andamento: base documental criada (visão, especificação,
-  arquitetura, design, decisões D-001..D-004, dúvidas abertas).
-- Próximos passos: esqueleto do monorepo; depois, primeira rodada de opções de
-  design (direção visual + home/calendário) com o David.
-- Nada de código de produto implementado ainda.
+- Fase 0 quase concluída: base documental criada; monorepo montado
+  (`apps/mobile` Expo SDK 57 com expo-router, `packages/core` com as primeiras
+  regras puras de domínio testadas, `packages/api` com factory do cliente
+  Supabase, `supabase/` preparado); CI com typecheck + testes; app web
+  compilando (`expo export --platform web` OK).
+- Falta na Fase 0: rodada de opções de design (direção visual + tokens) com o
+  David — **próximo passo**.
+- O app ainda exibe as telas de exemplo do template Expo; nenhuma tela do
+  produto foi implementada (aguardando escolha de design).
