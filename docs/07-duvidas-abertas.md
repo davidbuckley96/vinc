@@ -33,8 +33,8 @@
 
 ## Design
 
-11. 🔴 **Direção visual** (paleta, tipografia, tom da marca): será a primeira
-    rodada de opções de design, antes de qualquer tela.
+11. ~~🔴 **Direção visual**~~ ✅ Respondida em 2026-07-02: Opção C, roxo
+    "fintech" (ver `06-decisoes.md` D-005).
 12. 🟢 **Nome/marca:** "Vinc" é definitivo? Há logo?
 
 ## Técnico / negócio

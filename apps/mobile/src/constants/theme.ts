@@ -1,6 +1,7 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Vinc design tokens — visual direction "C" (purple fintech), chosen by David
+ * in design round 1 (docs/06-decisoes.md D-005, docs/04-design.md).
+ * All UI colors must come from here; never hardcode colors in screens.
  */
 
 import '@/global.css';
@@ -9,22 +10,50 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: '#17141F',
+    textSecondary: '#6B7280',
+    background: '#FFFFFF',
+    backgroundElement: '#F4F1FA',
+    backgroundSelected: '#E9E2F8',
+    primary: '#6D28D9',
+    onPrimary: '#FFFFFF',
+    onPrimaryMuted: '#D8CCF3',
+    primarySoft: '#F1EBFD',
+    primarySoftText: '#4C1D95',
+    primarySoftMeta: '#6D4FAE',
+    line: '#E7EAEE',
+    dashedBorder: '#D5C9F2',
+    success: '#059669',
+    danger: '#DC2626',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: '#F4F2F8',
+    textSecondary: '#A8A3B3',
+    background: '#131019',
+    backgroundElement: '#1D1827',
+    backgroundSelected: '#2A2338',
+    primary: '#7C3AED',
+    onPrimary: '#FFFFFF',
+    onPrimaryMuted: '#D8CCF3',
+    primarySoft: '#251C3D',
+    primarySoftText: '#D6C7F7',
+    primarySoftMeta: '#B9A6E8',
+    line: '#2A2338',
+    dashedBorder: '#4A3C6E',
+    success: '#34D399',
+    danger: '#F87171',
   },
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+
+export const Radius = {
+  small: 8,
+  medium: 12,
+  large: 16,
+  xlarge: 24,
+  pill: 999,
+} as const;
 
 export const Fonts = Platform.select({
   ios: {

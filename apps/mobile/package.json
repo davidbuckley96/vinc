@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "dependencies": {
     "@expo/ui": "~57.0.1",
+    "@expo/vector-icons": "^15.1.1",
     "@vinc/api": "workspace:*",
     "@vinc/core": "workspace:*",
     "expo": "~57.0.1",

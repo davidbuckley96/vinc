@@ -39,3 +39,13 @@ serviços, coerente com a home de calendário (num horário livre: buscar bico O
 anunciar vaga). Reputação unificada por pessoa, com contexto por papel.
 Alternativas descartadas: contas separadas por papel (modelo iFood) e conta com
 papel primário.
+
+## D-005 — Direção visual: Opção C, "Fintech" (roxo)
+**Data:** 2026-07-02 · **Decidido por:** David
+
+Na rodada 1 de design (`docs/design/rodada-01-direcao-visual.html`), David
+escolheu a opção C: cabeçalho roxo sólido (#6D28D9) com cantos inferiores
+arredondados, identidade forte inspirada em fintechs brasileiras (Nubank),
+fundo branco e cartões suaves em lilás. Tokens implementados em
+`apps/mobile/src/constants/theme.ts` (modo claro e escuro). Alternativas
+descartadas: A (azul neutro estilo Uber) e B (verde acolhedor estilo iFood).

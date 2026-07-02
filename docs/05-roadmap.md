@@ -7,11 +7,11 @@
 - [x] Base documental (`docs/`, `CLAUDE.md`)
 - [x] Esqueleto do monorepo (pnpm + Expo + packages + supabase)
 - [x] CI básico (typecheck, testes)
-- [ ] Escolha da direção visual (rodada de opções de design) e tokens do design system
+- [x] Escolha da direção visual (rodada 1: Opção C, roxo fintech — D-005) e tokens do design system
 
 ## Fase 1 — MVP (pagamentos simulados)
 - [ ] Autenticação (e-mail/senha) e perfil
-- [ ] Calendário home (visões dia/semana/mês; selecionar horário → buscar vaga ou anunciar)
+- [~] Calendário home (visões dia/semana/mês; selecionar horário → buscar vaga ou anunciar) — UI pronta com dados simulados; falta ligar ao backend
 - [ ] CRUD de vagas (categoria, descrição, data/horário, valor, local)
 - [ ] Busca/listagem de vagas por horário e categoria
 - [ ] Aceite atômico com checagem de conflito de agenda
@@ -44,12 +44,14 @@
 
 **Última atualização:** 2026-07-02
 
-- Fase 0 quase concluída: base documental criada; monorepo montado
-  (`apps/mobile` Expo SDK 57 com expo-router, `packages/core` com as primeiras
-  regras puras de domínio testadas, `packages/api` com factory do cliente
-  Supabase, `supabase/` preparado); CI com typecheck + testes; app web
-  compilando (`expo export --platform web` OK).
-- Falta na Fase 0: rodada de opções de design (direção visual + tokens) com o
-  David — **próximo passo**.
-- O app ainda exibe as telas de exemplo do template Expo; nenhuma tela do
-  produto foi implementada (aguardando escolha de design).
+- **Fase 0 concluída**: base documental; monorepo (Expo SDK 57 + expo-router,
+  `packages/core` testado, `packages/api`, `supabase/`); CI; direção visual C
+  (roxo fintech) escolhida pelo David e tokens implementados (claro/escuro).
+- **Fase 1 iniciada**: home/calendário implementada com dados simulados —
+  visões dia (timeline por hora com compromissos, horários livres e ações
+  "Buscar serviços"/"Anunciar vaga"), semana e mês; navegação por 5 abas
+  (Agenda, Buscar, Anunciar, Carteira, Perfil — as 4 últimas são placeholders).
+  Verificado no navegador com screenshots (build web estática + Playwright).
+- Próximos passos da Fase 1: autenticação (Supabase) e telas de vaga
+  (busca e criação) — cada tela nova passa antes por rodada de opções de
+  design com o David.

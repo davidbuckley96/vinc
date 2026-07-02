@@ -26,12 +26,24 @@
    `06-decisoes.md`.
 3. Só então implementar, usando os tokens e componentes do design system.
 
+## Direção visual escolhida (D-005)
+
+Rodada 1 (`docs/design/rodada-01-direcao-visual.html`): David escolheu a
+**Opção C — "Fintech" (roxo)**, inspirada no Nubank:
+
+- **Primária:** roxo `#6D28D9` (claro) / `#7C3AED` (escuro); cabeçalho sólido
+  roxo com cantos inferiores arredondados (raio 24).
+- **Superfícies:** fundo branco/quase-preto, cartões suaves em lilás
+  (`primarySoft`), bordas tracejadas lilás para horários livres.
+- **Compromissos na agenda:** cartão lilás com borda esquerda roxa, título em
+  roxo profundo e metadados (horário · valor · nota) em roxo médio.
+- Tokens completos (claro + escuro) em `apps/mobile/src/constants/theme.ts` —
+  única fonte de cor do app; proibido hardcode de cor em telas.
+
 ## Design system
 
-- Tokens (cores, tipografia, espaçamento, raios, sombras) definidos em
-  `packages/core` ou `apps/mobile/src/components/theme/` — a definir na
-  primeira tarefa de UI, junto com a escolha da direção visual.
+- Tokens (cores, raios, espaçamento, fontes) em
+  `apps/mobile/src/constants/theme.ts`.
 - Componentes base reutilizáveis em `apps/mobile/src/components/`
-  (Button, Card, Avatar, RatingStars, MoneyText, TimeSlot, EmptyState, ...).
-- ⚠️ Direção visual (paleta, tipografia, tom) ainda não escolhida — será a
-  primeira rodada de opções de design (ver `07-duvidas-abertas.md`).
+  (a biblioteca cresce conforme as features: Button, Card, Avatar,
+  RatingStars, MoneyText, TimeSlot, EmptyState, ...).
