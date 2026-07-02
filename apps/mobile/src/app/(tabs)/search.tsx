@@ -1,11 +1,3 @@
-import { PlaceholderScreen } from '@/components/placeholder-screen';
+import { SearchScreen } from '@/features/gigs/screens/search-screen';
 
-export default function SearchScreen() {
-  return (
-    <PlaceholderScreen
-      icon="search"
-      title="Buscar serviços"
-      description="Aqui você vai encontrar vagas abertas por categoria e horário. Em construção."
-    />
-  );
-}
+export default SearchScreen;
