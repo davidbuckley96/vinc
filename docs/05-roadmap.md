@@ -12,8 +12,8 @@
 ## Fase 1 — MVP (pagamentos simulados)
 - [~] Autenticação (e-mail/senha + Google) e perfil — telas e fluxo prontos (D-006); falta criar o projeto Supabase e conectar
 - [~] Calendário home (visões dia/semana/mês; selecionar horário → buscar vaga ou anunciar) — UI pronta com dados simulados; falta ligar ao backend
-- [ ] CRUD de vagas (categoria, descrição, data/horário, valor, local)
-- [ ] Busca/listagem de vagas por horário e categoria
+- [~] CRUD de vagas — criação pronta (Anunciar com prévia, D-007); faltam editar/excluir
+- [~] Busca/listagem de vagas — categorias primeiro + vagas recentes (D-007); falta filtro por horário
 - [ ] Aceite atômico com checagem de conflito de agenda
 - [ ] Ciclo de vida do serviço (aceita → em andamento → concluída + confirmação do anunciante)
 - [ ] Carteira simulada: escrow no aceite, liberação na confirmação, multa do anunciante
@@ -68,5 +68,9 @@
   legada que foi exposta em chat. Obs.: o ambiente remoto de desenvolvimento
   bloqueia `supabase.co`, então testes end-to-end de auth/dados são feitos na
   máquina do David até a liberação da rede.
-- Próximos passos da Fase 1: conectar auth/agenda ao Supabase real; rodadas
-  de design das telas Buscar vagas e Anunciar vaga.
+- Telas Buscar (categorias primeiro) e Anunciar (formulário com prévia)
+  implementadas e conectadas ao Supabase via React Query, com fallback de
+  demonstração sem backend; validação de vaga no `core` (14 testes).
+- Próximos passos da Fase 1: aceite de vaga (Edge Function atômica com
+  checagem de conflito), agenda real na home (substituir mock), detalhe da
+  vaga, editar/excluir vaga própria.
