@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -24,6 +25,7 @@ import { useCategories, useOpenGigs } from '../hooks';
  */
 export function SearchScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const [category, setCategory] = useState<Category | null>(null);
   const categories = useCategories();
   const gigs = useOpenGigs(category?.id);
@@ -103,7 +105,12 @@ export function SearchScreen() {
             </Text>
           )}
           {gigs.data?.map((gig) => (
-            <GigCard key={gig.id} gig={gig} categoryName={categoryName(gig.categoryId)} />
+            <GigCard
+              key={gig.id}
+              gig={gig}
+              categoryName={categoryName(gig.categoryId)}
+              onPress={() => router.push(`/gig/${gig.id}`)}
+            />
           ))}
         </ScrollView>
       </View>

@@ -1,6 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { createGig, fetchCategories, fetchOpenGigs } from '@vinc/api';
+import {
+  acceptGig,
+  createGig,
+  fetchCategories,
+  fetchGigById,
+  fetchOpenGigs,
+  type AcceptGigResult,
+} from '@vinc/api';
 import type { GigDraft } from '@vinc/core';
 
 import { supabase } from '@/lib/supabase';
@@ -24,6 +31,32 @@ export function useOpenGigs(categoryId?: string) {
         : Promise.resolve(
             categoryId ? DEMO_GIGS.filter((gig) => gig.categoryId === categoryId) : DEMO_GIGS,
           ),
+  });
+}
+
+export function useGig(gigId: string) {
+  return useQuery({
+    queryKey: ['gigs', 'detail', gigId],
+    queryFn: () =>
+      supabase
+        ? fetchGigById(supabase, gigId)
+        : Promise.resolve(DEMO_GIGS.find((gig) => gig.id === gigId) ?? null),
+  });
+}
+
+export function useAcceptGig() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (gigId: string): Promise<AcceptGigResult> => {
+      if (!supabase) return 'accepted'; // demo mode: pretend success
+      return acceptGig(supabase, gigId);
+    },
+    onSuccess: (result) => {
+      if (result === 'accepted' || result === 'already_taken') {
+        queryClient.invalidateQueries({ queryKey: ['gigs'] });
+        queryClient.invalidateQueries({ queryKey: ['agenda'] });
+      }
+    },
   });
 }
 
