@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,7 +13,7 @@ import { MonthGrid } from '../components/month-grid';
 import { ViewSwitcher, type AgendaView } from '../components/view-switcher';
 import { WeekList } from '../components/week-list';
 import { formatLongDate, isSameDay } from '../dates';
-import { getMockCommitments } from '../mock';
+import { useMyAgenda } from '../hooks';
 
 /**
  * Home screen — the product's core loop (docs/02 §8): a calendar where any
@@ -27,7 +27,8 @@ export function AgendaScreen() {
   const [view, setView] = useState<AgendaView>('day');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
 
-  const commitments = useMemo(() => getMockCommitments(new Date()), []);
+  const agenda = useMyAgenda();
+  const commitments = agenda.data ?? [];
   const dayCommitments = commitments.filter((c) => isSameDay(c.startsAt, selectedDate));
 
   const openDay = (date: Date) => {

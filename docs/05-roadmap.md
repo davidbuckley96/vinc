@@ -14,7 +14,9 @@
 - [~] Calendário home (visões dia/semana/mês; selecionar horário → buscar vaga ou anunciar) — UI pronta com dados simulados; falta ligar ao backend
 - [~] CRUD de vagas — criação pronta (Anunciar com prévia, D-007); faltam editar/excluir
 - [~] Busca/listagem de vagas — categorias primeiro + vagas recentes (D-007); falta filtro por horário
-- [ ] Aceite atômico com checagem de conflito de agenda
+- [~] Aceite atômico com checagem de conflito de agenda — Edge Function
+  `accept-gig` pronta + tela de detalhe com aceite; falta o David rodar
+  `supabase functions deploy accept-gig` (requer Supabase CLI logada)
 - [ ] Ciclo de vida do serviço (aceita → em andamento → concluída + confirmação do anunciante)
 - [ ] Carteira simulada: escrow no aceite, liberação na confirmação, multa do anunciante
 - [ ] Avaliações mútuas (1–5) e reputação no perfil público
@@ -71,6 +73,13 @@
 - Telas Buscar (categorias primeiro) e Anunciar (formulário com prévia)
   implementadas e conectadas ao Supabase via React Query, com fallback de
   demonstração sem backend; validação de vaga no `core` (14 testes).
-- Próximos passos da Fase 1: aceite de vaga (Edge Function atômica com
-  checagem de conflito), agenda real na home (substituir mock), detalhe da
-  vaga, editar/excluir vaga própria.
+- Detalhe da vaga (`/gig/[id]`) com aceite em um toque; Edge Function
+  `accept-gig` (atômica, com checagem de conflito reusando o `core`);
+  agenda da home agora usa dados reais do usuário logado (mock apenas em
+  modo demonstração).
+- **Pendências do David:** deploy da função (`supabase functions deploy
+  accept-gig`); verificação do checklist de conexão/OAuth na máquina dele
+  (cadastro e-mail, login Google, publicar vaga); liberar `supabase.co` na
+  rede do ambiente remoto para testes end-to-end do Claude.
+- Próximos passos da Fase 1: editar/excluir vaga própria; ciclo de vida do
+  serviço (iniciar/concluir/confirmar); carteira simulada.
