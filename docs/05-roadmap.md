@@ -60,8 +60,13 @@
     profiles (com trigger de criação no signup), categories (com seed) e
     gigs com RLS e regras de coerência de status.
   - Verificado no navegador com screenshots (build web + Playwright).
-- **Bloqueio externo:** criar o projeto Supabase (conta do David), aplicar a
-  migration 0001, ativar o provedor Google e preencher
-  `apps/mobile/.env` (ver `.env.example`) — passo a passo com o David.
+- **Projeto Supabase criado pelo David** (2026-07-02):
+  `https://gexzpkbqodoyoxudzklb.supabase.co` — URL e chave publicável estão em
+  `apps/mobile/.env.example` (copiar para `.env`). Pendências do David no
+  painel: aplicar `supabase/migrations/0001` via SQL Editor, ativar o provedor
+  Google (credenciais OAuth do Google Cloud) e trocar/invalidar a service key
+  legada que foi exposta em chat. Obs.: o ambiente remoto de desenvolvimento
+  bloqueia `supabase.co`, então testes end-to-end de auth/dados são feitos na
+  máquina do David até a liberação da rede.
 - Próximos passos da Fase 1: conectar auth/agenda ao Supabase real; rodadas
   de design das telas Buscar vagas e Anunciar vaga.

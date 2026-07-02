@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GoogleLogo } from '@/components/google-logo';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -169,7 +170,7 @@ export function AuthScreen() {
               disabled={busy}
               onPress={google}
               style={[styles.button, styles.buttonOutline, { borderColor: theme.line }]}>
-              <Text style={[styles.googleG]}>G</Text>
+              <GoogleLogo size={18} />
               <Text style={[styles.buttonLabel, { color: theme.text }]}>
                 {signUp ? 'Cadastrar com Google' : 'Entrar com Google'}
               </Text>
@@ -266,11 +267,6 @@ const styles = StyleSheet.create({
   buttonLabel: {
     fontSize: 15,
     fontWeight: '700',
-  },
-  googleG: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#4285F4',
   },
   dividerRow: {
     flexDirection: 'row',
