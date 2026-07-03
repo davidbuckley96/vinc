@@ -118,8 +118,14 @@ revisados antes de abrir o app ao público:
   `Authorization: Bearer $SUPABASE_ACCESS_TOKEN` e
   `--cacert /root/.ccr/ca-bundle.crt`), que funciona. O token deve estar nas
   variáveis do ambiente do Claude Code (não no repositório).
-- **Pendência para e2e autenticado do Claude:** desativar "Confirm email"
-  (Authentication → Sign In / Providers → Email) durante o desenvolvimento
-  ou criar 2 usuários de teste confirmados no painel.
+- ✅ **Teste end-to-end completo no backend real (2026-07-03):** confirmação
+  de e-mail desativada pelo David (ver checklist de pré-lançamento); criadas
+  2 contas de teste → trigger criou perfis → 6 categorias do seed visíveis →
+  vaga publicada via RLS → aceite `accepted` → segundo aceite
+  `already_taken` (atomicidade) → vaga sobreposta `schedule_conflict` →
+  própria vaga `own_gig` → agenda do trabalhador com o serviço aceito.
+  Dados de teste removidos ao final via Management API
+  (`POST /v1/projects/{ref}/database/query`), que é também o caminho para
+  aplicar migrations futuras daqui do ambiente.
 - Próximos passos da Fase 1: editar/excluir vaga própria; ciclo de vida do
   serviço (iniciar/concluir/confirmar); carteira simulada.
