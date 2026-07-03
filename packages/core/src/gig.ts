@@ -10,6 +10,7 @@
 
 export const GIG_STATUSES = [
   "open",
+  "pending_approval",
   "accepted",
   "in_progress",
   "awaiting_confirmation",
@@ -22,7 +23,9 @@ export const GIG_STATUSES = [
 export type GigStatus = (typeof GIG_STATUSES)[number];
 
 const TRANSITIONS: Record<GigStatus, readonly GigStatus[]> = {
-  open: ["accepted", "expired"],
+  open: ["pending_approval", "expired"],
+  // approval -> accepted; refusal -> back to open (docs/02 §3)
+  pending_approval: ["accepted", "open"],
   accepted: ["in_progress", "cancelled_by_poster", "cancelled_by_worker"],
   in_progress: ["awaiting_confirmation", "cancelled_by_poster", "cancelled_by_worker"],
   awaiting_confirmation: ["completed"],
@@ -36,11 +39,20 @@ export function canTransition(from: GigStatus, to: GigStatus): boolean {
   return TRANSITIONS[from].includes(to);
 }
 
-/** Statuses in which the gig occupies the worker's agenda. */
+/** Statuses with escrow held for the worker (wallet "a receber"). */
 export const ACTIVE_WORKER_STATUSES: readonly GigStatus[] = [
   "accepted",
   "in_progress",
   "awaiting_confirmation",
+];
+
+/**
+ * Statuses that occupy the worker's schedule for conflict checks: a pending
+ * candidacy also blocks the slot (docs/02 §3), even though no escrow exists.
+ */
+export const SCHEDULE_BLOCKING_STATUSES: readonly GigStatus[] = [
+  "pending_approval",
+  ...ACTIVE_WORKER_STATUSES,
 ];
 
 /**

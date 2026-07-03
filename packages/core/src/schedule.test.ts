@@ -39,13 +39,16 @@ describe("hasScheduleConflict", () => {
 
 describe("gig state machine", () => {
   it("allows the happy path", () => {
-    expect(canTransition("open", "accepted")).toBe(true);
+    expect(canTransition("open", "pending_approval")).toBe(true);
+    expect(canTransition("pending_approval", "accepted")).toBe(true);
+    expect(canTransition("pending_approval", "open")).toBe(true);
     expect(canTransition("accepted", "in_progress")).toBe(true);
     expect(canTransition("in_progress", "awaiting_confirmation")).toBe(true);
     expect(canTransition("awaiting_confirmation", "completed")).toBe(true);
   });
 
   it("rejects invalid transitions", () => {
+    expect(canTransition("open", "accepted")).toBe(false);
     expect(canTransition("open", "completed")).toBe(false);
     expect(canTransition("completed", "open")).toBe(false);
     expect(canTransition("in_progress", "completed")).toBe(false);

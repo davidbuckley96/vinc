@@ -1,25 +1,28 @@
-// Edge Function: accept-gig
-// The critical marketplace action (docs/02 §3): a worker claims an open gig.
-// Runs with the service role because clients must never decide acceptance
-// (docs/03 principle 3). Guarantees:
+// Edge Function: apply-gig
+// Worker applies to an open gig (docs/02 §3, Uber-like — D-012). Guarantees:
 //   - only authenticated users, never the poster themselves
-//   - schedule-conflict check against the worker's active commitments,
-//     using the same pure rule as the app (packages/core/src/schedule.ts)
-//   - atomic claim: UPDATE ... WHERE status = 'open' — two workers can
-//     never take the same gig (the second update matches zero rows)
+//   - refused candidates can never re-apply to this gig
+//   - blocked pairs (either direction) can't apply
+//   - schedule-conflict check incl. the worker's own pending candidacies
+//   - atomic lock: UPDATE ... WHERE status='open' — one candidate at a time;
+//     while pending, the gig is out of listings and nobody else can apply
+// No money moves here: escrow is held at APPROVAL (respond-candidacy).
 //
-// Deploy: supabase functions deploy accept-gig
+// Deploy: Management API multipart (see docs/05 roadmap).
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+import { SCHEDULE_BLOCKING_STATUSES } from "../../../packages/core/src/gig.ts";
 import { hasScheduleConflict } from "../../../packages/core/src/schedule.ts";
 
 type ResultCode =
-  | "accepted"
+  | "applied"
   | "unauthorized"
   | "not_found"
   | "own_gig"
-  | "already_taken"
+  | "not_available"
+  | "refused_before"
+  | "blocked"
   | "schedule_conflict"
   | "invalid_request";
 
@@ -40,8 +43,7 @@ Deno.serve(async (request) => {
     return new Response("ok", { headers: CORS_HEADERS });
   }
 
-  const authHeader = request.headers.get("Authorization") ?? "";
-  const jwt = authHeader.replace("Bearer ", "");
+  const jwt = (request.headers.get("Authorization") ?? "").replace("Bearer ", "");
   if (!jwt) return respond("unauthorized", 401);
 
   let gigId: unknown;
@@ -63,22 +65,36 @@ Deno.serve(async (request) => {
 
   const { data: gig } = await admin
     .from("gigs")
-    .select("id, poster_id, status, starts_at, ends_at, price_cents")
+    .select("id, poster_id, status, starts_at, ends_at")
     .eq("id", gigId)
     .maybeSingle();
   if (!gig) return respond("not_found", 404);
   if (gig.poster_id === workerId) return respond("own_gig", 409);
-  if (gig.status !== "open") return respond("already_taken", 409);
+  if (gig.status !== "open") return respond("not_available", 409);
 
-  // Schedule conflict against the worker's active commitments as a worker.
-  // Gigs they posted don't block them (they hire, they don't attend) — see
-  // docs/02 §3; revisit if the product decides otherwise.
+  const { data: refusal } = await admin
+    .from("gig_refusals")
+    .select("gig_id")
+    .eq("gig_id", gigId)
+    .eq("worker_id", workerId)
+    .maybeSingle();
+  if (refusal) return respond("refused_before", 403);
+
+  const { data: blocks } = await admin
+    .from("user_blocks")
+    .select("blocker_id")
+    .or(
+      `and(blocker_id.eq.${workerId},blocked_id.eq.${gig.poster_id}),` +
+        `and(blocker_id.eq.${gig.poster_id},blocked_id.eq.${workerId})`,
+    )
+    .limit(1);
+  if (blocks && blocks.length > 0) return respond("blocked", 403);
+
   const { data: commitments } = await admin
     .from("gigs")
     .select("starts_at, ends_at")
     .eq("worker_id", workerId)
-    .in("status", ["accepted", "in_progress"]);
-
+    .in("status", [...SCHEDULE_BLOCKING_STATUSES]);
   const candidate = { startsAt: gig.starts_at, endsAt: gig.ends_at };
   const committed = (commitments ?? []).map((row) => ({
     startsAt: row.starts_at,
@@ -88,29 +104,14 @@ Deno.serve(async (request) => {
     return respond("schedule_conflict", 409);
   }
 
-  // Atomic claim: only succeeds if the gig is still open.
-  const { data: claimed } = await admin
+  // Atomic lock: only succeeds while the gig is still open.
+  const { data: locked } = await admin
     .from("gigs")
-    .update({
-      status: "accepted",
-      worker_id: workerId,
-      accepted_at: new Date().toISOString(),
-    })
+    .update({ status: "pending_approval", worker_id: workerId })
     .eq("id", gigId)
     .eq("status", "open")
     .select("id");
+  if (!locked || locked.length === 0) return respond("not_available", 409);
 
-  if (!claimed || claimed.length === 0) return respond("already_taken", 409);
-
-  // Escrow hold (docs/02 §5): the gig price leaves the poster's simulated
-  // wallet the moment the gig is claimed. Released to the worker on
-  // confirmation (gig-lifecycle), refunded on legitimate cancellation.
-  await admin.from("ledger_entries").insert({
-    user_id: gig.poster_id,
-    gig_id: gig.id,
-    type: "escrow_hold",
-    amount_cents: -gig.price_cents,
-  });
-
-  return respond("accepted", 200);
+  return respond("applied", 200);
 });
