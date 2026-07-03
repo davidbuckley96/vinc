@@ -139,3 +139,18 @@ funcionalidade de MVP: **bloqueio entre usuários** (docs/02 §8) — esconde
 vagas nas duas direções, impede candidaturas e bloqueará mensagens (chat
 simples também entra no MVP). Notificação de candidatura no MVP é dentro do
 app; push na Fase 2.
+
+## D-013 — Taxa de serviço paga na criação da vaga; prestador vê o líquido
+**Data:** 2026-07-03 · **Decidido por:** David
+
+O anunciante paga o valor total **na criação da vaga**: taxa de serviço
+(fica com a empresa, não reembolsável) + valor líquido (escrow do
+prestador). O prestador sempre vê e recebe o **líquido** integral pelo qual
+se candidatou (busca, prévia da criação, detalhe, carteira). A taxa aparece
+explícita na criação. Se ninguém for aprovado (sem candidatos, todos
+recusados, ou vaga excluída antes de aprovar), reembolsa-se apenas o
+líquido. Racional: impede recusar todo mundo para reaver 100% do valor —
+arrepender-se custa a taxa. Percentual usado como exemplo: 10% (valor final
+⚠️ dúvida #2). Consequência técnica: escrow deixa de ser retido na
+aprovação (D-012) e passa para a criação; `gigs.price_cents` = líquido,
+nova coluna `fee_cents`.

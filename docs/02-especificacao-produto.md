@@ -99,16 +99,32 @@ ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
 - Proteção contra serviço malfeito (ex.: faxina pela metade): o anunciante pode
   **contestar antes da liberação**, abrindo uma disputa (ver §6).
 
-## 5. Pagamentos (MVP: simulado — decisão D-003)
+## 5. Pagamentos (MVP: simulado — decisões D-003 e D-013)
 
 - No MVP toda a mecânica financeira funciona com **saldo simulado** (carteira
   interna), sem gateway real. A arquitetura já modela o fluxo real:
-  1. Vaga aceita → valor do anunciante fica **retido** (escrow).
-  2. Serviço concluído e confirmado → valor **liberado** para a carteira do
-     prestador.
-  3. Prestador **saca** para conta bancária (no MVP: saque simulado; no futuro:
-     Pix via gateway — Mercado Pago/Pagar.me, a definir na Fase 3).
-- **Taxa da plataforma**: percentual sobre o valor do serviço ⚠️ em aberto.
+  1. **Na criação da vaga o anunciante paga o valor total** (bruto), composto
+     de: **taxa de serviço da plataforma** (não reembolsável) + **valor
+     líquido** que fica retido em escrow para o prestador.
+  2. Serviço concluído e confirmado → o **líquido** é liberado para a
+     carteira do prestador.
+  3. Prestador **saca** para conta bancária (no MVP: saque simulado; no
+     futuro: Pix via gateway — Fase 3).
+
+### 5.1 Taxa de serviço na criação (D-013)
+
+- Exemplo (valores ilustrativos, percentual final ⚠️ em aberto): vaga de
+  R$ 100 → taxa de R$ 10 fica com a empresa → o prestador recebe R$ 90.
+- **O prestador sempre vê o valor líquido** (na busca, no detalhe, na
+  agenda, na carteira): ele recebe integralmente o valor pelo qual se
+  candidatou. A **prévia** do anúncio na criação mostra o líquido.
+- A **taxa aparece explícita no momento da criação** ("Valor da vaga
+  R$ 100 · Taxa de serviço R$ 10 · O prestador recebe R$ 90").
+- **Reembolso:** se ninguém se candidatar, se o anunciante recusar todos os
+  candidatos ou se ele excluir a vaga antes de aprovar alguém, o **líquido é
+  reembolsado** (R$ 90 no exemplo) — **a taxa fica com a empresa**. Isso
+  impede o golpe de "recusar indefinidamente esperando reembolso total":
+  arrepender-se de abrir a vaga custa a taxa.
 - Multas são cobradas do saldo/forma de pagamento do anunciante infrator.
 - Todo movimento financeiro gera **registro imutável em ledger** (auditoria).
 

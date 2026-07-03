@@ -9,8 +9,9 @@
 1. 🔴 **Multa do anunciante** (exclui vaga ou rejeita prestador pós-aceite):
    valor fixo ou % do serviço? Qual? Para onde vai a multa (plataforma,
    prestador lesado, ou dividido)?
-2. 🔴 **Taxa da plataforma:** qual % sobre o valor do serviço? Descontada do
-   prestador, acrescida ao anunciante, ou dividida?
+2. 🟡 **Taxa da plataforma:** o MODELO foi decidido (D-013: paga pelo
+   anunciante na criação, não reembolsável, prestador vê o líquido). Falta
+   definir o **percentual/fórmula** — 10% está em uso como exemplo.
 3. 🔴 **Conflito de agenda no aceite:** bloquear de vez o aceite conflitante ou
    apenas alertar fortemente?
 4. 🔴 **Confirmação de conclusão:** se o anunciante não confirmar nem contestar,
