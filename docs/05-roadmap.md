@@ -42,6 +42,28 @@
 
 ---
 
+## ⚠️ Checklist de pré-lançamento (obrigatório antes do deployment real)
+
+Itens desligados/simplificados durante o desenvolvimento que DEVEM ser
+revisados antes de abrir o app ao público:
+
+1. **Reativar "Confirm email"** (painel Supabase → Authentication → Sign In /
+   Providers → Email). Desativado em 2026-07-03 para permitir testes
+   end-to-end automatizados. **Recomendação: reativar sim** — sem confirmação
+   de e-mail, contas falsas em massa ficam triviais e minam o sistema de
+   reputação, que é o núcleo do produto (docs/01). Avaliar no mesmo momento a
+   verificação por SMS/telefone como alternativa mais forte (padrão em apps
+   de serviço no Brasil).
+2. Reativar/verificar limites de rate-limit de auth no painel.
+3. Revogar tokens de acesso pessoais criados durante o desenvolvimento
+   (`SUPABASE_ACCESS_TOKEN` expira ~2026-08-01; verificar lista em
+   supabase.com/dashboard/account/tokens).
+4. Trocar as credenciais OAuth do Google se o client secret tiver circulado
+   fora do painel; tirar o app do modo de teste (OAuth consent screen →
+   publicar) para permitir logins de qualquer conta Google.
+5. Migrar e-mails transacionais para um provedor SMTP próprio (o SMTP
+   embutido do Supabase é só para desenvolvimento e tem limites baixos).
+
 ## Estado atual
 
 **Última atualização:** 2026-07-02
