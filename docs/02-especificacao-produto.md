@@ -29,7 +29,21 @@ Campos essenciais:
 | Descrição do serviço esperado | Texto livre, com o que deve ser feito |
 | Data e horário | dia X, 15h–22h |
 | Valor do serviço (BRL) | R$ 160,00 |
-| Local | Endereço/bairro (nível de detalhe exibido ⚠️ em aberto) |
+| Local | Escolhido **no mapa** (ver §2.1) — nível de detalhe exibido antes do aceite ⚠️ em aberto |
+
+### 2.1 Localização por mapa (definido pelo David em 2026-07-03)
+
+- **Na criação do anúncio**, o local NÃO é uma caixa de texto livre (evita
+  endereços inexistentes/ambíguos). A pessoa escolhe no **mapa**, estilo
+  Uber/iFood: arrastando o pino OU digitando na caixa de busca dentro do
+  próprio mapa (geocodificação).
+- **Na visualização da vaga** (antes e depois do aceite), o endereço é
+  clicável e abre um **modal com o mapa** mostrando o pino do local, com um
+  botão de fechar.
+- Requisitos técnicos: colunas `lat`/`lng` na tabela `gigs`; provedor de
+  mapas/geocodificação a decidir (⚠️ `07-duvidas-abertas.md`).
+- **Rodada de opções de design obrigatória** antes de implementar (processo
+  padrão de UI).
 
 Categorias iniciais: saúde, entretenimento, serviços domésticos (lista completa
 ⚠️ em aberto — expansível, cadastrada no banco e não no código).

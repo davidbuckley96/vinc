@@ -20,6 +20,7 @@
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
 - [~] Carteira simulada: escrow no aceite e liberação na confirmação prontos (ledger imutável + tela dois cartões, D-008); falta a multa do anunciante (cancelamento pós-aceite)
 - [ ] Avaliações mútuas (1–5) e reputação no perfil público
+- [ ] Localização por mapa (pino arrastável + busca no mapa ao anunciar; modal de mapa ao ver a vaga — docs/02 §2.1; requer provedor de mapas, ver dúvidas #15)
 - [ ] Web e mobile funcionando com paridade
 
 ## Fase 2 — Confiança

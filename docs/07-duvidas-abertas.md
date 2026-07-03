@@ -41,9 +41,13 @@
 
 13. 🟡 **Gateway de pagamento** da Fase 3: Mercado Pago, Pagar.me ou outro?
     (depende de conta/credenciais do David)
-14. 🔴 **Contas de infraestrutura:** criar o projeto Supabase (conta do
-    David) — agora é bloqueio da Fase 1: sem ele auth e dados reais não
-    funcionam (o app roda em modo demonstração). Depois de criado: aplicar
-    `supabase/migrations/0001`, ativar provedor Google (para o "Entrar com
-    Google" — D-006) e preencher `apps/mobile/.env`. Contas Apple
-    Developer / Google Play ficam para a Fase 4.
+14. ~~🔴 **Contas de infraestrutura**~~ ✅ Resolvida em 2026-07-03: projeto
+    Supabase criado, migrations aplicadas, Google OAuth configurado, `.env`
+    preenchido e backend verificado e2e. Contas Apple Developer / Google
+    Play ficam para a Fase 4.
+
+15. 🟡 **Provedor de mapas/geocodificação** para a localização por mapa
+    (docs/02 §2.1): Google Maps (o mais familiar; exige chave de API com
+    cartão cadastrado, tem cota gratuita), Mapbox (cota gratuita generosa) ou
+    OpenStreetMap/Nominatim (gratuito, visual menos polido). Recomendação
+    será apresentada junto com a rodada de design do mapa.
