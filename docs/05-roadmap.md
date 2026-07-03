@@ -86,11 +86,17 @@
   teste não fala com o proxy de rede do ambiente diretamente — as chamadas
   ao Supabase são roteadas pela camada Node do Playwright (`page.route` →
   `context.request`), padrão já usado nos scripts de verificação.
-- **Pendências do David:** (1) deploy da função — `git pull` +
-  `supabase functions deploy accept-gig` na máquina dele (o clone estava
-  desatualizado no 1º intento) OU adicionar `SUPABASE_ACCESS_TOKEN` nas
-  variáveis do ambiente para o Claude fazer deploys; (2) para testes
-  autenticados end-to-end do Claude: desativar "Confirm email"
+- ✅ Edge Function `accept-gig` deployada pelo David (v1 ATIVA) e verificada:
+  responde com os códigos de resultado do nosso contrato (`unauthorized`
+  para chamador sem login).
+- **Deploys pelo Claude:** o David gerou um `SUPABASE_ACCESS_TOKEN` (expira
+  ~2026-08-01). A CLI do Supabase tem problema de transporte com o proxy do
+  ambiente; usar a **Management API direto com curl**
+  (`https://api.supabase.com/v1/projects/gexzpkbqodoyoxudzklb/...` com
+  `Authorization: Bearer $SUPABASE_ACCESS_TOKEN` e
+  `--cacert /root/.ccr/ca-bundle.crt`), que funciona. O token deve estar nas
+  variáveis do ambiente do Claude Code (não no repositório).
+- **Pendência para e2e autenticado do Claude:** desativar "Confirm email"
   (Authentication → Sign In / Providers → Email) durante o desenvolvimento
   ou criar 2 usuários de teste confirmados no painel.
 - Próximos passos da Fase 1: editar/excluir vaga própria; ciclo de vida do
