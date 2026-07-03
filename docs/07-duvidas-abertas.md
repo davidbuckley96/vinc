@@ -31,6 +31,11 @@
    entretenimento e serviços domésticos).
 10. 🟢 **Avaliações:** comentário textual além da nota? Avaliação é pública no
     perfil ou só a média?
+18. 🟢 **Edição de vaga sem mudar o valor** (D-017): implementei a edição da
+    vaga aberta permitindo mudar tudo MENOS o valor (que está amarrado ao
+    pagamento da criação; para outro valor: excluir, receber o líquido de
+    volta e recriar). Confirma essa regra, ou quer permitir mudar o valor
+    com ajuste de cobrança/reembolso da diferença?
 16. ~~🔴 **Prazo de processamento na carteira**~~ ✅ Respondida em
     2026-07-03: **7 dias**, inicialmente (ver `06-decisoes.md` D-016).
     Relaciona-se com a dúvida #4 (auto-liberação da confirmação) e com o

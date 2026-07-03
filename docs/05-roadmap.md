@@ -12,14 +12,14 @@
 ## Fase 1 — MVP (pagamentos simulados)
 - [x] Autenticação (e-mail/senha + Google, D-006) — conectada ao Supabase real e verificada (cadastro, login, OAuth Google ativo)
 - [x] Calendário home (visões dia/semana/mês; horário livre → buscar/anunciar) — ligado à agenda real do usuário
-- [~] CRUD de vagas — criação pronta (Anunciar com prévia, D-007); faltam editar/excluir
+- [x] CRUD de vagas — criação com prévia (D-007); editar (vaga aberta, valor imutável) e excluir (reembolso do líquido, taxa fica) via Edge Functions (D-017, docs/02 §2.2), verificado e2e
 - [~] Busca/listagem de vagas — categorias primeiro + vagas recentes (D-007); falta filtro por horário
 - [x] Candidatura com aprovação do anunciante (modelo Uber, docs/02 §3, D-012) — trava atômica de 1 candidato; recusa sem multa reabre a vaga e bloqueia o candidato só para ela; escrow retido na aprovação; verificado e2e (14 checagens)
 - [x] Bloqueio entre usuários (docs/02 §8) — botão no perfil público; vagas ocultas nas duas direções e candidatura impedida (verificado e2e); corte de mensagens entra junto com o chat
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
 - [~] Carteira simulada (ledger imutável + tela dois cartões, D-008); falta a multa do anunciante (cancelamento pós-aprovação)
 - [ ] Reformulação da carteira (D-015, docs/02 §5.2): só o saldo disponível em destaque (recebido desde o último saque); serviço concluído entra na hora numa seção "Em processamento" com prazo de 7 dias (D-016); extrato completo atrás de "Ver histórico"; serviços não prestados fora da carteira; saldo usável integral/parcialmente na criação de vagas. (Pedido de reembolso dentro do prazo → processo de disputas, Fase 2; saque real via Pix → Fase 3)
-- [~] Taxa de serviço na criação da vaga (D-013) — IMPLEMENTADO: pagamento antecipado via create-gig (taxa 10%-exemplo + escrow do líquido), taxa explícita na criação, prévia e busca com o líquido, verificado e2e; FALTA: reembolso do líquido na exclusão/expiração (entra com o bloco excluir vaga)
+- [~] Taxa de serviço na criação da vaga (D-013) — IMPLEMENTADO: pagamento antecipado via create-gig (taxa 10%-exemplo + escrow do líquido), taxa explícita na criação, prévia e busca com o líquido, reembolso do líquido na exclusão (delete-gig), tudo verificado e2e; FALTA: reembolso na expiração da vaga (job de expiração ainda não existe)
 - [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
 - [ ] Localização por mapa (pino arrastável + busca no mapa ao anunciar; modal de mapa ao ver a vaga — docs/02 §2.1; requer provedor de mapas, ver dúvidas #15)
 - [ ] Mensagens entre as partes dentro do app (chat simples; respeita bloqueios)
@@ -92,9 +92,15 @@ revisados antes de abrir o app ao público:
   deployadas (accept-gig legada removida); view visible_open_gigs filtra
   recusados e bloqueados; UI completa (candidatar-se, decisão do
   anunciante com aviso in-app, bloquear/desbloquear no perfil).
-- **Faltam na Fase 1**: cancelamento com multa do anunciante;
-  editar/excluir vaga própria; reformulação da carteira (D-015, docs/02
-  §5.2: saldo único + "em processamento" + histórico); localização por mapa
-  (docs/02 §2.1, rodada de design + provedor, dúvida #15); mensagens no app
-  (chat simples, respeitando bloqueios); revisão final de paridade
-  web/mobile.
+- **Editar/excluir vaga (D-017) no ar**: update-gig e delete-gig
+  deployadas; exclusão reembolsa o líquido (taxa fica) com trava atômica
+  contra reembolso duplo; edição só com vaga aberta e valor imutável;
+  política de UPDATE do cliente removida (migrations 0007–0008 aplicadas);
+  cartão "Vaga publicada" com botões Editar/Excluir e tela de edição com
+  formulário compartilhado (GigForm).
+- **Faltam na Fase 1**: cancelamento com multa do anunciante (dúvida #1);
+  expiração de vaga com reembolso; reformulação da carteira (D-015, docs/02
+  §5.2: saldo único + "em processamento" + histórico — rodada de design
+  antes); localização por mapa (docs/02 §2.1, rodada de design + provedor,
+  dúvida #15); mensagens no app (chat simples, respeitando bloqueios);
+  filtro de busca por horário; revisão final de paridade web/mobile.

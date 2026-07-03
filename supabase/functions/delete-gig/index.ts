@@ -67,10 +67,11 @@ Deno.serve(async (request) => {
   if (!posterCanDelete(gig.status as GigStatus)) return respond("not_deletable", 409);
 
   // Atomic: only the caller that wins this conditional UPDATE refunds, so
-  // the escrow can never be refunded twice.
+  // the escrow can never be refunded twice. A pending candidate's id is
+  // kept for history (migration 0008 allows either).
   const { data: cancelled } = await admin
     .from("gigs")
-    .update({ status: "cancelled_by_poster", worker_id: null })
+    .update({ status: "cancelled_by_poster" })
     .eq("id", gig.id)
     .in("status", ["open", "pending_approval"])
     .select("id");

@@ -60,6 +60,24 @@ ABERTA → CANDIDATURA PENDENTE → ACEITA → EM ANDAMENTO
 ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
 ```
 
+### 2.2 Editar e excluir a própria vaga (D-017 — implementado)
+
+- **Excluir**: permitido enquanto ninguém foi aprovado (vaga aberta ou com
+  candidato pendente). O **valor do prestador volta** para o anunciante; a
+  **taxa fica** com a empresa (§5.1). Após aprovar alguém vira
+  cancelamento, com multa (⚠️ dúvida #1). Botão com confirmação em dois
+  toques na tela da vaga.
+- **Editar**: permitido apenas com a vaga **aberta e sem candidato
+  pendente** (o candidato se candidatou a termos específicos — decida
+  primeiro). Editáveis: categoria, título, descrição, dia/horário e local.
+- **O valor NÃO é editável** (nem para cima nem para baixo): ele está
+  amarrado ao pagamento feito na criação (escrow + taxa). Para pagar outro
+  valor: excluir a vaga (reembolso do líquido) e criar outra. Confirmação
+  do David ⚠️ dúvida #18.
+- Técnica: edição e exclusão passam por Edge Functions (`update-gig`,
+  `delete-gig`); a política de UPDATE direto do cliente foi removida
+  (migration 0007) para o valor não ser alterável fora do fluxo.
+
 ## 3. Candidatura e aprovação (modelo Uber — definido pelo David em 2026-07-03)
 
 - O prestador **se candidata** a uma vaga ABERTA com poucos cliques. A

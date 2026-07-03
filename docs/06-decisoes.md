@@ -195,3 +195,19 @@ mais usadas/confiáveis são PayPal, Mercado Pago e PicPay. Direção prática
 para a Fase 3: lançar com **Pix + cartões** (cobertos por qualquer gateway
 brasileiro — dúvida #13) e adicionar carteiras conforme o suporte do
 gateway. No MVP nada muda (pagamentos simulados).
+
+## D-017 — Editar/excluir vaga: valor imutável; reembolso do líquido na exclusão
+**Data:** 2026-07-03 · **Decidido por:** Claude (derivado de D-013/D-014; validação do David ⚠️ dúvida #18)
+
+Implementa o CRUD da vaga (docs/02 §2.2). **Excluir**: permitido antes de
+aprovar alguém (aberta ou candidato pendente) — o valor do prestador é
+reembolsado e a taxa fica com a empresa, exatamente como D-013 define.
+**Editar**: só com a vaga aberta e sem candidato; categoria, título,
+descrição, horário e local. **O valor não é editável**: ele corresponde ao
+pagamento já feito na criação — permitir mudá-lo obrigaria a decidir se a
+taxa acompanha (contradiz "não reembolsável" ao baixar) ou não (taxa
+descolada do valor). Para mudar o valor: excluir e recriar. Técnica:
+edição/exclusão via Edge Functions; política de UPDATE do cliente removida
+(migration 0007 — fechava brecha de editar `price_cents` direto);
+migration 0008 ajusta a invariante de `worker_id` para permitir cancelar
+vaga que nunca teve prestador.
