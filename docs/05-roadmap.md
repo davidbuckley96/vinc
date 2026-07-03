@@ -17,8 +17,8 @@
 - [~] Aceite atômico com checagem de conflito de agenda — Edge Function
   `accept-gig` pronta + tela de detalhe com aceite; falta o David rodar
   `supabase functions deploy accept-gig` (requer Supabase CLI logada)
-- [ ] Ciclo de vida do serviço (aceita → em andamento → concluída + confirmação do anunciante)
-- [ ] Carteira simulada: escrow no aceite, liberação na confirmação, multa do anunciante
+- [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
+- [~] Carteira simulada: escrow no aceite e liberação na confirmação prontos (ledger imutável + tela dois cartões, D-008); falta a multa do anunciante (cancelamento pós-aceite)
 - [ ] Avaliações mútuas (1–5) e reputação no perfil público
 - [ ] Web e mobile funcionando com paridade
 
@@ -127,5 +127,10 @@ revisados antes de abrir o app ao público:
   Dados de teste removidos ao final via Management API
   (`POST /v1/projects/{ref}/database/query`), que é também o caminho para
   aplicar migrations futuras daqui do ambiente.
-- Próximos passos da Fase 1: editar/excluir vaga própria; ciclo de vida do
-  serviço (iniciar/concluir/confirmar); carteira simulada.
+- Ciclo de vida + carteira entregues (D-008): função `gig-lifecycle` e
+  `accept-gig` v2 (escrow) deployadas e testadas e2e no backend real
+  (hold no aceite, ações por papel/ordem, release na confirmação, RLS);
+  telas do serviço ("uma ação por vez") e da Carteira (dois cartões +
+  extrato por dia) implementadas e verificadas com screenshots.
+- Próximos passos da Fase 1: avaliações mútuas (1–5) e reputação no perfil;
+  cancelamento com multa do anunciante; editar/excluir vaga própria.
