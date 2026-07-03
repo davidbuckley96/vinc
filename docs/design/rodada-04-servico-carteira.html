@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 4: Serviço em andamento e Carteira</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --roxo-med:#6D4FAE; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --verde:#059669; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  h2.section{font-size:17px;margin:34px 0 4px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:780px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .head{background:var(--roxo);color:#fff;padding:26px 16px 14px;border-radius:0 0 22px 22px}
+  .head .t{font-size:18px;font-weight:800}
+  .body{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+  .btn{border-radius:13px;padding:14px 0;text-align:center;font-weight:800;font-size:14.5px;background:var(--roxo);color:#fff}
+  .muted{font-size:11.5px;color:var(--ink2);text-align:center;line-height:1.5}
+
+  /* stepper */
+  .step{display:flex;gap:10px}
+  .step .rail{display:flex;flex-direction:column;align-items:center}
+  .dotv{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  .dotv.done{background:var(--verde);color:#fff}
+  .dotv.now{background:var(--roxo);color:#fff}
+  .dotv.todo{background:#EDE9F8;color:var(--roxo-med)}
+  .rail .bar{width:2.5px;flex:1;background:#E9E2F8;min-height:16px}
+  .step .info{padding-bottom:14px}
+  .step .st{font-size:13.5px;font-weight:700}
+  .step .sd{font-size:11.5px;color:var(--ink2)}
+
+  .bigstatus{background:var(--lilas);border-radius:16px;padding:18px 14px;text-align:center}
+  .bigstatus .ic{font-size:34px}
+  .bigstatus .bt{font-size:16px;font-weight:800;color:var(--roxo-deep);margin-top:6px}
+  .bigstatus .bd{font-size:12px;color:var(--roxo-med);margin-top:3px;line-height:1.45}
+
+  .kv{display:flex;justify-content:space-between;font-size:12.5px;padding:7px 2px;border-bottom:1px solid var(--line)}
+  .kv b{font-weight:700}
+
+  /* wallet */
+  .balance{background:var(--roxo);border-radius:18px;color:#fff;padding:18px 16px}
+  .balance .lb{font-size:11.5px;color:#D8CCF3;font-weight:700;letter-spacing:.4px}
+  .balance .vl{font-size:28px;font-weight:800;margin-top:2px}
+  .balance .pend{font-size:12px;color:#D8CCF3;margin-top:8px}
+  .cards2{display:flex;gap:9px}
+  .wcard{flex:1;border-radius:16px;padding:13px 12px}
+  .wcard .lb{font-size:10.5px;font-weight:800;letter-spacing:.4px}
+  .wcard .vl{font-size:19px;font-weight:800;margin-top:2px}
+  .entry{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;border-bottom:1px solid var(--line)}
+  .entry .et{font-size:12.5px;font-weight:600}
+  .entry .ed{font-size:10.5px;color:var(--ink2)}
+  .entry .ev{font-size:13px;font-weight:800}
+  .pos{color:var(--verde)} .neg{color:#DC2626}
+  .group-h{font-size:11px;font-weight:800;color:var(--ink2);letter-spacing:.4px;margin-top:4px}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 4 de design</h1>
+  <p class="sub">Duas telas novas: o <b>detalhe do serviço</b> (aberto a partir da agenda; é onde o trabalhador inicia/conclui e o anunciante confirma — a confirmação libera o pagamento) e a <b>Carteira</b>. Escolha uma opção de cada seção.</p>
+
+  <h2 class="section">Seção 1 — Serviço em andamento</h2>
+  <div class="row">
+
+    <!-- SV1: stepper -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">‹ Faxina — Casa da Ana</div></div>
+        <div class="body">
+          <div class="kv"><span>Quando</span><b>sexta, 4 · 14h às 17h</b></div>
+          <div class="kv"><span>Valor</span><b style="color:var(--roxo)">R$ 150,00</b></div>
+          <div class="kv"><span>Com</span><b>Ana Souza · ★ 4,9</b></div>
+          <div style="height:4px"></div>
+          <div class="step"><div class="rail"><div class="dotv done">✓</div><div class="bar"></div></div><div class="info"><div class="st">Serviço aceito</div><div class="sd">quinta, 3 · 18h40</div></div></div>
+          <div class="step"><div class="rail"><div class="dotv now">2</div><div class="bar"></div></div><div class="info"><div class="st">Iniciar o serviço</div><div class="sd">quando chegar no local, toque no botão</div></div></div>
+          <div class="step"><div class="rail"><div class="dotv todo">3</div><div class="bar"></div></div><div class="info"><div class="st">Concluir</div><div class="sd">ao terminar o trabalho</div></div></div>
+          <div class="step"><div class="rail"><div class="dotv todo">4</div></div><div class="info"><div class="st">Confirmação e pagamento</div><div class="sd">Ana confirma e você recebe R$ 150,00</div></div></div>
+          <div style="flex:1"></div>
+          <div class="btn">Iniciar serviço</div>
+        </div>
+      </div>
+      <h3>Serviço 1 — Linha do tempo · recomendada</h3>
+      <span class="tag">o caminho inteiro visível</span>
+      <p>Os 4 passos sempre visíveis, com o passo atual destacado e o botão da próxima ação. A pessoa entende o processo inteiro (inclusive quando vai receber) sem precisar de explicação.</p>
+    </div>
+
+    <!-- SV2: single action -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">‹ Faxina — Casa da Ana</div></div>
+        <div class="body">
+          <div class="bigstatus">
+            <div class="ic">🧹</div>
+            <div class="bt">Serviço aceito!</div>
+            <div class="bd">sexta, 4 · 14h às 17h · R$ 150,00<br>Quando chegar no local, toque em iniciar.</div>
+          </div>
+          <div class="kv"><span>Com</span><b>Ana Souza · ★ 4,9</b></div>
+          <div class="kv"><span>Onde</span><b>Rua das Flores, 100</b></div>
+          <div style="flex:1"></div>
+          <div class="btn">Iniciar serviço</div>
+          <div class="muted">Depois de concluir, Ana confirma e o valor cai na sua carteira.</div>
+        </div>
+      </div>
+      <h3>Serviço 2 — Uma ação por vez</h3>
+      <span class="tag">estilo Uber, mínimo</span>
+      <p>Só o status atual num cartão grande e o único botão possível agora. Tela mais limpa e imediata, mas o usuário não vê o processo completo de antemão.</p>
+    </div>
+  </div>
+
+  <h2 class="section">Seção 2 — Carteira</h2>
+  <div class="row">
+
+    <!-- W1 -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Carteira</div></div>
+        <div class="body">
+          <div class="balance">
+            <div class="lb">SALDO DISPONÍVEL</div>
+            <div class="vl">R$ 310,00</div>
+            <div class="pend">⏳ A receber (serviços em andamento): R$ 150,00</div>
+          </div>
+          <div class="group-h">EXTRATO</div>
+          <div class="entry"><div><div class="et">Pagamento recebido · Babá 2 crianças</div><div class="ed">quinta, 3 de julho</div></div><div class="ev pos">+ R$ 160,00</div></div>
+          <div class="entry"><div><div class="et">Pagamento recebido · Faxina apto</div><div class="ed">quarta, 2 de julho</div></div><div class="ev pos">+ R$ 150,00</div></div>
+          <div class="entry"><div><div class="et">Valor reservado · Garçom (minha vaga)</div><div class="ed">quarta, 2 de julho</div></div><div class="ev neg">− R$ 200,00</div></div>
+          <div style="flex:1"></div>
+          <div class="btn" style="background:#EDE9F8;color:var(--roxo)">Sacar para minha conta (em breve)</div>
+        </div>
+      </div>
+      <h3>Carteira 1 — Saldo único + extrato · recomendada</h3>
+      <span class="tag">estilo Nubank</span>
+      <p>Um número grande (o que importa), o "a receber" como linha secundária e o extrato em linguagem simples ("Pagamento recebido", "Valor reservado"). Botão de saque já visível, desabilitado até a Fase 3.</p>
+    </div>
+
+    <!-- W2 -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Carteira</div></div>
+        <div class="body">
+          <div class="cards2">
+            <div class="wcard" style="background:var(--lilas)"><div class="lb" style="color:var(--roxo-med)">DISPONÍVEL</div><div class="vl" style="color:var(--roxo-deep)">R$ 310,00</div></div>
+            <div class="wcard" style="background:#E8F5EE"><div class="lb" style="color:#2f7c5d">A RECEBER</div><div class="vl" style="color:#065f46">R$ 150,00</div></div>
+          </div>
+          <div class="group-h">HOJE</div>
+          <div class="entry"><div><div class="et">Babá 2 crianças</div><div class="ed">pagamento recebido</div></div><div class="ev pos">+ R$ 160,00</div></div>
+          <div class="group-h">ONTEM</div>
+          <div class="entry"><div><div class="et">Faxina apto</div><div class="ed">pagamento recebido</div></div><div class="ev pos">+ R$ 150,00</div></div>
+          <div class="entry"><div><div class="et">Garçom (minha vaga)</div><div class="ed">valor reservado</div></div><div class="ev neg">− R$ 200,00</div></div>
+          <div style="flex:1"></div>
+        </div>
+      </div>
+      <h3>Carteira 2 — Dois cartões + extrato por dia</h3>
+      <span class="tag">disponível × a receber lado a lado</span>
+      <p>Separa visualmente o que já é seu do que está a caminho, e agrupa o extrato por dia. Um pouco mais denso; os dois números disputam atenção.</p>
+    </div>
+  </div>
+</body>
+</html>

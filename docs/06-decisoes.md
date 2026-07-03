@@ -74,3 +74,16 @@ Rodada 3 (`docs/design/rodada-03-buscar-anunciar.html`):
   anúncio exatamente como aparecerá na busca, antes de publicar.
 Alternativas descartadas: busca por lista com filtros e por agenda;
 anúncio em formulário único sem prévia e em passo a passo.
+
+## D-008 — Telas do serviço em andamento e da Carteira
+**Data:** 2026-07-03 · **Decidido por:** David
+
+Rodada 4 (`docs/design/rodada-04-servico-carteira.html`):
+- **Serviço em andamento — opção 2, "uma ação por vez":** cartão grande com o
+  status atual e um único botão com a próxima ação possível para o papel do
+  usuário (estilo Uber). Sem stepper.
+- **Carteira — opção 2, "dois cartões":** "Disponível" e "A receber" lado a
+  lado, extrato agrupado por dia com linguagem simples ("pagamento
+  recebido", "valor reservado").
+Alternativas descartadas: linha do tempo de 4 passos; saldo único com
+extrato corrido.
