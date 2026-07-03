@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 6: Carteira reformulada</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --roxo-med:#6D4FAE; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --verde:#059669; --amarelo:#B45309; --amarelo-bg:#FEF3E2; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:820px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .head{background:var(--roxo);color:#fff;padding:26px 16px 14px;border-radius:0 0 22px 22px;display:flex;justify-content:space-between;align-items:flex-start}
+  .head .t{font-size:18px;font-weight:800}
+  .head .hist{font-size:11px;font-weight:700;background:rgba(255,255,255,.18);padding:5px 10px;border-radius:99px}
+  .body{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+  .btn{border-radius:13px;padding:13px 0;text-align:center;font-weight:800;font-size:14px;background:var(--roxo);color:#fff}
+  .btn.sec{background:#fff;color:var(--roxo);border:1.5px solid var(--roxo)}
+  .btn.dis{background:#EDE9F8;color:#A79BC8}
+  .muted{font-size:11px;color:var(--ink2);text-align:center;line-height:1.5}
+  .seclabel{font-size:10.5px;font-weight:800;letter-spacing:.5px;color:var(--ink2);margin-top:4px}
+  .bigsaldo{text-align:center;margin-top:10px}
+  .bigsaldo .l{font-size:11.5px;font-weight:700;color:var(--roxo-med)}
+  .bigsaldo .v{font-size:38px;font-weight:800;letter-spacing:-.03em;color:var(--ink)}
+  .bigsaldo .d{font-size:11px;color:var(--ink2)}
+  .actions{display:flex;gap:8px}
+  .actions .btn{flex:1;font-size:12.5px;padding:11px 0}
+  .proc{background:var(--amarelo-bg);border-radius:14px;padding:10px 12px}
+  .proc .ph{display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:var(--amarelo);letter-spacing:.4px}
+  .procitem{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3E3C8}
+  .procitem:last-child{border-bottom:none}
+  .procitem .pt{font-size:12.5px;font-weight:700}
+  .procitem .pd{font-size:11px;color:var(--amarelo);margin-top:1px}
+  .procitem .pv{font-size:13px;font-weight:800;color:var(--amarelo)}
+  .histlink{display:flex;justify-content:space-between;align-items:center;border:1.5px solid var(--line);border-radius:13px;padding:12px;font-size:13px;font-weight:700}
+  .histlink span{color:var(--ink2);font-weight:400;font-size:11.5px}
+  .card{background:linear-gradient(135deg,#6D28D9,#4C1D95);border-radius:18px;padding:16px;color:#fff}
+  .card .cl{font-size:11px;font-weight:700;opacity:.85}
+  .card .cv{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:2px 0 10px}
+  .card .btn{background:#fff;color:var(--roxo-deep);padding:10px 0;font-size:13px}
+  .tl{display:flex;flex-direction:column;gap:8px}
+  .tlitem{border:1px solid var(--line);border-radius:13px;padding:10px 12px}
+  .tlitem .th{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700}
+  .tlitem .tv{color:var(--amarelo);font-weight:800}
+  .bar{height:6px;background:#F1EBFD;border-radius:99px;margin-top:8px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--roxo);border-radius:99px}
+  .tld{font-size:10.5px;color:var(--ink2);margin-top:5px}
+  .tabs{display:flex;background:#F4F1FA;border-radius:12px;padding:3px}
+  .tab{flex:1;text-align:center;font-size:12px;font-weight:700;padding:8px 0;border-radius:10px;color:var(--ink2)}
+  .tab.on{background:#fff;color:var(--roxo-deep);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .kv{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:9px 2px;border-bottom:1px solid var(--line)}
+  .kv .kl b{display:block;font-size:12.5px}
+  .kv .kl span{font-size:11px;color:var(--ink2)}
+  .kv .kvv{font-weight:800;color:var(--verde)}
+  .note{background:var(--lilas);border-radius:12px;padding:9px 11px;font-size:11px;color:var(--roxo-med);line-height:1.5}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 6 de design: a nova Carteira</h1>
+  <p class="sub">Reformulação decidida em D-015/D-016: <b>um único saldo</b> (o que dá para sacar), serviços concluídos entram numa área <b>"Em processamento"</b> por 7 dias antes de liberar, o extrato completo sai da tela (botão <b>"Ver histórico"</b>), e o saldo pode ser <b>sacado (Pix)</b> ou <b>usado para anunciar vagas</b>. Três formas de organizar isso — escolha uma.</p>
+
+  <div class="row">
+
+    <!-- OPÇÃO A -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Carteira</div><div class="hist">Ver histórico</div></div>
+        <div class="body">
+          <div class="bigsaldo">
+            <div class="l">DISPONÍVEL PARA SACAR</div>
+            <div class="v">R$ 310,00</div>
+            <div class="d">recebido desde o seu último saque</div>
+          </div>
+          <div class="actions">
+            <div class="btn">Sacar via Pix</div>
+            <div class="btn sec">Usar ao anunciar</div>
+          </div>
+          <div class="proc">
+            <div class="ph"><span>EM PROCESSAMENTO</span><span>R$ 210,00</span></div>
+            <div class="procitem">
+              <div><div class="pt">Babá — 2 crianças</div><div class="pd">libera em 5 dias</div></div>
+              <div class="pv">R$ 160,00</div>
+            </div>
+            <div class="procitem">
+              <div><div class="pt">Passeio com cachorro</div><div class="pd">libera amanhã</div></div>
+              <div class="pv">R$ 50,00</div>
+            </div>
+          </div>
+          <div class="muted">Serviços concluídos ficam 7 dias em processamento e liberam sozinhos.</div>
+          <div style="flex:1"></div>
+        </div>
+      </div>
+      <h3>Opção A — Saldo gigante · recomendada</h3>
+      <span class="tag">estilo Nubank, direto ao ponto</span>
+      <p>Um número só, enorme: o que a pessoa pode sacar agora. Ações logo abaixo, e o que está em processamento aparece num quadro âmbar com a data de liberação de cada serviço. Histórico no topo. É a leitura mais rápida possível: "tenho X, posso sacar".</p>
+    </div>
+
+    <!-- OPÇÃO B -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Carteira</div></div>
+        <div class="body">
+          <div class="card">
+            <div class="cl">DISPONÍVEL PARA SACAR</div>
+            <div class="cv">R$ 310,00</div>
+            <div class="btn">Sacar via Pix</div>
+          </div>
+          <div class="seclabel">EM PROCESSAMENTO</div>
+          <div class="tl">
+            <div class="tlitem">
+              <div class="th"><span>Babá — 2 crianças</span><span class="tv">R$ 160,00</span></div>
+              <div class="bar"><i style="width:28%"></i></div>
+              <div class="tld">concluído há 2 dias · libera sexta, 10</div>
+            </div>
+            <div class="tlitem">
+              <div class="th"><span>Passeio com cachorro</span><span class="tv">R$ 50,00</span></div>
+              <div class="bar"><i style="width:85%"></i></div>
+              <div class="tld">concluído há 6 dias · libera amanhã</div>
+            </div>
+          </div>
+          <div class="histlink">Ver histórico <span>todos os pagamentos ›</span></div>
+          <div style="flex:1"></div>
+          <div class="note">💡 Seu saldo também pode pagar novas vagas que você anunciar.</div>
+        </div>
+      </div>
+      <h3>Opção B — Cartão + barra de progresso</h3>
+      <span class="tag">visual de banco, progresso visível</span>
+      <p>O saldo vive num cartão roxo (como um cartão de banco) com o botão de saque dentro. Cada serviço em processamento mostra uma <b>barrinha de progresso dos 7 dias</b> — dá para VER o dinheiro amadurecendo. Usar o saldo ao anunciar vira uma dica, não um botão.</p>
+    </div>
+
+    <!-- OPÇÃO C -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Carteira</div><div class="hist">Ver histórico</div></div>
+        <div class="body">
+          <div class="bigsaldo" style="margin-top:2px">
+            <div class="l">DISPONÍVEL PARA SACAR</div>
+            <div class="v" style="font-size:32px">R$ 310,00</div>
+          </div>
+          <div class="tabs"><div class="tab on">Disponível</div><div class="tab">Em processamento (2)</div></div>
+          <div class="kv"><div class="kl"><b>Faxina — Casa da Ana</b><span>liberado ontem</span></div><div class="kvv">+ R$ 150,00</div></div>
+          <div class="kv"><div class="kl"><b>Garçom para festa</b><span>liberado seg, 29</span></div><div class="kvv">+ R$ 160,00</div></div>
+          <div style="flex:1"></div>
+          <div class="btn">Sacar via Pix</div>
+          <div class="btn sec">Usar saldo ao anunciar</div>
+        </div>
+      </div>
+      <h3>Opção C — Duas abas</h3>
+      <span class="tag">separação explícita</span>
+      <p>Abas "Disponível" e "Em processamento": a pessoa alterna para ver de onde veio o saldo e o que ainda está preso. Botões de ação fixos embaixo. Mais organizado para quem tem muitos serviços, porém um toque a mais para ver o processamento.</p>
+    </div>
+
+  </div>
+</body>
+</html>
