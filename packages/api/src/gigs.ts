@@ -132,6 +132,42 @@ export async function acceptGig(
   return (data as { code?: AcceptGigResult })?.code ?? "network_error";
 }
 
+export type LifecycleAction = "start" | "complete" | "confirm";
+
+export type LifecycleResult =
+  | "done"
+  | "unauthorized"
+  | "not_found"
+  | "forbidden"
+  | "invalid_action"
+  | "state_changed"
+  | "invalid_request"
+  | "network_error";
+
+/** Calls the gig-lifecycle Edge Function (start/complete/confirm). */
+export async function gigLifecycle(
+  client: SupabaseClient,
+  gigId: string,
+  action: LifecycleAction,
+): Promise<LifecycleResult> {
+  const { data, error } = await client.functions.invoke("gig-lifecycle", {
+    body: { gigId, action },
+  });
+  if (error) {
+    try {
+      const context = (error as { context?: Response }).context;
+      if (context) {
+        const body = (await context.json()) as { code?: LifecycleResult };
+        if (body.code) return body.code;
+      }
+    } catch {
+      // fall through
+    }
+    return "network_error";
+  }
+  return (data as { code?: LifecycleResult })?.code ?? "network_error";
+}
+
 export async function createGig(
   client: SupabaseClient,
   posterId: string,
