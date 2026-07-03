@@ -87,3 +87,16 @@ Rodada 4 (`docs/design/rodada-04-servico-carteira.html`):
   recebido", "valor reservado").
 Alternativas descartadas: linha do tempo de 4 passos; saldo único com
 extrato corrido.
+
+## D-009 — Avaliação híbrida e perfil com nota por papel
+**Data:** 2026-07-03 · **Decidido por:** David
+
+Rodada 5 (`docs/design/rodada-05-avaliacao-perfil.html`):
+- **Avaliação — misto das duas opções:** estrelas grandes com rótulo em
+  palavras + **marcadores prontos que mudam conforme a nota** (nota alta →
+  elogios como "Pontual", "Caprichou"; nota baixa → problemas como
+  "Atrasou", "Serviço incompleto"), adaptados ao papel do avaliado, +
+  comentário livre opcional. Marcadores gravados em `reviews.tags`.
+- **Perfil — opção 2, nota separada por papel:** dois cartões (como
+  prestador × como anunciante), cada um com média, nº de avaliações e
+  serviços concluídos, seguidos das avaliações recentes.

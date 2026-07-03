@@ -18,6 +18,7 @@ export interface Review {
   id: string;
   rating: number;
   comment: string | null;
+  tags: string[];
   reviewerName: string;
   createdAt: string;
 }
@@ -29,6 +30,7 @@ export interface ReviewInput {
   revieweeRole: "worker" | "poster";
   rating: number;
   comment?: string;
+  tags?: string[];
 }
 
 export async function fetchProfileStats(
@@ -64,7 +66,7 @@ export async function fetchRecentReviews(
 ): Promise<Review[]> {
   const { data, error } = await client
     .from("reviews")
-    .select("id, rating, comment, created_at, reviewer:reviewer_id (name)")
+    .select("id, rating, comment, tags, created_at, reviewer:reviewer_id (name)")
     .eq("reviewee_id", userId)
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -74,6 +76,7 @@ export async function fetchRecentReviews(
       id: string;
       rating: number;
       comment: string | null;
+      tags: string[] | null;
       created_at: string;
       reviewer: { name: string } | null;
     }>
@@ -81,6 +84,7 @@ export async function fetchRecentReviews(
     id: row.id,
     rating: row.rating,
     comment: row.comment,
+    tags: row.tags ?? [],
     reviewerName: row.reviewer?.name ?? "Usuário",
     createdAt: row.created_at,
   }));
@@ -113,6 +117,7 @@ export async function submitReview(
     reviewee_role: input.revieweeRole,
     rating: input.rating,
     comment: input.comment?.trim() || null,
+    tags: input.tags ?? [],
   });
   if (error) throw new Error(error.message);
 }

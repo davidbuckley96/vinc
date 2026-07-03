@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 5: Avaliação e Perfil</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --roxo-med:#6D4FAE; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --verde:#059669; --star:#F59E0B; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  h2.section{font-size:17px;margin:34px 0 4px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:780px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .head{background:var(--roxo);color:#fff;padding:26px 16px 14px;border-radius:0 0 22px 22px}
+  .head .t{font-size:18px;font-weight:800}
+  .body{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+  .btn{border-radius:13px;padding:14px 0;text-align:center;font-weight:800;font-size:14.5px;background:var(--roxo);color:#fff}
+  .muted{font-size:11.5px;color:var(--ink2);text-align:center;line-height:1.5}
+  .stars{font-size:38px;letter-spacing:6px;text-align:center;color:var(--star)}
+  .stars .off{color:#E5E1EE}
+  .starlabel{text-align:center;font-size:14px;font-weight:800;color:var(--roxo-deep)}
+  .avwrap{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:8px}
+  .bigav{width:74px;height:74px;border-radius:50%;background:var(--lilas);color:var(--roxo-deep);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800}
+  .field{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;color:#9aa1ab;min-height:64px}
+  .kv{display:flex;justify-content:space-between;font-size:12.5px;padding:7px 2px;border-bottom:1px solid var(--line)}
+  .chipsrow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  .qchip{border:1.5px solid var(--line);border-radius:99px;padding:6px 11px;font-size:12px;font-weight:600;color:var(--ink2)}
+  .qchip.on{background:var(--lilas);border-color:var(--roxo);color:var(--roxo-deep)}
+  .bignote{font-size:34px;font-weight:800;text-align:center;color:var(--ink)}
+  .rolecard{flex:1;border-radius:14px;padding:12px;background:var(--lilas)}
+  .rolecard .rl{font-size:10.5px;font-weight:800;color:var(--roxo-med);letter-spacing:.4px}
+  .rolecard .rv{font-size:17px;font-weight:800;color:var(--roxo-deep);margin-top:2px}
+  .rolecard .rc{font-size:11px;color:var(--roxo-med)}
+  .review{border-bottom:1px solid var(--line);padding:9px 2px}
+  .review .rh{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700}
+  .review .rstars{color:var(--star);font-size:12px}
+  .review .rc2{font-size:12px;color:var(--ink2);margin-top:2px;line-height:1.45}
+  .statchips{display:flex;gap:8px}
+  .statchip{flex:1;background:#F4F1FA;border-radius:12px;padding:9px 6px;text-align:center}
+  .statchip .sv{font-size:16px;font-weight:800;color:var(--roxo-deep)}
+  .statchip .sl{font-size:10px;color:var(--ink2);margin-top:1px;line-height:1.3}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 5 de design</h1>
+  <p class="sub">O sistema de reputação — coração da confiança do Vinc. Duas telas: a <b>avaliação</b> logo após a conclusão do serviço (ambos os lados se avaliam) e o <b>perfil</b> com a reputação pública. Escolha uma de cada.</p>
+
+  <h2 class="section">Seção 1 — Avaliar a outra pessoa</h2>
+  <div class="row">
+
+    <!-- A1 -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Serviço concluído 🎉</div></div>
+        <div class="body">
+          <div class="avwrap">
+            <div class="bigav">A</div>
+            <div style="font-size:16px;font-weight:800">Como foi com Ana Souza?</div>
+            <div class="muted">Sua nota ajuda outras pessoas a confiar.</div>
+          </div>
+          <div class="stars">★★★★<span class="off">★</span></div>
+          <div class="starlabel">Muito bom</div>
+          <div class="field">Escreva um comentário (opcional)</div>
+          <div style="flex:1"></div>
+          <div class="btn">Enviar avaliação</div>
+          <div class="muted">Você não pode mudar a nota depois.</div>
+        </div>
+      </div>
+      <h3>Avaliação 1 — Estrelas + comentário · recomendada</h3>
+      <span class="tag">clássico universal</span>
+      <p>Estrelas grandes com rótulo em palavras ("Péssimo" → "Excelente"), comentário opcional e um único botão. O padrão que todo mundo já conhece de iFood/Uber.</p>
+    </div>
+
+    <!-- A2 -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Serviço concluído 🎉</div></div>
+        <div class="body">
+          <div class="avwrap">
+            <div class="bigav">A</div>
+            <div style="font-size:16px;font-weight:800">Como foi com Ana Souza?</div>
+          </div>
+          <div class="stars">★★★★<span class="off">★</span></div>
+          <div class="starlabel">Muito bom</div>
+          <div class="muted">O que foi bom? (toque nas opções)</div>
+          <div class="chipsrow">
+            <span class="qchip on">Pontual</span><span class="qchip on">Educada</span><span class="qchip">Caprichosa</span><span class="qchip">Comunicativa</span><span class="qchip">Local seguro</span><span class="qchip">Pagou certo</span>
+          </div>
+          <div style="flex:1"></div>
+          <div class="btn">Enviar avaliação</div>
+        </div>
+      </div>
+      <h3>Avaliação 2 — Estrelas + elogios prontos</h3>
+      <span class="tag">zero digitação</span>
+      <p>Em vez de escrever, a pessoa toca em elogios prontos (adaptados ao papel). Mais fácil para quem tem dificuldade com texto; gera dados estruturados. Comentário livre fica de fora (ou vem depois).</p>
+    </div>
+  </div>
+
+  <h2 class="section">Seção 2 — Perfil com reputação</h2>
+  <div class="row">
+
+    <!-- P1 -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Perfil</div></div>
+        <div class="body">
+          <div class="avwrap" style="margin-top:2px">
+            <div class="bigav">M</div>
+            <div style="font-size:17px;font-weight:800">Maria da Silva</div>
+            <div class="bignote">★ 4,9</div>
+            <div class="muted">87 avaliações</div>
+          </div>
+          <div class="statchips">
+            <div class="statchip"><div class="sv">64</div><div class="sl">serviços prestados</div></div>
+            <div class="statchip"><div class="sv">23</div><div class="sl">serviços contratados</div></div>
+          </div>
+          <div style="font-size:11px;font-weight:800;color:var(--ink2);letter-spacing:.4px;margin-top:4px">AVALIAÇÕES RECENTES</div>
+          <div class="review"><div class="rh"><span>Ana Souza</span><span class="rstars">★★★★★</span></div><div class="rc2">Muito caprichosa, super recomendo!</div></div>
+          <div class="review"><div class="rh"><span>Carlos Lima</span><span class="rstars">★★★★★</span></div><div class="rc2">Pontual e educada.</div></div>
+          <div style="flex:1"></div>
+        </div>
+      </div>
+      <h3>Perfil 1 — Nota única em destaque · recomendada</h3>
+      <span class="tag">um número que resume tudo</span>
+      <p>Uma nota geral gigante (como o Uber mostra ao motorista), os dois contadores de serviços e as avaliações recentes. Simples de entender de relance.</p>
+    </div>
+
+    <!-- P2 -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Perfil</div></div>
+        <div class="body">
+          <div class="avwrap" style="margin-top:2px">
+            <div class="bigav">M</div>
+            <div style="font-size:17px;font-weight:800">Maria da Silva</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <div class="rolecard"><div class="rl">COMO PRESTADORA</div><div class="rv">★ 4,9</div><div class="rc">64 serviços · 61 avaliações</div></div>
+            <div class="rolecard" style="background:#F4F1FA"><div class="rl" style="color:var(--ink2)">COMO ANUNCIANTE</div><div class="rv" style="color:var(--ink)">★ 4,7</div><div class="rc" style="color:var(--ink2)">23 vagas · 26 avaliações</div></div>
+          </div>
+          <div style="font-size:11px;font-weight:800;color:var(--ink2);letter-spacing:.4px;margin-top:4px">AVALIAÇÕES RECENTES</div>
+          <div class="review"><div class="rh"><span>Ana Souza</span><span class="rstars">★★★★★</span></div><div class="rc2">Muito caprichosa, super recomendo!</div></div>
+          <div class="review"><div class="rh"><span>Carlos Lima</span><span class="rstars">★★★★★</span></div><div class="rc2">Pontual e educada.</div></div>
+          <div style="flex:1"></div>
+        </div>
+      </div>
+      <h3>Perfil 2 — Nota separada por papel</h3>
+      <span class="tag">prestador × anunciante</span>
+      <p>Dois cartões: a nota como prestadora e como anunciante (a conta é única, mas a reputação tem contexto — D-004). Mais informativo; exige um pouco mais de leitura.</p>
+    </div>
+  </div>
+</body>
+</html>
