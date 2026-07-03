@@ -38,6 +38,12 @@ export interface CancellationFine {
   workerShareCents: number;
   /** Portion kept by the platform (20%). */
   platformShareCents: number;
+  /**
+   * What the poster actually gets back — a SINGLE refund with the fine
+   * already deducted (net − fine), never two separate movements (D-020).
+   * Zero when the gig pays the R$ 10 minimum (fine floor == price floor).
+   */
+  posterRefundCents: number;
 }
 
 export function computeCancellationFine(netCents: number): CancellationFine {
@@ -46,5 +52,10 @@ export function computeCancellationFine(netCents: number): CancellationFine {
     CANCELLATION_FINE_FLOOR_CENTS,
   );
   const workerShareCents = Math.round(fineCents * CANCELLATION_FINE_WORKER_SHARE);
-  return { fineCents, workerShareCents, platformShareCents: fineCents - workerShareCents };
+  return {
+    fineCents,
+    workerShareCents,
+    platformShareCents: fineCents - workerShareCents,
+    posterRefundCents: netCents - fineCents,
+  };
 }

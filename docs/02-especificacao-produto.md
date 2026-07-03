@@ -106,13 +106,15 @@ ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
 ### Punições pós-aprovação
 - **Anunciante** cancela após aprovar (serviço aceito ou em andamento) →
   paga **multa de 25% do valor do prestador, com piso de R$ 10** (D-018).
-  O valor do prestador volta para o anunciante (o serviço não acontece; a
-  taxa da criação fica com a empresa) e a multa é cobrada por cima: **80%
-  compensa o prestador lesado**, **20% fica com a plataforma**. Na
-  interface, a multa é apresentada pelo valor total, "como compensação
-  pelo prestador lesado" — a divisão 80/20 é interna (D-019). Excluir a
-  vaga deixa de ser possível após a aprovação — só existe o cancelamento
-  com multa. Recusar uma candidatura NÃO gera multa.
+  É **uma única operação por pessoa** (D-020): o anunciante recebe **um
+  reembolso já com a multa deduzida** (vaga de R$ 100 → voltam R$ 75; a
+  taxa da criação fica com a empresa) e o **prestador lesado é pago
+  diretamente** na sua parte — internamente **80% da multa** vai para ele
+  e **20% para a plataforma**. Na interface, a multa é apresentada pelo
+  valor total, "como compensação pelo prestador lesado" — a divisão 80/20
+  é interna (D-019). Excluir a vaga deixa de ser possível após a
+  aprovação — só existe o cancelamento com multa. Recusar uma candidatura
+  NÃO gera multa.
 - **Prestador** cancela após a aprovação → sem multa financeira na fase
   inicial, mas sofre punição de reputação/prioridade (modelo Uber). ⚠️.
 

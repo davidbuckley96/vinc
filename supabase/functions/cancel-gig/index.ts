@@ -1,10 +1,11 @@
 // Edge Function: cancel-gig
 // The poster cancels a service AFTER approving the candidate (docs/02 §3,
-// D-018): accepted/in_progress → cancelled_by_poster. The escrowed worker
-// amount returns to the poster (the service won't happen; the fee stays
-// with the platform as always), and a FINE of 25% of the worker amount
-// (min R$ 10) is charged on top — 80% compensates the harmed worker, 20%
-// stays with the platform.
+// D-018/D-020): accepted/in_progress → cancelled_by_poster. The FINE is
+// 25% of the worker amount (min R$ 10); the poster receives ONE refund
+// with the fine already deducted (worker amount − fine; the creation fee
+// stays with the platform), and the harmed worker is paid 80% of the fine
+// directly. The 80/20 split is internal — the UI presents the whole fine
+// as compensation for the worker (D-019).
 //
 // Deleting BEFORE approval (no fine) is delete-gig, not this function.
 //
@@ -83,18 +84,27 @@ Deno.serve(async (request) => {
     .select("id");
   if (!cancelled || cancelled.length === 0) return respond("state_changed", 409);
 
+  // ONE movement per person (D-020): the poster gets a single refund with
+  // the fine already deducted (net − fine; the creation fee stays with the
+  // platform), and the harmed worker is paid his share directly. The
+  // platform keeps the remainder of the fine implicitly. On a
+  // minimum-price gig the poster refund is zero — no entry is written.
   const fine = computeCancellationFine(gig.price_cents);
-  await admin.from("ledger_entries").insert([
-    // escrow returns to the poster (the fee from creation stays)...
-    { user_id: userId, gig_id: gig.id, type: "refund", amount_cents: gig.price_cents },
-    // ...and the fine is charged on top: poster pays it all,
-    { user_id: userId, gig_id: gig.id, type: "fine", amount_cents: -fine.fineCents },
-    // the harmed worker receives 80% (platform keeps the rest implicitly).
+  const entries = [
     { user_id: gig.worker_id, gig_id: gig.id, type: "fine", amount_cents: fine.workerShareCents },
-  ]);
+  ];
+  if (fine.posterRefundCents > 0) {
+    entries.unshift({
+      user_id: userId,
+      gig_id: gig.id,
+      type: "refund",
+      amount_cents: fine.posterRefundCents,
+    });
+  }
+  await admin.from("ledger_entries").insert(entries);
 
   return respond("cancelled", 200, {
     fineCents: fine.fineCents,
-    workerShareCents: fine.workerShareCents,
+    posterRefundCents: fine.posterRefundCents,
   });
 });

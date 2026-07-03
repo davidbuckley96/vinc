@@ -18,12 +18,13 @@ describe("computeGigPricing", () => {
   });
 });
 
-describe("computeCancellationFine (D-018)", () => {
-  it("charges 25% of the worker amount, split 80/20", () => {
+describe("computeCancellationFine (D-018/D-020)", () => {
+  it("charges 25% of the worker amount, split 80/20, refunded in one move", () => {
     expect(computeCancellationFine(10000)).toEqual({
       fineCents: 2500,
       workerShareCents: 2000,
       platformShareCents: 500,
+      posterRefundCents: 7500,
     });
   });
 
@@ -32,12 +33,18 @@ describe("computeCancellationFine (D-018)", () => {
       fineCents: 1000,
       workerShareCents: 800,
       platformShareCents: 200,
+      posterRefundCents: 1000,
     });
+  });
+
+  it("refunds nothing on a minimum-price gig (floor == minimum)", () => {
+    expect(computeCancellationFine(1000).posterRefundCents).toBe(0);
   });
 
   it("splits into whole cents that add up exactly", () => {
     const fine = computeCancellationFine(9999);
     expect(Number.isInteger(fine.workerShareCents)).toBe(true);
     expect(fine.workerShareCents + fine.platformShareCents).toBe(fine.fineCents);
+    expect(fine.posterRefundCents + fine.fineCents).toBe(9999);
   });
 });

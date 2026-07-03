@@ -237,3 +237,15 @@ no formulário, nas functions (create/update) e constraint no banco
 80/20 da multa (D-018, que segue valendo internamente): a interface
 apresenta **o valor total da multa como compensação pelo prestador
 lesado**.
+
+## D-020 — Cancelamento: uma única operação por pessoa (multa já deduzida)
+**Data:** 2026-07-03 · **Decidido por:** David (ajusta D-018)
+
+No cancelamento pós-aprovação, o anunciante NÃO recebe o reembolso
+integral seguido de uma cobrança de multa (duas operações): ele recebe
+**um único reembolso já com a multa deduzida** (ex.: vaga de R$ 100 →
+volta R$ 75), e o prestador lesado **é pago diretamente** na sua parte
+(R$ 20 no exemplo). No extrato, cada pessoa vê um único lançamento. Numa
+vaga de valor mínimo (R$ 10), a multa consome todo o reembolso e nenhum
+lançamento de reembolso é criado. A mecânica 25%/piso/80-20 de D-018
+continua igual — muda a forma de lançar e apresentar.
