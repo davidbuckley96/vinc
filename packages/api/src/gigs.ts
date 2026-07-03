@@ -210,6 +210,81 @@ export async function gigLifecycle(
   return (data as { code?: LifecycleResult })?.code ?? "network_error";
 }
 
+export type DeleteGigResult =
+  | "deleted"
+  | "unauthorized"
+  | "not_found"
+  | "forbidden"
+  | "not_deletable"
+  | "state_changed"
+  | "invalid_request"
+  | "network_error";
+
+/**
+ * Deletes an own gig BEFORE approving anyone (delete-gig Edge Function):
+ * the worker amount returns to the poster, the fee stays (docs/02 §5.1).
+ */
+export async function deleteGig(
+  client: SupabaseClient,
+  gigId: string,
+): Promise<DeleteGigResult> {
+  const { data, error } = await client.functions.invoke("delete-gig", {
+    body: { gigId },
+  });
+  if (error) {
+    try {
+      const context = (error as { context?: Response }).context;
+      if (context) {
+        const body = (await context.json()) as { code?: DeleteGigResult };
+        if (body.code) return body.code;
+      }
+    } catch {
+      // fall through
+    }
+    return "network_error";
+  }
+  return (data as { code?: DeleteGigResult })?.code ?? "network_error";
+}
+
+export type UpdateGigResult =
+  | "updated"
+  | "unauthorized"
+  | "not_found"
+  | "forbidden"
+  | "not_editable"
+  | "invalid_draft"
+  | "state_changed"
+  | "invalid_request"
+  | "network_error";
+
+/**
+ * Edits an own OPEN gig (update-gig Edge Function). The price is immutable
+ * (D-017) — the function keeps the price paid at creation regardless of
+ * draft.priceCents.
+ */
+export async function updateGig(
+  client: SupabaseClient,
+  gigId: string,
+  draft: GigDraft,
+): Promise<UpdateGigResult> {
+  const { data, error } = await client.functions.invoke("update-gig", {
+    body: { gigId, draft },
+  });
+  if (error) {
+    try {
+      const context = (error as { context?: Response }).context;
+      if (context) {
+        const body = (await context.json()) as { code?: UpdateGigResult };
+        if (body.code) return body.code;
+      }
+    } catch {
+      // fall through
+    }
+    return "network_error";
+  }
+  return (data as { code?: UpdateGigResult })?.code ?? "network_error";
+}
+
 export type CreateGigResult = "created" | "unauthorized" | "invalid_draft" | "invalid_request" | "network_error";
 
 /**

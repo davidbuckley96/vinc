@@ -3,11 +3,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   applyGig,
   createGig,
+  deleteGig,
   fetchCategories,
   fetchGigById,
   fetchOpenGigs,
+  updateGig,
   type ApplyGigResult,
   type CreateGigResult,
+  type DeleteGigResult,
+  type UpdateGigResult,
 } from '@vinc/api';
 import type { GigDraft } from '@vinc/core';
 
@@ -54,6 +58,39 @@ export function useApplyGig() {
     },
     onSuccess: (result) => {
       if (result === 'applied' || result === 'not_available') {
+        queryClient.invalidateQueries({ queryKey: ['gigs'] });
+        queryClient.invalidateQueries({ queryKey: ['agenda'] });
+      }
+    },
+  });
+}
+
+export function useDeleteGig() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (gigId: string): Promise<DeleteGigResult> => {
+      if (!supabase) return 'deleted'; // demo mode: pretend success
+      return deleteGig(supabase, gigId);
+    },
+    onSuccess: (result) => {
+      if (result === 'deleted') {
+        queryClient.invalidateQueries({ queryKey: ['gigs'] });
+        queryClient.invalidateQueries({ queryKey: ['agenda'] });
+        queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      }
+    },
+  });
+}
+
+export function useUpdateGig() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { gigId: string; draft: GigDraft }): Promise<UpdateGigResult> => {
+      if (!supabase) return 'updated'; // demo mode: pretend success
+      return updateGig(supabase, input.gigId, input.draft);
+    },
+    onSuccess: (result) => {
+      if (result === 'updated') {
         queryClient.invalidateQueries({ queryKey: ['gigs'] });
         queryClient.invalidateQueries({ queryKey: ['agenda'] });
       }

@@ -23,9 +23,11 @@ export const GIG_STATUSES = [
 export type GigStatus = (typeof GIG_STATUSES)[number];
 
 const TRANSITIONS: Record<GigStatus, readonly GigStatus[]> = {
-  open: ["pending_approval", "expired"],
+  // deletion by the poster (net refund, fee kept — docs/02 §5.1) is
+  // modelled as open/pending_approval → cancelled_by_poster, without fine
+  open: ["pending_approval", "cancelled_by_poster", "expired"],
   // approval -> accepted; refusal -> back to open (docs/02 §3)
-  pending_approval: ["accepted", "open"],
+  pending_approval: ["accepted", "open", "cancelled_by_poster"],
   accepted: ["in_progress", "cancelled_by_poster", "cancelled_by_worker"],
   in_progress: ["awaiting_confirmation", "cancelled_by_poster", "cancelled_by_worker"],
   awaiting_confirmation: ["completed"],
@@ -61,6 +63,24 @@ export const SCHEDULE_BLOCKING_STATUSES: readonly GigStatus[] = [
  */
 export function posterCancellationIncursFine(status: GigStatus): boolean {
   return status === "accepted" || status === "in_progress";
+}
+
+/**
+ * Poster may DELETE the gig (net amount refunded, fee kept — docs/02 §5.1)
+ * only before approving anyone. After approval it becomes a cancellation,
+ * which incurs a fine (docs/07 #1).
+ */
+export function posterCanDelete(status: GigStatus): boolean {
+  return status === "open" || status === "pending_approval";
+}
+
+/**
+ * Poster may EDIT the gig only while open with no pending candidate — a
+ * candidate applied to specific terms, so deciding comes first. The price
+ * is never editable (D-017): change it by deleting and re-creating.
+ */
+export function posterCanEdit(status: GigStatus): boolean {
+  return status === "open";
 }
 
 /** Which lifecycle action each role may perform at a given status. */

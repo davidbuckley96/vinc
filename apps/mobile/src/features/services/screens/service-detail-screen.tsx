@@ -15,10 +15,12 @@ import type { ServiceDetail } from '@vinc/api';
 import {
   allowedLifecycleAction,
   formatBRL,
+  posterCanEdit,
   type GigStatus,
 } from '@vinc/core';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
+import { useDeleteGig } from '@/features/gigs/hooks';
 import { useHasReviewed } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -41,6 +43,12 @@ function statusCard(service: ServiceDetail): StatusCard {
   const worker = service.role === 'worker';
 
   switch (service.status) {
+    case 'open':
+      return {
+        icon: 'megaphone',
+        title: 'Vaga publicada',
+        body: 'Sua vaga está visível para os trabalhadores. Você será avisado quando alguém se candidatar.',
+      };
     case 'pending_approval':
       return worker
         ? {
@@ -131,8 +139,32 @@ export function ServiceDetailScreen() {
   const lifecycle = useLifecycleAction(id);
   const candidacy = useRespondCandidacy(id);
   const reviewed = useHasReviewed(id);
+  const deletion = useDeleteGig();
   const [error, setError] = useState<string | null>(null);
   const [candidacyNote, setCandidacyNote] = useState<string | null>(null);
+  const [deleteArmed, setDeleteArmed] = useState(false);
+  const [deletedNote, setDeletedNote] = useState<string | null>(null);
+
+  const removeGig = async () => {
+    if (!service.data) return;
+    if (!deleteArmed) {
+      setDeleteArmed(true);
+      return;
+    }
+    setError(null);
+    const result = await deletion.mutateAsync(service.data.id);
+    setDeleteArmed(false);
+    if (result === 'deleted') {
+      setDeletedNote(
+        `Vaga excluída. ${formatBRL(service.data.priceCents)} voltaram para a sua carteira (a taxa de serviço não é reembolsável).`,
+      );
+      setTimeout(() => router.back(), 1600);
+    } else if (result === 'not_deletable' || result === 'state_changed') {
+      setError('Esta vaga não pode mais ser excluída — atualize e tente de novo.');
+    } else {
+      setError('Não foi possível excluir agora. Tente de novo.');
+    }
+  };
 
   const decide = async (action: 'approve' | 'refuse') => {
     setError(null);
@@ -283,6 +315,54 @@ export function ServiceDetailScreen() {
                 </Pressable>
               </View>
             )}
+
+            {deletedNote && (
+              <Text style={[styles.error, { color: theme.success }]}>{deletedNote}</Text>
+            )}
+            {data.role === 'poster' &&
+              posterCanEdit(data.status as GigStatus) &&
+              !deletedNote && (
+                <View style={styles.decideRow}>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => router.push(`/gig/edit/${data.id}`)}
+                    style={[
+                      styles.action,
+                      styles.decideButton,
+                      styles.refuseButton,
+                      { borderColor: theme.primary, backgroundColor: theme.background },
+                    ]}>
+                    <Text style={[styles.actionLabel, { color: theme.primary }]}>
+                      Editar vaga
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={deletion.isPending}
+                    onPress={removeGig}
+                    style={[
+                      styles.action,
+                      styles.decideButton,
+                      styles.refuseButton,
+                      {
+                        borderColor: theme.danger,
+                        backgroundColor: deleteArmed ? theme.danger : theme.background,
+                      },
+                    ]}>
+                    {deletion.isPending ? (
+                      <ActivityIndicator color={theme.danger} />
+                    ) : (
+                      <Text
+                        style={[
+                          styles.actionLabel,
+                          { color: deleteArmed ? theme.onPrimary : theme.danger },
+                        ]}>
+                        {deleteArmed ? 'Confirmar exclusão' : 'Excluir vaga'}
+                      </Text>
+                    )}
+                  </Pressable>
+                </View>
+              )}
 
             {card.actionLabel && (
               <Pressable

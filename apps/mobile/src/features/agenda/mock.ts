@@ -59,5 +59,13 @@ export function getMockCommitments(today: Date): AgendaCommitment[] {
       endsAt: at(addDays(today, 2), 23),
       priceCents: 30000,
     },
+    {
+      id: '5',
+      title: 'Passear com cachorro (minha vaga)',
+      role: 'poster',
+      startsAt: at(today, 18),
+      endsAt: at(today, 19),
+      priceCents: 5000,
+    },
   ];
 }

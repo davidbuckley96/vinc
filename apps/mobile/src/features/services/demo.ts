@@ -61,4 +61,17 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     counterpartId: 'demo-paulo',
     counterpartName: 'Paulo Dias',
   },
+  '5': {
+    id: '5',
+    title: 'Passear com cachorro (minha vaga)',
+    description: 'Passeio de 1 hora com cachorro dócil de porte médio.',
+    status: 'open',
+    role: 'poster',
+    startsAt: inDays(0, 18),
+    endsAt: inDays(0, 19),
+    priceCents: 5000,
+    address: 'Praça da Matriz',
+    counterpartId: null,
+    counterpartName: null,
+  },
 };

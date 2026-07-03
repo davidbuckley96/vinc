@@ -71,4 +71,18 @@ export const DEMO_GIGS: OpenGig[] = [
     posterId: 'demo-paulo',
     posterName: 'Paulo Dias',
   },
+  // Mirrors DEMO_SERVICES['5'] (my open gig) so the edit screen works in
+  // demo mode; being open, it also shows up in the search list.
+  {
+    id: '5',
+    title: 'Passear com cachorro (minha vaga)',
+    description: 'Passeio de 1 hora com cachorro dócil de porte médio.',
+    startsAt: inDays(0, 18),
+    endsAt: inDays(0, 19),
+    priceCents: 5000,
+    address: 'Praça da Matriz',
+    categoryId: 'demo-outros',
+    posterId: 'demo-user',
+    posterName: 'Maria da Silva',
+  },
 ];
