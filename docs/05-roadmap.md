@@ -18,7 +18,7 @@
 - [x] Bloqueio entre usuários (docs/02 §8) — botão no perfil público; vagas ocultas nas duas direções e candidatura impedida (verificado e2e); corte de mensagens entra junto com o chat
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
 - [~] Carteira simulada (ledger imutável + tela dois cartões, D-008); falta a multa do anunciante (cancelamento pós-aprovação)
-- [~] Taxa de serviço na criação da vaga (D-013): pagamento antecipado (taxa + escrow do líquido), taxa explícita na criação, prestador vê o líquido, reembolso do líquido se ninguém for aprovado (em implementação)
+- [~] Taxa de serviço na criação da vaga (D-013) — IMPLEMENTADO: pagamento antecipado via create-gig (taxa 10%-exemplo + escrow do líquido), taxa explícita na criação, prévia e busca com o líquido, verificado e2e; FALTA: reembolso do líquido na exclusão/expiração (entra com o bloco excluir vaga)
 - [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
 - [ ] Localização por mapa (pino arrastável + busca no mapa ao anunciar; modal de mapa ao ver a vaga — docs/02 §2.1; requer provedor de mapas, ver dúvidas #15)
 - [ ] Mensagens entre as partes dentro do app (chat simples; respeita bloqueios)

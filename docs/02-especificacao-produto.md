@@ -74,10 +74,11 @@ ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
   A recusa vale só para o serviço em questão: o mesmo trabalhador pode se
   candidatar normalmente a outras vagas (novas ou abertas) do mesmo
   anunciante — salvo bloqueio entre usuários (ver §8).
-- **Aprovação:** vira o vínculo (ACEITA) — é aqui que o escrow é retido. O
-  backend re-checa o conflito de agenda do candidato na aprovação (ele pode
-  ter aceitado outro serviço enquanto esperava); havendo conflito, a
-  candidatura é recusada automaticamente.
+- **Aprovação:** vira o vínculo (ACEITA). O pagamento já foi feito na
+  criação da vaga (ver §5.1 — D-013): o líquido segue retido em escrow até a
+  conclusão. O backend re-checa o conflito de agenda do candidato na
+  aprovação (ele pode ter aceitado outro serviço enquanto esperava);
+  havendo conflito, a candidatura é recusada automaticamente.
 - **Conflito de agenda:** o backend impede candidatura a vagas que conflitem
   com os compromissos do prestador (serviços aceitos/em andamento e
   candidaturas pendentes dele).

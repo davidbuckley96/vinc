@@ -117,14 +117,7 @@ Deno.serve(async (request) => {
     .select("id");
   if (!approved || approved.length === 0) return respond("state_changed", 409);
 
-  // Escrow hold happens at approval (docs/02 §3/§5): the poster's money is
-  // reserved the moment the contract forms.
-  await admin.from("ledger_entries").insert({
-    user_id: gig.poster_id,
-    gig_id: gig.id,
-    type: "escrow_hold",
-    amount_cents: -gig.price_cents,
-  });
-
+  // No money moves here: the escrow was already held at gig CREATION
+  // (create-gig, D-013) and is released to the worker on confirmation.
   return respond("approved", 200);
 });

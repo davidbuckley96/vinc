@@ -210,21 +210,31 @@ export async function gigLifecycle(
   return (data as { code?: LifecycleResult })?.code ?? "network_error";
 }
 
+export type CreateGigResult = "created" | "unauthorized" | "invalid_draft" | "invalid_request" | "network_error";
+
+/**
+ * Publishes via the create-gig Edge Function: the poster pays upfront
+ * (platform fee + escrowed net — docs/02 §5.1, D-013). draft.priceCents is
+ * the GROSS the poster pays.
+ */
 export async function createGig(
   client: SupabaseClient,
-  posterId: string,
   draft: GigDraft,
-): Promise<void> {
-  const { error } = await client.from("gigs").insert({
-    poster_id: posterId,
-    category_id: draft.categoryId,
-    title: draft.title.trim(),
-    description: draft.description.trim(),
-    starts_at: draft.startsAt,
-    ends_at: draft.endsAt,
-    price_cents: draft.priceCents,
-    address: draft.address.trim(),
-    status: "open",
+): Promise<CreateGigResult> {
+  const { data, error } = await client.functions.invoke("create-gig", {
+    body: { draft },
   });
-  if (error) throw new Error(error.message);
+  if (error) {
+    try {
+      const context = (error as { context?: Response }).context;
+      if (context) {
+        const body = (await context.json()) as { code?: CreateGigResult };
+        if (body.code) return body.code;
+      }
+    } catch {
+      // fall through
+    }
+    return "network_error";
+  }
+  return (data as { code?: CreateGigResult })?.code ?? "network_error";
 }

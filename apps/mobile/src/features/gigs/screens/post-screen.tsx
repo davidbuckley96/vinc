@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { OpenGig } from '@vinc/api';
-import { formatBRL, validateGigDraft, type GigDraft, type GigDraftError } from '@vinc/core';
+import { computeGigPricing, formatBRL, validateGigDraft, type GigDraft, type GigDraftError } from '@vinc/core';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
@@ -56,7 +56,7 @@ export function PostScreen() {
   const router = useRouter();
   const { status, session, userName } = useSession();
   const categories = useCategories();
-  const createGig = useCreateGig(session?.user.id ?? null);
+  const createGig = useCreateGig();
 
   const days = useMemo(
     () =>
@@ -81,6 +81,7 @@ export function PostScreen() {
   );
 
   const selectedDay = days[dayIndex] ?? days[0]!;
+  const pricing = computeGigPricing(priceCents);
   const draft: GigDraft = {
     categoryId,
     title,
@@ -98,7 +99,7 @@ export function PostScreen() {
     description,
     startsAt: draft.startsAt,
     endsAt: draft.endsAt,
-    priceCents,
+    priceCents: pricing.netCents,
     address: address.trim() || 'Local',
     categoryId,
     posterName: userName ?? 'Você',
@@ -117,13 +118,23 @@ export function PostScreen() {
       return;
     }
     try {
-      await createGig.mutateAsync(draft);
+      const result = await createGig.mutateAsync(draft);
+      if (result !== 'created') {
+        setFeedback({
+          kind: 'error',
+          text:
+            result === 'unauthorized'
+              ? 'Entre na sua conta para anunciar.'
+              : 'Não foi possível publicar. Verifique os dados e tente de novo.',
+        });
+        return;
+      }
       setFeedback({
         kind: 'success',
         text:
           status === 'unconfigured'
             ? 'Modo demonstração: a vaga seria publicada agora.'
-            : 'Vaga publicada! Ela já aparece na busca.',
+            : `Vaga publicada! ${formatBRL(priceCents)} foram reservados da sua carteira.`,
       });
       setTitle('');
       setDescription('');
@@ -261,6 +272,35 @@ export function PostScreen() {
             onChangeText={(text) => setPriceCents(Number(text.replace(/\D/g, '')))}
           />
 
+          {priceCents > 0 && (
+            <View style={[styles.feeBox, { backgroundColor: theme.primarySoft }]}>
+              <View style={styles.feeRow}>
+                <Text style={[styles.feeLabel, { color: theme.primarySoftMeta }]}>
+                  Valor da vaga
+                </Text>
+                <Text style={[styles.feeValue, { color: theme.primarySoftText }]}>
+                  {formatBRL(pricing.grossCents)}
+                </Text>
+              </View>
+              <View style={styles.feeRow}>
+                <Text style={[styles.feeLabel, { color: theme.primarySoftMeta }]}>
+                  Taxa de serviço (não reembolsável)
+                </Text>
+                <Text style={[styles.feeValue, { color: theme.primarySoftText }]}>
+                  − {formatBRL(pricing.feeCents)}
+                </Text>
+              </View>
+              <View style={styles.feeRow}>
+                <Text style={[styles.feeLabelStrong, { color: theme.primarySoftText }]}>
+                  O prestador recebe
+                </Text>
+                <Text style={[styles.feeValueStrong, { color: theme.primarySoftText }]}>
+                  {formatBRL(pricing.netCents)}
+                </Text>
+              </View>
+            </View>
+          )}
+
           {label('ONDE?')}
           <TextInput
             style={inputStyle}
@@ -375,6 +415,31 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  feeBox: {
+    borderRadius: Radius.medium,
+    padding: Spacing.two + 4,
+    gap: 5,
+  },
+  feeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  feeLabel: {
+    fontSize: 12.5,
+  },
+  feeValue: {
+    fontSize: 12.5,
+    fontWeight: '600',
+  },
+  feeLabelStrong: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  feeValueStrong: {
+    fontSize: 13,
+    fontWeight: '800',
   },
   publish: {
     borderRadius: Radius.large - 2,

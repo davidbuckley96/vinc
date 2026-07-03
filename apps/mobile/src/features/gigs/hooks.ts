@@ -7,6 +7,7 @@ import {
   fetchGigById,
   fetchOpenGigs,
   type ApplyGigResult,
+  type CreateGigResult,
 } from '@vinc/api';
 import type { GigDraft } from '@vinc/core';
 
@@ -60,14 +61,16 @@ export function useApplyGig() {
   });
 }
 
-export function useCreateGig(posterId: string | null) {
+export function useCreateGig() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (draft: GigDraft) => {
-      if (!supabase) return; // demo mode: pretend success
-      if (!posterId) throw new Error('not_signed_in');
-      await createGig(supabase, posterId, draft);
+    mutationFn: async (draft: GigDraft): Promise<CreateGigResult> => {
+      if (!supabase) return 'created'; // demo mode: pretend success
+      return createGig(supabase, draft);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['gigs'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gigs'] });
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+    },
   });
 }
