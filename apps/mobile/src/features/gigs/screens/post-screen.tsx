@@ -93,6 +93,7 @@ export function PostScreen() {
 
   const previewGig: OpenGig = {
     id: 'preview',
+    posterId: session?.user.id ?? 'preview',
     title: title.trim() || 'Título do serviço',
     description,
     startsAt: draft.startsAt,

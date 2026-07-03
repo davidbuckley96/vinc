@@ -39,6 +39,7 @@ export default function RootLayout() {
             <Stack.Screen name="gig/[id]" />
             <Stack.Screen name="service/[id]" />
             <Stack.Screen name="review/[gigId]" />
+            <Stack.Screen name="user/[id]" />
           </Stack>
         </ThemeProvider>
       </SessionProvider>

@@ -9,7 +9,7 @@ export const DEMO_PROFILE_STATS: ProfileStats = {
   workerAvgRating: 4.9,
   workerReviewCount: 61,
   posterAvgRating: 4.7,
-  posterReviewCount: 26,
+  posterReviewCount: 21,
   completedAsWorker: 64,
   completedAsPoster: 23,
 };

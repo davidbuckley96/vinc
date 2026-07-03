@@ -11,6 +11,7 @@ export interface Category {
 export interface OpenGig {
   id: string;
   title: string;
+  posterId: string;
   description: string;
   startsAt: string;
   endsAt: string;
@@ -23,6 +24,7 @@ export interface OpenGig {
 interface GigRow {
   id: string;
   title: string;
+  poster_id: string;
   description: string;
   starts_at: string;
   ends_at: string;
@@ -48,7 +50,7 @@ export async function fetchOpenGigs(
   let query = client
     .from("gigs")
     .select(
-      "id, title, description, starts_at, ends_at, price_cents, address, category_id, poster:poster_id (name)",
+      "id, title, description, starts_at, ends_at, price_cents, address, category_id, poster_id, poster:poster_id (name)",
     )
     .eq("status", "open")
     .gt("starts_at", new Date().toISOString())
@@ -61,6 +63,7 @@ export async function fetchOpenGigs(
   return (data as unknown as GigRow[]).map((row) => ({
     id: row.id,
     title: row.title,
+    posterId: row.poster_id,
     description: row.description,
     startsAt: row.starts_at,
     endsAt: row.ends_at,
@@ -78,7 +81,7 @@ export async function fetchGigById(
   const { data, error } = await client
     .from("gigs")
     .select(
-      "id, title, description, starts_at, ends_at, price_cents, address, category_id, poster:poster_id (name)",
+      "id, title, description, starts_at, ends_at, price_cents, address, category_id, poster_id, poster:poster_id (name)",
     )
     .eq("id", gigId)
     .maybeSingle();
@@ -88,6 +91,7 @@ export async function fetchGigById(
   return {
     id: row.id,
     title: row.title,
+    posterId: row.poster_id,
     description: row.description,
     startsAt: row.starts_at,
     endsAt: row.ends_at,

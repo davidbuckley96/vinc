@@ -32,6 +32,7 @@ export const DEMO_GIGS: OpenGig[] = [
     priceCents: 12000,
     address: 'Boa Vista',
     categoryId: 'demo-domesticos',
+    posterId: 'demo-carlos',
     posterName: 'Carlos Lima',
   },
   {
@@ -43,6 +44,7 @@ export const DEMO_GIGS: OpenGig[] = [
     priceCents: 16000,
     address: 'Centro',
     categoryId: 'demo-criancas',
+    posterId: 'demo-ana',
     posterName: 'Ana Souza',
   },
   {
@@ -54,6 +56,7 @@ export const DEMO_GIGS: OpenGig[] = [
     priceCents: 28000,
     address: 'Centro',
     categoryId: 'demo-saude',
+    posterId: 'demo-marta',
     posterName: 'Marta Reis',
   },
   {
@@ -65,6 +68,7 @@ export const DEMO_GIGS: OpenGig[] = [
     priceCents: 20000,
     address: 'Jardim América',
     categoryId: 'demo-eventos',
+    posterId: 'demo-paulo',
     posterName: 'Paulo Dias',
   },
 ];

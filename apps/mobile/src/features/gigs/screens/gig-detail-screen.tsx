@@ -116,9 +116,19 @@ export function GigDetailScreen() {
               <Text style={[styles.infoLine, { color: theme.primarySoftText }]}>
                 📍 {gig.data.address}
               </Text>
-              <Text style={[styles.infoLine, { color: theme.primarySoftText }]}>
-                👤 Anunciado por {gig.data.posterName}
-              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Ver perfil de ${gig.data.posterName}`}
+                onPress={() =>
+                  router.push(
+                    `/user/${gig.data!.posterId}?role=poster&name=${encodeURIComponent(gig.data!.posterName)}`,
+                  )
+                }>
+                <Text style={[styles.infoLine, { color: theme.primarySoftText }]}>
+                  👤 Anunciado por{' '}
+                  <Text style={styles.posterLink}>{gig.data.posterName}</Text> ›
+                </Text>
+              </Pressable>
             </View>
 
             {gig.data.description ? (
@@ -239,6 +249,10 @@ const styles = StyleSheet.create({
   infoLine: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  posterLink: {
+    textDecorationLine: 'underline',
+    fontWeight: '800',
   },
   sectionTitle: {
     fontSize: 11.5,

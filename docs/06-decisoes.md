@@ -112,3 +112,16 @@ comentários recebidos **naquele papel** e o total de serviços
 de vagas anunciadas — só as concluídas — para impedir que alguém crie e
 cancele muitas vagas para inflar números e passar falsa impressão de
 atividade.
+
+## D-011 — Versão do perfil escolhida pelo contexto (ajusta D-010)
+**Data:** 2026-07-03 · **Decidido por:** David
+
+O perfil NÃO tem seletor manual: **a plataforma escolhe a versão conforme o
+contexto**. Quem abre o perfil do autor de uma vaga vê o perfil **como
+anunciante**; quem abre o perfil de um prestador (ex.: o anunciante vendo
+quem aceitou) vê o perfil **como prestador**. Na própria aba Perfil, a
+plataforma mostra o papel com mais serviços finalizados (empate →
+prestador). Nota de coerência: o nº de avaliações exibido nunca pode
+superar o de serviços finalizados no papel — o banco já garante isso (uma
+avaliação por serviço, apenas do contraparte); dados de demonstração devem
+respeitar a mesma regra.

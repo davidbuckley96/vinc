@@ -190,12 +190,21 @@ export function ServiceDetailScreen() {
               </Text>
             </View>
             {data.counterpartName && (
-              <View style={[styles.kv, { borderBottomColor: theme.line }]}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Ver perfil de ${data.counterpartName}`}
+                disabled={!data.counterpartId}
+                onPress={() =>
+                  router.push(
+                    `/user/${data.counterpartId}?role=${data.role === 'poster' ? 'worker' : 'poster'}&name=${encodeURIComponent(data.counterpartName!)}`,
+                  )
+                }
+                style={[styles.kv, { borderBottomColor: theme.line }]}>
                 <Text style={[styles.kvLabel, { color: theme.textSecondary }]}>Com</Text>
-                <Text style={[styles.kvValue, { color: theme.text }]}>
-                  {data.counterpartName}
+                <Text style={[styles.kvValue, styles.kvLink, { color: theme.primary }]}>
+                  {data.counterpartName} ›
                 </Text>
-              </View>
+              </Pressable>
             )}
             <View style={[styles.kv, { borderBottomColor: theme.line }]}>
               <Text style={[styles.kvLabel, { color: theme.textSecondary }]}>Onde</Text>
@@ -324,6 +333,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     flexShrink: 1,
     textAlign: 'right',
+  },
+  kvLink: {
+    textDecorationLine: 'underline',
   },
   description: {
     fontSize: 13.5,
