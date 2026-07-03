@@ -14,7 +14,8 @@ export const DEMO_PROFILE_STATS: ProfileStats = {
   completedAsPoster: 23,
 };
 
-export const DEMO_REVIEWS: Review[] = [
+export const DEMO_REVIEWS: Record<'worker' | 'poster', Review[]> = {
+  worker: [
   {
     id: 'r1',
     rating: 5,
@@ -31,4 +32,15 @@ export const DEMO_REVIEWS: Review[] = [
     reviewerName: 'Carlos Lima',
     createdAt: new Date().toISOString(),
   },
-];
+  ],
+  poster: [
+    {
+      id: 'r3',
+      rating: 5,
+      comment: 'Local seguro e pagamento certinho.',
+      tags: ['Pagou certinho', 'Instruções claras'],
+      reviewerName: 'Paulo Dias',
+      createdAt: new Date().toISOString(),
+    },
+  ],
+};

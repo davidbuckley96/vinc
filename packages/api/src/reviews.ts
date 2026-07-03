@@ -62,12 +62,14 @@ export async function fetchProfileStats(
 export async function fetchRecentReviews(
   client: SupabaseClient,
   userId: string,
+  revieweeRole: "worker" | "poster",
   limit = 10,
 ): Promise<Review[]> {
   const { data, error } = await client
     .from("reviews")
     .select("id, rating, comment, tags, created_at, reviewer:reviewer_id (name)")
     .eq("reviewee_id", userId)
+    .eq("reviewee_role", revieweeRole)
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw new Error(error.message);

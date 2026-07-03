@@ -54,13 +54,13 @@ export function useProfileStats(userId: string | null) {
   });
 }
 
-export function useRecentReviews(userId: string | null) {
+export function useRecentReviews(userId: string | null, role: 'worker' | 'poster') {
   return useQuery({
-    queryKey: ['profile', 'reviews', userId],
+    queryKey: ['profile', 'reviews', userId, role],
     queryFn: async (): Promise<Review[]> => {
-      if (!supabase) return DEMO_REVIEWS;
+      if (!supabase) return DEMO_REVIEWS[role];
       if (!userId) return [];
-      return fetchRecentReviews(supabase, userId);
+      return fetchRecentReviews(supabase, userId, role);
     },
   });
 }

@@ -100,3 +100,15 @@ Rodada 5 (`docs/design/rodada-05-avaliacao-perfil.html`):
 - **Perfil — opção 2, nota separada por papel:** dois cartões (como
   prestador × como anunciante), cada um com média, nº de avaliações e
   serviços concluídos, seguidos das avaliações recentes.
+
+## D-010 — Perfil: nota única em duas versões alternáveis (substitui o perfil de D-009)
+**Data:** 2026-07-03 · **Decidido por:** David
+
+O perfil deixa de mostrar os dois cartões lado a lado e passa a ter **duas
+versões alternáveis** (Prestador × Anunciante), cada uma no estilo "nota
+única em destaque" da rodada 5: a média grande, o nº de avaliações, os
+comentários recebidos **naquele papel** e o total de serviços
+**finalizados** no papel. **Regra anti-manipulação:** nunca exibir o total
+de vagas anunciadas — só as concluídas — para impedir que alguém crie e
+cancele muitas vagas para inflar números e passar falsa impressão de
+atividade.

@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -10,32 +11,44 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { signOut } from '@/features/auth/auth-actions';
 import { useSession } from '@/features/auth/session-context';
 import { useProfileStats, useRecentReviews } from '@/features/reviews/hooks';
-import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+
+type ProfileRole = 'worker' | 'poster';
 
 function stars(rating: number): string {
   return '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
 }
 
-function formatRating(value: number | null): string {
-  return value === null ? '—' : `★ ${value.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}`;
-}
-
-/** Profile with per-role reputation cards + recent reviews (D-009). */
+/**
+ * Profile — single prominent rating in two switchable versions,
+ * Prestador × Anunciante (D-010). Each version shows only that role's
+ * average, reviews and COMPLETED services. Never show how many gigs were
+ * posted (anti-manipulation: posting + cancelling must not inflate numbers).
+ */
 export function ProfileScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { status, userName, session } = useSession();
   const userId = session?.user.id ?? null;
+  const [role, setRole] = useState<ProfileRole>('worker');
   const stats = useProfileStats(userId);
-  const reviews = useRecentReviews(userId);
+  const reviews = useRecentReviews(userId, role);
 
   const name = stats.data?.name ?? userName ?? 'Visitante';
   const initial = name.trim().charAt(0).toUpperCase();
   const signedOut = status === 'signedOut';
+
+  const avg = role === 'worker' ? stats.data?.workerAvgRating : stats.data?.posterAvgRating;
+  const reviewCount =
+    role === 'worker' ? stats.data?.workerReviewCount : stats.data?.posterReviewCount;
+  const completed =
+    role === 'worker' ? stats.data?.completedAsWorker : stats.data?.completedAsPoster;
+  const completedLabel =
+    role === 'worker' ? 'serviços prestados' : 'serviços finalizados';
 
   return (
     <View style={[styles.root, { backgroundColor: theme.background }]}>
@@ -43,6 +56,37 @@ export function ProfileScreen() {
         <View style={[styles.header, { backgroundColor: theme.primary }]}>
           <SafeAreaView edges={['top']}>
             <Text style={[styles.headerTitle, { color: theme.onPrimary }]}>Perfil</Text>
+            {!signedOut && (
+              <View style={styles.switcher}>
+                {(
+                  [
+                    { key: 'worker', label: 'Prestador' },
+                    { key: 'poster', label: 'Anunciante' },
+                  ] as const
+                ).map((option) => {
+                  const selected = role === option.key;
+                  return (
+                    <Pressable
+                      key={option.key}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                      onPress={() => setRole(option.key)}
+                      style={[
+                        styles.switchOption,
+                        selected && { backgroundColor: theme.background },
+                      ]}>
+                      <Text
+                        style={[
+                          styles.switchLabel,
+                          { color: selected ? theme.primary : theme.onPrimaryMuted },
+                        ]}>
+                        {option.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
           </SafeAreaView>
         </View>
 
@@ -79,41 +123,30 @@ export function ProfileScreen() {
             <>
               {stats.isLoading && <ActivityIndicator color={theme.primary} />}
               {stats.data && (
-                <View style={styles.roleCards}>
-                  <View style={[styles.roleCard, { backgroundColor: theme.primarySoft }]}>
-                    <Text style={[styles.roleLabel, { color: theme.primarySoftMeta }]}>
-                      COMO PRESTADOR
-                    </Text>
-                    <Text style={[styles.roleRating, { color: theme.primarySoftText }]}>
-                      {formatRating(stats.data.workerAvgRating)}
-                    </Text>
-                    <Text style={[styles.roleMeta, { color: theme.primarySoftMeta }]}>
-                      {stats.data.completedAsWorker} serviços ·{' '}
-                      {stats.data.workerReviewCount} avaliações
-                    </Text>
-                  </View>
-                  <View style={[styles.roleCard, { backgroundColor: theme.backgroundElement }]}>
-                    <Text style={[styles.roleLabel, { color: theme.textSecondary }]}>
-                      COMO ANUNCIANTE
-                    </Text>
-                    <Text style={[styles.roleRating, { color: theme.text }]}>
-                      {formatRating(stats.data.posterAvgRating)}
-                    </Text>
-                    <Text style={[styles.roleMeta, { color: theme.textSecondary }]}>
-                      {stats.data.completedAsPoster} vagas ·{' '}
-                      {stats.data.posterReviewCount} avaliações
-                    </Text>
-                  </View>
+                <View style={[styles.ratingCard, { backgroundColor: theme.primarySoft }]}>
+                  <Text style={[styles.bigRating, { color: theme.primarySoftText }]}>
+                    {avg != null
+                      ? `★ ${avg.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}`
+                      : 'Sem nota ainda'}
+                  </Text>
+                  <Text style={[styles.ratingMeta, { color: theme.primarySoftMeta }]}>
+                    {reviewCount ?? 0}{' '}
+                    {(reviewCount ?? 0) === 1 ? 'avaliação' : 'avaliações'} ·{' '}
+                    {completed ?? 0} {completedLabel}
+                  </Text>
                 </View>
               )}
 
               <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
-                AVALIAÇÕES RECENTES
+                {role === 'worker'
+                  ? 'AVALIAÇÕES COMO PRESTADOR'
+                  : 'AVALIAÇÕES COMO ANUNCIANTE'}
               </Text>
               {reviews.data?.length === 0 && (
                 <Text style={[styles.meta, { color: theme.textSecondary }]}>
-                  Você ainda não recebeu avaliações. Conclua serviços para construir sua
-                  reputação!
+                  {role === 'worker'
+                    ? 'Você ainda não recebeu avaliações como prestador. Aceite e conclua serviços para construir sua reputação!'
+                    : 'Você ainda não recebeu avaliações como anunciante. Anuncie vagas e confirme as conclusões para construir sua reputação!'}
                 </Text>
               )}
               {reviews.data?.map((review) => (
@@ -177,13 +210,31 @@ const styles = StyleSheet.create({
   header: {
     borderBottomLeftRadius: Radius.xlarge,
     borderBottomRightRadius: Radius.xlarge,
+    paddingBottom: Spacing.three,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '800',
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.two,
-    paddingBottom: Spacing.three,
+    paddingBottom: Spacing.two,
+  },
+  switcher: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderRadius: Radius.medium,
+    padding: 3,
+    marginHorizontal: Spacing.three,
+  },
+  switchOption: {
+    flex: 1,
+    paddingVertical: 7,
+    borderRadius: Radius.small + 1,
+    alignItems: 'center',
+  },
+  switchLabel: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   scroll: {
     flex: 1,
@@ -227,27 +278,19 @@ const styles = StyleSheet.create({
     fontSize: 14.5,
     fontWeight: '700',
   },
-  roleCards: {
-    flexDirection: 'row',
-    gap: Spacing.two + 2,
-  },
-  roleCard: {
-    flex: 1,
+  ratingCard: {
     borderRadius: Radius.large,
-    padding: Spacing.two + 4,
-    gap: 2,
+    padding: Spacing.three,
+    alignItems: 'center',
+    gap: 3,
   },
-  roleLabel: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  roleRating: {
-    fontSize: 18,
+  bigRating: {
+    fontSize: 30,
     fontWeight: '800',
   },
-  roleMeta: {
-    fontSize: 11,
+  ratingMeta: {
+    fontSize: 12.5,
+    fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 11,
