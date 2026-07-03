@@ -51,29 +51,43 @@ Categorias iniciais: saúde, entretenimento, serviços domésticos (lista comple
 ### Ciclo de vida da vaga
 
 ```
-rascunho? → ABERTA → ACEITA → EM ANDAMENTO → CONCLUÍDA
-                │        │
-                │        ├─ cancelada pelo anunciante (multa)
-                │        ├─ prestador rejeitado pelo anunciante (multa)
-                │        └─ cancelada pelo prestador (punição de reputação)
-                └─ excluída antes de aceite (sem punição)
+ABERTA → CANDIDATURA PENDENTE → ACEITA → EM ANDAMENTO
+   ▲              │                │           │
+   │   (anunciante recusa;        │           └→ AGUARDANDO CONFIRMAÇÃO → CONCLUÍDA
+   └── candidato fica bloqueado   ├─ cancelada pelo anunciante (multa)
+       para ESTA vaga)            └─ cancelada pelo prestador (punição de reputação)
+
+ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
 ```
 
-## 3. Aceite de vaga (sem processo seletivo)
+## 3. Candidatura e aprovação (modelo Uber — definido pelo David em 2026-07-03)
 
-- Qualquer prestador pode aceitar uma vaga **ABERTA** com poucos cliques.
-- **Não há processo seletivo**: o primeiro aceite vincula o prestador à vaga.
-  O aceite deve ser **atômico** no backend (duas pessoas não podem aceitar a
-  mesma vaga).
-- **Conflito de agenda:** o app impede (ou alerta fortemente ⚠️) o aceite de
-  vagas que conflitem com a agenda semanal do prestador (outros serviços já
-  aceitos e bloqueios de horário definidos por ele).
+- O prestador **se candidata** a uma vaga ABERTA com poucos cliques. A
+  candidatura deve ser **atômica** no backend: no momento em que existe um
+  candidato, a vaga sai da busca e **ninguém mais pode se candidatar**.
+- O **anunciante recebe uma notificação** para **aceitar ou recusar** o
+  candidato (no MVP, aviso dentro do app — agenda e tela do serviço; push
+  real na Fase 2). Ele **não escolhe entre vários candidatos**: como no Uber
+  (o passageiro não escolhe o motorista), é um candidato por vez, sim ou não.
+- **Recusa (sem multa):** a vaga volta a ficar ABERTA para os demais, e o
+  candidato recusado **nunca mais vê nem pode se candidatar a ESTA vaga**.
+  A recusa vale só para o serviço em questão: o mesmo trabalhador pode se
+  candidatar normalmente a outras vagas (novas ou abertas) do mesmo
+  anunciante — salvo bloqueio entre usuários (ver §8).
+- **Aprovação:** vira o vínculo (ACEITA) — é aqui que o escrow é retido. O
+  backend re-checa o conflito de agenda do candidato na aprovação (ele pode
+  ter aceitado outro serviço enquanto esperava); havendo conflito, a
+  candidatura é recusada automaticamente.
+- **Conflito de agenda:** o backend impede candidatura a vagas que conflitem
+  com os compromissos do prestador (serviços aceitos/em andamento e
+  candidaturas pendentes dele).
 
-### Punições pós-aceite
-- **Anunciante** exclui a vaga ou rejeita o prestador após o aceite → paga
-  **multa** (valor/percentual ⚠️ em aberto). Destino da multa ⚠️ em aberto.
-- **Prestador** cancela após o aceite → sem multa financeira na fase inicial,
-  mas sofre punição de reputação/prioridade (modelo Uber). Regras exatas ⚠️.
+### Punições pós-aprovação
+- **Anunciante** exclui a vaga ou cancela após aprovar → paga **multa**
+  (valor/percentual ⚠️ em aberto). Destino da multa ⚠️ em aberto.
+  Recusar uma candidatura NÃO gera multa.
+- **Prestador** cancela após a aprovação → sem multa financeira na fase
+  inicial, mas sofre punição de reputação/prioridade (modelo Uber). ⚠️.
 
 ## 4. Execução e conclusão do serviço
 
@@ -122,7 +136,20 @@ reembolso. Ver `07-duvidas-abertas.md`.
 - Mecanismos anti-manipulação (avaliação só após serviço concluído; uma
   avaliação por serviço).
 
-## 8. Home / Calendário (tela principal)
+## 8. Bloqueio entre usuários (definido pelo David em 2026-07-03)
+
+- Qualquer usuário pode **bloquear** outro (ex.: pelo perfil público).
+- Efeitos do bloqueio (valem nas duas direções, para quem bloqueou e para
+  quem foi bloqueado):
+  - As **vagas anunciadas por um não aparecem** para o outro.
+  - Nenhum dos dois pode **se candidatar** a vagas do outro.
+  - A **comunicação entre eles fica bloqueada** (quando existirem mensagens
+    dentro do app — previstas para o MVP).
+- O bloqueio é a ferramenta para cortar relação com um usuário específico;
+  a recusa de candidatura (§3) afeta apenas uma vaga específica.
+- Desbloqueio: quem bloqueou pode desfazer.
+
+## 9. Home / Calendário (tela principal)
 
 - Calendário com visões **diária (dividida por hora), semanal e mensal**.
 - O usuário seleciona um horário e escolhe entre:
@@ -132,7 +159,7 @@ reembolso. Ver `07-duvidas-abertas.md`.
   e vagas anunciadas (como anunciante).
 - Fluxo central do produto: "tenho o dia X livre → preencho com um bico".
 
-## 9. Requisitos não-funcionais
+## 10. Requisitos não-funcionais
 
 - **Plataformas:** Android, iOS e web (desktop e mobile) com um só código.
 - **Acessibilidade/simplicidade:** usável por pessoas de baixa escolaridade;
@@ -142,7 +169,7 @@ reembolso. Ver `07-duvidas-abertas.md`.
 - **Segurança:** RLS no banco, regras financeiras somente no backend (nunca
   confiar no cliente), ledger auditável.
 
-## 10. Escopo do MVP (Fase 1 do roadmap)
+## 11. Escopo do MVP (Fase 1 do roadmap)
 
 **Dentro:** auth + perfil, calendário home (3 visões), criar/editar/excluir
 vaga, listar/buscar vagas por horário e categoria, aceite atômico com checagem

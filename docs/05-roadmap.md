@@ -14,11 +14,13 @@
 - [x] Calendário home (visões dia/semana/mês; horário livre → buscar/anunciar) — ligado à agenda real do usuário
 - [~] CRUD de vagas — criação pronta (Anunciar com prévia, D-007); faltam editar/excluir
 - [~] Busca/listagem de vagas — categorias primeiro + vagas recentes (D-007); falta filtro por horário
-- [x] Aceite atômico com checagem de conflito de agenda — `accept-gig` v2 deployada e verificada e2e (atomicidade, conflito, own_gig)
+- [~] Candidatura com aprovação do anunciante (modelo Uber, docs/02 §3) — substitui o aceite direto; recusa bloqueia o candidato só para aquela vaga; escrow passa a ser retido na aprovação (em implementação)
+- [ ] Bloqueio entre usuários (docs/02 §8): esconde vagas nas duas direções, impede candidatura e cortará mensagens
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
 - [~] Carteira simulada: escrow no aceite e liberação na confirmação prontos (ledger imutável + tela dois cartões, D-008); falta a multa do anunciante (cancelamento pós-aceite)
 - [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
 - [ ] Localização por mapa (pino arrastável + busca no mapa ao anunciar; modal de mapa ao ver a vaga — docs/02 §2.1; requer provedor de mapas, ver dúvidas #15)
+- [ ] Mensagens entre as partes dentro do app (chat simples; respeita bloqueios)
 - [ ] Web e mobile funcionando com paridade
 
 ## Fase 2 — Confiança
@@ -35,7 +37,6 @@
 
 ## Fase 4 — Crescimento
 - [ ] Geolocalização e busca por proximidade/mapa
-- [ ] Chat entre as partes
 - [ ] Filtros avançados, recomendações, favoritos
 - [ ] Publicação nas lojas (App Store / Play Store)
 

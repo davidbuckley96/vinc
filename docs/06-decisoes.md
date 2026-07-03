@@ -125,3 +125,17 @@ prestador). Nota de coerência: o nº de avaliações exibido nunca pode
 superar o de serviços finalizados no papel — o banco já garante isso (uma
 avaliação por serviço, apenas do contraparte); dados de demonstração devem
 respeitar a mesma regra.
+
+## D-012 — Candidatura com aprovação (modelo Uber) e bloqueio entre usuários
+**Data:** 2026-07-03 · **Decidido por:** David
+
+Substitui o aceite direto de D-007/D-008: o prestador **se candidata**; a
+vaga fica travada (ninguém mais se candidata); o anunciante é notificado e
+**aceita ou recusa** o candidato — sem escolher entre vários, um por vez,
+como no Uber. Recusa: sem multa, vaga reabre, e o recusado nunca mais vê ou
+se candidata àquela vaga específica (outras vagas do mesmo anunciante
+continuam normais). Escrow passa a ser retido na aprovação. Nova
+funcionalidade de MVP: **bloqueio entre usuários** (docs/02 §8) — esconde
+vagas nas duas direções, impede candidaturas e bloqueará mensagens (chat
+simples também entra no MVP). Notificação de candidatura no MVP é dentro do
+app; push na Fase 2.
