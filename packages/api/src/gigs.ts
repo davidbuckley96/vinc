@@ -214,8 +214,8 @@ export type CreateGigResult = "created" | "unauthorized" | "invalid_draft" | "in
 
 /**
  * Publishes via the create-gig Edge Function: the poster pays upfront
- * (platform fee + escrowed net — docs/02 §5.1, D-013). draft.priceCents is
- * the GROSS the poster pays.
+ * (escrowed worker amount + platform fee on top — docs/02 §5.1,
+ * D-013/D-014). draft.priceCents is what the WORKER receives.
  */
 export async function createGig(
   client: SupabaseClient,

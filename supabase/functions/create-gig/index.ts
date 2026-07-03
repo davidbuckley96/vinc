@@ -1,9 +1,9 @@
 // Edge Function: create-gig
-// Publishes a gig with the upfront payment (docs/02 §5.1 — D-013): the
-// poster pays the GROSS value at creation — the platform fee (non
-// refundable) plus the NET amount escrowed for the worker. Runs with the
-// service role because money moves here; the client INSERT policy was
-// removed in migration 0006.
+// Publishes a gig with the upfront payment (docs/02 §5.1 — D-013/D-014):
+// the poster chooses the exact amount the WORKER receives
+// (draft.priceCents) and pays that amount + the platform service fee (non
+// refundable) at creation. Runs with the service role because money moves
+// here; the client INSERT policy was removed in migration 0006.
 //
 // Deploy: Management API multipart (see docs/05 roadmap).
 
@@ -54,7 +54,7 @@ Deno.serve(async (request) => {
   if (userError || !userData.user) return respond("unauthorized", 401);
   const posterId = userData.user.id;
 
-  // draft.priceCents is the GROSS the poster pays; the worker sees the net.
+  // draft.priceCents is what the WORKER receives; the fee goes on top.
   const pricing = computeGigPricing(draft.priceCents);
 
   const { data: gig, error: insertError } = await admin
@@ -75,7 +75,8 @@ Deno.serve(async (request) => {
     .single();
   if (insertError || !gig) return respond("invalid_request", 400);
 
-  // Upfront payment: non-refundable fee + escrowed net (docs/02 §5.1).
+  // Upfront payment (total = net + fee): non-refundable fee + escrowed
+  // worker amount (docs/02 §5.1 — D-014).
   await admin.from("ledger_entries").insert([
     { user_id: posterId, gig_id: gig.id, type: "fee", amount_cents: -pricing.feeCents },
     { user_id: posterId, gig_id: gig.id, type: "escrow_hold", amount_cents: -pricing.netCents },

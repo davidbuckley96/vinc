@@ -154,3 +154,13 @@ arrepender-se custa a taxa. Percentual usado como exemplo: 10% (valor final
 ⚠️ dúvida #2). Consequência técnica: escrow deixa de ser retido na
 aprovação (D-012) e passa para a criação; `gigs.price_cents` = líquido,
 nova coluna `fee_cents`.
+
+## D-014 — Anunciante escolhe o valor do prestador; taxa somada por cima (ajusta D-013)
+**Data:** 2026-07-03 · **Decidido por:** David
+
+Inverte a direção do cálculo de D-013: em vez de escolher um valor bruto do
+qual a taxa é descontada, o anunciante **escolhe o valor exato que o
+prestador receberá (x)** e paga **x + taxa** ao confirmar a vaga. Exemplo
+ilustrativo: prestador recebe R$ 100, taxa R$ 10, anunciante paga R$ 110.
+Tela de criação: "O prestador recebe R$ 100 · Taxa de serviço + R$ 10 ·
+Você paga R$ 110". Reembolso continua sendo apenas o valor do prestador.

@@ -1,20 +1,22 @@
 /**
- * Platform pricing (docs/02 §5.1 — D-013). The poster pays the GROSS value
- * at gig creation: a non-refundable service fee stays with the platform and
- * the NET amount is escrowed for the worker, who always sees and receives
- * the net. The rate below is an EXAMPLE pending the final decision
- * (docs/07 #2).
+ * Platform pricing (docs/02 §5.1 — D-013/D-014). The poster chooses the
+ * exact amount the WORKER receives (net) and pays net + service fee at gig
+ * creation; the fee is non-refundable and stays with the platform. The
+ * rate below is an EXAMPLE pending the final decision (docs/07 #2).
  */
 
 export const PLATFORM_FEE_RATE = 0.1;
 
 export interface GigPricing {
-  grossCents: number;
-  feeCents: number;
+  /** What the worker receives — the value the poster typed. */
   netCents: number;
+  /** Platform service fee, added on top. */
+  feeCents: number;
+  /** What the poster pays at creation: net + fee. */
+  totalCents: number;
 }
 
-export function computeGigPricing(grossCents: number): GigPricing {
-  const feeCents = Math.round(grossCents * PLATFORM_FEE_RATE);
-  return { grossCents, feeCents, netCents: grossCents - feeCents };
+export function computeGigPricing(netCents: number): GigPricing {
+  const feeCents = Math.round(netCents * PLATFORM_FEE_RATE);
+  return { netCents, feeCents, totalCents: netCents + feeCents };
 }

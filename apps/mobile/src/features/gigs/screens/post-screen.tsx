@@ -99,7 +99,7 @@ export function PostScreen() {
     description,
     startsAt: draft.startsAt,
     endsAt: draft.endsAt,
-    priceCents: pricing.netCents,
+    priceCents,
     address: address.trim() || 'Local',
     categoryId,
     posterName: userName ?? 'Você',
@@ -134,7 +134,7 @@ export function PostScreen() {
         text:
           status === 'unconfigured'
             ? 'Modo demonstração: a vaga seria publicada agora.'
-            : `Vaga publicada! ${formatBRL(priceCents)} foram reservados da sua carteira.`,
+            : `Vaga publicada! ${formatBRL(pricing.totalCents)} saíram da sua carteira (${formatBRL(pricing.netCents)} reservados para o prestador).`,
       });
       setTitle('');
       setDescription('');
@@ -262,7 +262,7 @@ export function PostScreen() {
             </View>
           </ScrollView>
 
-          {label('QUANTO VAI PAGAR?')}
+          {label('QUANTO O PRESTADOR VAI RECEBER?')}
           <TextInput
             style={inputStyle}
             placeholder="R$ 0,00"
@@ -276,10 +276,10 @@ export function PostScreen() {
             <View style={[styles.feeBox, { backgroundColor: theme.primarySoft }]}>
               <View style={styles.feeRow}>
                 <Text style={[styles.feeLabel, { color: theme.primarySoftMeta }]}>
-                  Valor da vaga
+                  O prestador recebe
                 </Text>
                 <Text style={[styles.feeValue, { color: theme.primarySoftText }]}>
-                  {formatBRL(pricing.grossCents)}
+                  {formatBRL(pricing.netCents)}
                 </Text>
               </View>
               <View style={styles.feeRow}>
@@ -287,15 +287,15 @@ export function PostScreen() {
                   Taxa de serviço (não reembolsável)
                 </Text>
                 <Text style={[styles.feeValue, { color: theme.primarySoftText }]}>
-                  − {formatBRL(pricing.feeCents)}
+                  + {formatBRL(pricing.feeCents)}
                 </Text>
               </View>
               <View style={styles.feeRow}>
                 <Text style={[styles.feeLabelStrong, { color: theme.primarySoftText }]}>
-                  O prestador recebe
+                  Você paga
                 </Text>
                 <Text style={[styles.feeValueStrong, { color: theme.primarySoftText }]}>
-                  {formatBRL(pricing.netCents)}
+                  {formatBRL(pricing.totalCents)}
                 </Text>
               </View>
             </View>

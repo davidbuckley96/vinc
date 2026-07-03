@@ -112,18 +112,21 @@ ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
   3. Prestador **saca** para conta bancária (no MVP: saque simulado; no
      futuro: Pix via gateway — Fase 3).
 
-### 5.1 Taxa de serviço na criação (D-013)
+### 5.1 Taxa de serviço na criação (D-013, ajustada por D-014)
 
-- Exemplo (valores ilustrativos, percentual final ⚠️ em aberto): vaga de
-  R$ 100 → taxa de R$ 10 fica com a empresa → o prestador recebe R$ 90.
-- **O prestador sempre vê o valor líquido** (na busca, no detalhe, na
+- **O anunciante escolhe o valor que o PRESTADOR RECEBERÁ (x)** e a taxa de
+  serviço é somada por cima: ao confirmar a vaga ele paga **x + taxa**.
+  Exemplo (valores ilustrativos, percentual final ⚠️ em aberto): prestador
+  recebe R$ 100 → taxa de R$ 10 → o anunciante paga R$ 110.
+- **O prestador sempre vê o valor escolhido (x)** (na busca, no detalhe, na
   agenda, na carteira): ele recebe integralmente o valor pelo qual se
-  candidatou. A **prévia** do anúncio na criação mostra o líquido.
-- A **taxa aparece explícita no momento da criação** ("Valor da vaga
-  R$ 100 · Taxa de serviço R$ 10 · O prestador recebe R$ 90").
+  candidatou. A **prévia** do anúncio na criação mostra esse valor.
+- A **taxa aparece explícita no momento da criação** ("O prestador recebe
+  R$ 100 · Taxa de serviço + R$ 10 · Você paga R$ 110").
 - **Reembolso:** se ninguém se candidatar, se o anunciante recusar todos os
-  candidatos ou se ele excluir a vaga antes de aprovar alguém, o **líquido é
-  reembolsado** (R$ 90 no exemplo) — **a taxa fica com a empresa**. Isso
+  candidatos ou se ele excluir a vaga antes de aprovar alguém, o **valor do
+  prestador é reembolsado** (R$ 100 no exemplo) — **a taxa fica com a
+  empresa**. Isso
   impede o golpe de "recusar indefinidamente esperando reembolso total":
   arrepender-se de abrir a vaga custa a taxa.
 - Multas são cobradas do saldo/forma de pagamento do anunciante infrator.
