@@ -1,4 +1,4 @@
-import type { Wallet } from '@vinc/api';
+import { buildWallet, type LedgerEntry, type Wallet } from '@vinc/api';
 
 function daysAgo(days: number): string {
   const date = new Date();
@@ -7,33 +7,66 @@ function daysAgo(days: number): string {
   return date.toISOString();
 }
 
-export const DEMO_WALLET: Wallet = {
-  balanceCents: 31000,
-  pendingCents: 15000,
-  entries: [
-    {
-      id: 'w1',
-      type: 'escrow_release',
-      amountCents: 16000,
-      gigId: '2',
-      gigTitle: 'Babá — 2 crianças',
-      createdAt: daysAgo(0),
-    },
-    {
-      id: 'w2',
-      type: 'escrow_release',
-      amountCents: 15000,
-      gigId: '1',
-      gigTitle: 'Faxina — Casa da Ana',
-      createdAt: daysAgo(1),
-    },
-    {
-      id: 'w3',
-      type: 'escrow_hold',
-      amountCents: -20000,
-      gigId: '3',
-      gigTitle: 'Garçom para festa',
-      createdAt: daysAgo(1),
-    },
-  ],
-};
+/** Newest first, like the real query. */
+const DEMO_ENTRIES: LedgerEntry[] = [
+  {
+    id: 'w1',
+    type: 'fine',
+    amountCents: 2000,
+    gigId: null,
+    gigTitle: 'DJ para aniversário',
+    createdAt: daysAgo(1),
+  },
+  {
+    id: 'w2',
+    type: 'escrow_release',
+    amountCents: 16000,
+    gigId: '2',
+    gigTitle: 'Babá — 2 crianças',
+    createdAt: daysAgo(2),
+  },
+  {
+    id: 'w3',
+    type: 'escrow_release',
+    amountCents: 5000,
+    gigId: null,
+    gigTitle: 'Cuidados com idosa',
+    createdAt: daysAgo(6),
+  },
+  {
+    id: 'w4',
+    type: 'escrow_release',
+    amountCents: 15000,
+    gigId: '1',
+    gigTitle: 'Faxina — Casa da Ana',
+    createdAt: daysAgo(9),
+  },
+  {
+    id: 'w6',
+    type: 'fee',
+    amountCents: -500,
+    gigId: '5',
+    gigTitle: 'Passear com cachorro (minha vaga)',
+    createdAt: daysAgo(10),
+  },
+  {
+    id: 'w7',
+    type: 'withdrawal',
+    amountCents: -12000,
+    gigId: null,
+    gigTitle: null,
+    createdAt: daysAgo(12),
+  },
+  {
+    id: 'w8',
+    type: 'escrow_release',
+    amountCents: 12000,
+    gigId: null,
+    gigTitle: 'Jardinagem — quintal',
+    createdAt: daysAgo(20),
+  },
+];
+
+export function demoWallet(): Wallet {
+  return buildWallet(DEMO_ENTRIES, new Date());
+}

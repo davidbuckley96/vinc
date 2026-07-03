@@ -24,6 +24,7 @@ export const Colors = {
     line: '#E7EAEE',
     dashedBorder: '#D5C9F2',
     success: '#059669',
+    warning: '#B45309',
     danger: '#DC2626',
   },
   dark: {
@@ -41,6 +42,7 @@ export const Colors = {
     line: '#2A2338',
     dashedBorder: '#4A3C6E',
     success: '#34D399',
+    warning: '#FBBF24',
     danger: '#F87171',
   },
 } as const;

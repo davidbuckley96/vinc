@@ -1,11 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { fetchWallet, type Wallet } from '@vinc/api';
+import { buildWallet, fetchWallet, withdraw, type Wallet, type WithdrawResult } from '@vinc/api';
 
 import { useSession } from '@/features/auth/session-context';
 import { supabase } from '@/lib/supabase';
 
-import { DEMO_WALLET } from './demo';
+import { demoWallet } from './demo';
 
 export function useWallet() {
   const { status, session } = useSession();
@@ -14,10 +14,25 @@ export function useWallet() {
   return useQuery({
     queryKey: ['wallet', userId ?? 'anonymous'],
     queryFn: async (): Promise<Wallet> => {
-      if (!supabase) return DEMO_WALLET;
-      if (!userId) return { balanceCents: 0, pendingCents: 0, entries: [] };
+      if (!supabase) return demoWallet();
+      if (!userId) return buildWallet([], new Date());
       return fetchWallet(supabase, userId);
     },
     enabled: status !== 'loading',
+  });
+}
+
+export function useWithdraw() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (): Promise<WithdrawResult> => {
+      if (!supabase) return 'withdrawn'; // demo mode: pretend success
+      return withdraw(supabase);
+    },
+    onSuccess: (result) => {
+      if (result === 'withdrawn') {
+        queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      }
+    },
   });
 }

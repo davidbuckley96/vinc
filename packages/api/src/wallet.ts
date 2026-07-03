@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { ACTIVE_WORKER_STATUSES } from "@vinc/core";
+import { deriveWalletBalances, isProcessing, releasesAt } from "@vinc/core";
 
 export interface LedgerEntry {
   id: string;
@@ -11,32 +11,39 @@ export interface LedgerEntry {
   createdAt: string;
 }
 
+/** A service payment still inside the 7-day hold (docs/02 §5.2). */
+export interface ProcessingEntry extends LedgerEntry {
+  releasesAt: string;
+}
+
 export interface Wallet {
-  /** Derived from the immutable ledger (docs/03 principle 4). */
-  balanceCents: number;
-  /** Escrowed amounts the user will receive when their services are confirmed. */
-  pendingCents: number;
+  /** Withdrawable now — received since the last withdrawal (D-015). */
+  availableCents: number;
+  /** Sum of service payments still in the 7-day hold. */
+  processingCents: number;
+  /** Credits that make up the available balance (since last withdrawal). */
+  availableEntries: LedgerEntry[];
+  /** Service payments waiting for the hold to end. */
+  processingEntries: ProcessingEntry[];
+  /** Full statement, newest first (the "Ver histórico" screen). */
   entries: LedgerEntry[];
 }
 
+/**
+ * Everything is DERIVED from the immutable ledger (docs/03 principle 4):
+ * balances, the processing hold (created_at + 7 days — no release job) and
+ * the "since last withdrawal" reading (withdrawals zero the balance).
+ */
 export async function fetchWallet(client: SupabaseClient, userId: string): Promise<Wallet> {
-  const [entriesResult, pendingResult] = await Promise.all([
-    client
-      .from("ledger_entries")
-      .select("id, type, amount_cents, gig_id, created_at, gig:gig_id (title)")
-      .order("created_at", { ascending: false })
-      .limit(100),
-    client
-      .from("gigs")
-      .select("price_cents")
-      .eq("worker_id", userId)
-      .in("status", [...ACTIVE_WORKER_STATUSES]),
-  ]);
-  if (entriesResult.error) throw new Error(entriesResult.error.message);
-  if (pendingResult.error) throw new Error(pendingResult.error.message);
+  const { data, error } = await client
+    .from("ledger_entries")
+    .select("id, type, amount_cents, gig_id, created_at, gig:gig_id (title)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
 
-  const entries = (
-    entriesResult.data as unknown as Array<{
+  const entries: LedgerEntry[] = (
+    data as unknown as Array<{
       id: string;
       type: LedgerEntry["type"];
       amount_cents: number;
@@ -53,9 +60,57 @@ export async function fetchWallet(client: SupabaseClient, userId: string): Promi
     createdAt: row.created_at,
   }));
 
-  return {
-    balanceCents: entries.reduce((sum, entry) => sum + entry.amountCents, 0),
-    pendingCents: pendingResult.data.reduce((sum, row) => sum + row.price_cents, 0),
-    entries,
-  };
+  return buildWallet(entries, new Date());
+}
+
+/** Pure assembly, shared with demo mode so both derive identically. */
+export function buildWallet(entries: LedgerEntry[], now: Date): Wallet {
+  const { availableCents, processingCents } = deriveWalletBalances(entries, now);
+  const lastWithdrawal = entries.find((entry) => entry.type === "withdrawal");
+
+  const processingEntries: ProcessingEntry[] = entries
+    .filter((entry) => isProcessing(entry, now))
+    .map((entry) => ({ ...entry, releasesAt: releasesAt(entry.createdAt) }));
+
+  // A credit joins the available list when it becomes money the user can
+  // touch: service payments only AFTER the hold ends (they were not part
+  // of any earlier withdrawal), everything else when it lands.
+  const effectiveAt = (entry: LedgerEntry) =>
+    new Date(
+      entry.type === "escrow_release" ? releasesAt(entry.createdAt) : entry.createdAt,
+    ).getTime();
+  const withdrawnAt = lastWithdrawal ? new Date(lastWithdrawal.createdAt).getTime() : null;
+  const availableEntries = entries.filter(
+    (entry) =>
+      entry.amountCents > 0 &&
+      !isProcessing(entry, now) &&
+      (withdrawnAt === null || effectiveAt(entry) > withdrawnAt),
+  );
+
+  return { availableCents, processingCents, availableEntries, processingEntries, entries };
+}
+
+export type WithdrawResult =
+  | "withdrawn"
+  | "nothing_to_withdraw"
+  | "unauthorized"
+  | "invalid_request"
+  | "network_error";
+
+/** Simulated full-balance withdrawal (withdraw Edge Function — D-021). */
+export async function withdraw(client: SupabaseClient): Promise<WithdrawResult> {
+  const { data, error } = await client.functions.invoke("withdraw", { body: {} });
+  if (error) {
+    try {
+      const context = (error as { context?: Response }).context;
+      if (context) {
+        const body = (await context.json()) as { code?: WithdrawResult };
+        if (body.code) return body.code;
+      }
+    } catch {
+      // fall through
+    }
+    return "network_error";
+  }
+  return (data as { code?: WithdrawResult })?.code ?? "network_error";
 }

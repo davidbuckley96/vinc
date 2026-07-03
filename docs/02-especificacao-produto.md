@@ -162,10 +162,10 @@ ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
 - Multas são cobradas do saldo/forma de pagamento do anunciante infrator.
 - Todo movimento financeiro gera **registro imutável em ledger** (auditoria).
 
-### 5.2 Carteira (D-015 — a implementar)
+### 5.2 Carteira (D-015/D-021 — implementada; design: rodada 6, opção C)
 
-Reformulação da tela da carteira, que hoje confunde ao misturar "recebido"
-com "a receber":
+Duas abas ("Disponível" / "Em processamento"), saldo único em destaque,
+saque fixo embaixo e extrato na tela "Histórico". Regras:
 
 - A carteira destaca **um único saldo: o disponível para saque** — o total
   recebido desde o último saque. Serviços **ainda não prestados não
@@ -182,8 +182,10 @@ com "a receber":
     lançamento; demais opções (cartões, carteiras digitais como Mercado
     Pago/PicPay) seguem a direção de D-016 e a escolha do gateway (⚠️
     dúvida #17);
-  - **usado, integral ou parcialmente, para criar vagas**: o saldo abate o
-    total "você paga" e o restante (se houver) vem da forma de pagamento.
+  - **usado, integral ou parcialmente, para criar vagas**: a opção aparece
+    **na hora do pagamento do anúncio** (quadro da taxa), não como botão na
+    carteira (D-021). No MVP simulado o saldo é a própria forma de
+    pagamento; a escolha saldo × outro meio chega com o gateway (Fase 3).
 - O **extrato completo** (todos os pagamentos e recebimentos) sai da tela
   principal e fica atrás de um botão **"Ver histórico"**.
 

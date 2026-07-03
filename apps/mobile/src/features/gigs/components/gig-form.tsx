@@ -20,6 +20,7 @@ import {
 
 import { Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
+import { useWallet } from '@/features/wallet/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
 import { useCategories } from '../hooks';
@@ -85,6 +86,10 @@ export function GigForm({
   const theme = useTheme();
   const { session, userName } = useSession();
   const categories = useCategories();
+  // The wallet balance shows up at PAYMENT time (D-021): a line in the fee
+  // box tells the poster their balance covers (part of) this gig.
+  const wallet = useWallet();
+  const availableCents = wallet.data?.availableCents ?? 0;
 
   const days = useMemo(
     () =>
@@ -322,6 +327,14 @@ export function GigForm({
                   {formatBRL(pricing.totalCents)}
                 </Text>
               </View>
+              {availableCents > 0 && (
+                <Text style={[styles.feeNote, { color: theme.primarySoftMeta }]}>
+                  💰{' '}
+                  {availableCents >= pricing.totalCents
+                    ? `Pago com seu saldo Vinc (você tem ${formatBRL(availableCents)}).`
+                    : `Seu saldo Vinc de ${formatBRL(availableCents)} entra neste pagamento.`}
+                </Text>
+              )}
             </View>
           )}
         </>

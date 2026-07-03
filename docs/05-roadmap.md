@@ -18,7 +18,7 @@
 - [x] Bloqueio entre usuários (docs/02 §8) — botão no perfil público; vagas ocultas nas duas direções e candidatura impedida (verificado e2e); corte de mensagens entra junto com o chat
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
 - [x] Carteira simulada (ledger imutável + tela dois cartões, D-008) com multa do anunciante (cancel-gig, D-018: 25% piso R$ 10, 80% ao prestador lesado), verificado e2e — reformulação da tela vem com D-015
-- [ ] Reformulação da carteira (D-015, docs/02 §5.2): só o saldo disponível em destaque (recebido desde o último saque); serviço concluído entra na hora numa seção "Em processamento" com prazo de 7 dias (D-016); extrato completo atrás de "Ver histórico"; serviços não prestados fora da carteira; saldo usável integral/parcialmente na criação de vagas. (Pedido de reembolso dentro do prazo → processo de disputas, Fase 2; saque real via Pix → Fase 3)
+- [x] Reformulação da carteira (D-015/D-021, docs/02 §5.2, rodada 6 opção C): saldo único (recebido desde o último saque), abas Disponível/Em processamento (7 dias derivados do ledger, D-016), tela Histórico, saque simulado via função `withdraw` (verificado e2e), saldo aparece no pagamento do anúncio. (Pedido de reembolso dentro do prazo → disputas, Fase 2; Pix real → Fase 3)
 - [~] Taxa de serviço na criação da vaga (D-013) — IMPLEMENTADO: pagamento antecipado via create-gig (taxa 10%-exemplo + escrow do líquido), taxa explícita na criação, prévia e busca com o líquido, reembolso do líquido na exclusão (delete-gig), tudo verificado e2e; FALTA: reembolso na expiração da vaga (job de expiração ainda não existe)
 - [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
 - [ ] Localização por mapa (pino arrastável + busca no mapa ao anunciar; modal de mapa ao ver a vaga — docs/02 §2.1; requer provedor de mapas, ver dúvidas #15)
@@ -103,9 +103,12 @@ revisados antes de abrir o app ao público:
   valor do prestador, cobra 25% (piso R$ 10) e credita 80% ao prestador
   lesado; delete-gig recusa vagas pós-aprovação (sem fugir da multa);
   botão "Cancelar serviço" com aviso da multa e confirmação em dois toques.
+- **Carteira nova (D-021) no ar**: derivação pura dos 7 dias no ledger
+  (sem job), função `withdraw` deployada (saque simulado zera o
+  disponível, respeitando o processamento — verificado e2e), tela com
+  abas + histórico separado, saldo exibido no pagamento do anúncio.
 - **Faltam na Fase 1**: expiração de vaga com reembolso; punição de
-  reputação do prestador que cancela (dúvida #5); reformulação da carteira (D-015, docs/02
-  §5.2: saldo único + "em processamento" + histórico — rodada de design
-  antes); localização por mapa (docs/02 §2.1, rodada de design + provedor,
-  dúvida #15); mensagens no app (chat simples, respeitando bloqueios);
-  filtro de busca por horário; revisão final de paridade web/mobile.
+  reputação do prestador que cancela (dúvida #5); localização por mapa
+  (docs/02 §2.1, rodada de design + provedor, dúvida #15); mensagens no
+  app (chat simples, respeitando bloqueios); filtro de busca por horário;
+  revisão final de paridade web/mobile.

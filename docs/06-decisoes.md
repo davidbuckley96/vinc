@@ -249,3 +249,17 @@ volta R$ 75), e o prestador lesado **é pago diretamente** na sua parte
 vaga de valor mínimo (R$ 10), a multa consome todo o reembolso e nenhum
 lançamento de reembolso é criado. A mecânica 25%/piso/80-20 de D-018
 continua igual — muda a forma de lançar e apresentar.
+
+## D-021 — Carteira: escolhida a Opção C da rodada 6 (abas), saldo entra no pagamento
+**Data:** 2026-07-03 · **Decidido por:** David
+
+Da rodada 6 (`docs/design/rodada-06-carteira.html`), David escolheu a
+**Opção C — duas abas** ("Disponível" e "Em processamento"), **sem** o
+botão "Usar saldo ao anunciar": o saldo aparece **na hora do pagamento do
+anúncio** (quadro da taxa na criação da vaga). Implementação: saldo único
+em destaque ("recebido desde o último saque"), abas com as listas, botão
+"Sacar via Pix" fixo embaixo (saque simulado no MVP via função `withdraw`,
+que zera o disponível), extrato completo na tela "Histórico". A liberação
+dos 7 dias (D-016) é DERIVADA do ledger (`created_at + 7 dias`), sem job:
+`escrow_release` recente conta como "em processamento"; compensações,
+reembolsos e demais lançamentos entram no disponível imediatamente.

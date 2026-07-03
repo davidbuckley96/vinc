@@ -1,91 +1,142 @@
 import { useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { LedgerEntry } from '@vinc/api';
-import { formatBRL } from '@vinc/core';
+import { formatBRL, PROCESSING_HOLD_DAYS } from '@vinc/core';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
 import { useTheme } from '@/hooks/use-theme';
 
-import { useWallet } from '../hooks';
+import { useWallet, useWithdraw } from '../hooks';
+import { entryLabel, receivedLabel, releaseLabel } from '../labels';
 
-const ENTRY_LABELS: Record<LedgerEntry['type'], string> = {
-  escrow_release: 'pagamento recebido',
-  escrow_hold: 'valor reservado',
-  fee: 'taxa da plataforma',
-  fine: 'multa',
-  refund: 'reembolso',
-  withdrawal: 'saque',
-};
+type Tab = 'available' | 'processing';
 
-function dayLabel(iso: string): string {
-  const date = new Date(iso);
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
-  const same = (a: Date, b: Date) =>
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-  if (same(date, today)) return 'HOJE';
-  if (same(date, yesterday)) return 'ONTEM';
-  return new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
-    .format(date)
-    .toUpperCase();
-}
-
-/** Wallet — two cards (available / incoming) + day-grouped ledger (D-008). */
+/**
+ * Wallet — D-021 (round 6, option C): one big withdrawable balance,
+ * "Disponível" / "Em processamento" tabs, full statement behind
+ * "Ver histórico" and the withdraw action pinned at the bottom. Future
+ * services never show up here (they live in the agenda).
+ */
 export function WalletScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { status } = useSession();
   const wallet = useWallet();
+  const withdrawal = useWithdraw();
 
-  const groups: { label: string; entries: LedgerEntry[] }[] = [];
-  for (const entry of wallet.data?.entries ?? []) {
-    const label = dayLabel(entry.createdAt);
-    const last = groups[groups.length - 1];
-    if (last && last.label === label) last.entries.push(entry);
-    else groups.push({ label, entries: [entry] });
-  }
+  const [tab, setTab] = useState<Tab>('available');
+  const [withdrawArmed, setWithdrawArmed] = useState(false);
+  const [feedback, setFeedback] = useState<{ kind: 'error' | 'success'; text: string } | null>(
+    null,
+  );
+
+  const data = wallet.data;
+  const canWithdraw = (data?.availableCents ?? 0) > 0 && status !== 'signedOut';
+
+  const doWithdraw = async () => {
+    if (!data) return;
+    if (!withdrawArmed) {
+      setWithdrawArmed(true);
+      return;
+    }
+    setFeedback(null);
+    setWithdrawArmed(false);
+    const amount = data.availableCents;
+    const result = await withdrawal.mutateAsync();
+    if (result === 'withdrawn') {
+      setFeedback({
+        kind: 'success',
+        text:
+          status === 'unconfigured'
+            ? 'Modo demonstração: o saque seria feito agora.'
+            : `Saque de ${formatBRL(amount)} realizado (simulado — o Pix real chega com os pagamentos de verdade).`,
+      });
+    } else if (result === 'nothing_to_withdraw') {
+      setFeedback({ kind: 'error', text: 'Nada para sacar ainda.' });
+    } else {
+      setFeedback({ kind: 'error', text: 'Não foi possível sacar agora. Tente de novo.' });
+    }
+  };
+
+  const tabStyle = (active: boolean) => [
+    styles.tab,
+    active && { backgroundColor: theme.background, ...styles.tabActive },
+  ];
+  const tabLabelStyle = (active: boolean) => [
+    styles.tabLabel,
+    { color: active ? theme.primarySoftText : theme.textSecondary },
+  ];
 
   return (
     <View style={[styles.root, { backgroundColor: theme.background }]}>
       <View style={styles.column}>
         <View style={[styles.header, { backgroundColor: theme.primary }]}>
           <SafeAreaView edges={['top']}>
-            <Text style={[styles.headerTitle, { color: theme.onPrimary }]}>Carteira</Text>
+            <View style={styles.headerRow}>
+              <Text style={[styles.headerTitle, { color: theme.onPrimary }]}>Carteira</Text>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push('/wallet-history')}
+                style={styles.historyPill}>
+                <Text style={[styles.historyLabel, { color: theme.onPrimary }]}>
+                  Ver histórico
+                </Text>
+              </Pressable>
+            </View>
           </SafeAreaView>
         </View>
 
-        <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-          {wallet.isLoading && <ActivityIndicator color={theme.primary} />}
-          {wallet.isError && (
-            <Text style={[styles.feedback, { color: theme.danger }]}>
-              Não foi possível carregar sua carteira. Verifique sua conexão.
-            </Text>
-          )}
+        {wallet.isLoading && <ActivityIndicator color={theme.primary} style={styles.loading} />}
+        {wallet.isError && (
+          <Text style={[styles.feedback, { color: theme.danger }]}>
+            Não foi possível carregar sua carteira. Verifique sua conexão.
+          </Text>
+        )}
 
-          {wallet.data && (
-            <>
-              <View style={styles.cards}>
-                <View style={[styles.card, { backgroundColor: theme.primarySoft }]}>
-                  <Text style={[styles.cardLabel, { color: theme.primarySoftMeta }]}>
-                    DISPONÍVEL
-                  </Text>
-                  <Text style={[styles.cardValue, { color: theme.primarySoftText }]}>
-                    {formatBRL(wallet.data.balanceCents)}
-                  </Text>
-                </View>
-                <View style={[styles.card, { backgroundColor: theme.backgroundElement }]}>
-                  <Text style={[styles.cardLabel, { color: theme.success }]}>A RECEBER</Text>
-                  <Text style={[styles.cardValue, { color: theme.success }]}>
-                    {formatBRL(wallet.data.pendingCents)}
-                  </Text>
-                </View>
-              </View>
+        {data && (
+          <>
+            <View style={styles.balanceBlock}>
+              <Text style={[styles.balanceLabel, { color: theme.primarySoftMeta }]}>
+                DISPONÍVEL PARA SACAR
+              </Text>
+              <Text style={[styles.balanceValue, { color: theme.text }]}>
+                {formatBRL(data.availableCents)}
+              </Text>
+              <Text style={[styles.balanceCaption, { color: theme.textSecondary }]}>
+                recebido desde o seu último saque
+              </Text>
+            </View>
 
-              {status === 'signedOut' && (
+            <View style={[styles.tabs, { backgroundColor: theme.backgroundElement }]}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setTab('available')}
+                style={tabStyle(tab === 'available')}>
+                <Text style={tabLabelStyle(tab === 'available')}>Disponível</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setTab('processing')}
+                style={tabStyle(tab === 'processing')}>
+                <Text style={tabLabelStyle(tab === 'processing')}>
+                  Em processamento{' '}
+                  {data.processingEntries.length > 0 ? `(${data.processingEntries.length})` : ''}
+                </Text>
+              </Pressable>
+            </View>
+
+            <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+              {status === 'signedOut' ? (
                 <Pressable
                   accessibilityRole="button"
                   onPress={() => router.push('/auth')}
@@ -94,57 +145,111 @@ export function WalletScreen() {
                     Entre para ver sua carteira
                   </Text>
                 </Pressable>
-              )}
-
-              {groups.length === 0 && status !== 'signedOut' ? (
-                <Text style={[styles.feedback, { color: theme.textSecondary }]}>
-                  Seu extrato aparece aqui: aceite um serviço ou anuncie uma vaga para
-                  começar.
-                </Text>
-              ) : (
-                groups.map((group) => (
-                  <View key={group.label} style={styles.group}>
-                    <Text style={[styles.groupLabel, { color: theme.textSecondary }]}>
-                      {group.label}
-                    </Text>
-                    {group.entries.map((entry) => (
-                      <View
-                        key={entry.id}
-                        style={[styles.entry, { borderBottomColor: theme.line }]}>
-                        <View style={styles.entryInfo}>
-                          <Text
-                            style={[styles.entryTitle, { color: theme.text }]}
-                            numberOfLines={1}>
-                            {entry.gigTitle ?? 'Movimentação'}
-                          </Text>
-                          <Text style={[styles.entryMeta, { color: theme.textSecondary }]}>
-                            {entry.type === 'fine' && entry.amountCents > 0
-                              ? 'compensação por cancelamento'
-                              : ENTRY_LABELS[entry.type]}
-                          </Text>
-                        </View>
+              ) : tab === 'available' ? (
+                data.availableEntries.length === 0 ? (
+                  <Text style={[styles.feedback, { color: theme.textSecondary }]}>
+                    Nada por aqui desde o seu último saque. Conclua um serviço para receber.
+                  </Text>
+                ) : (
+                  data.availableEntries.map((entry) => (
+                    <View
+                      key={entry.id}
+                      style={[styles.entry, { borderBottomColor: theme.line }]}>
+                      <View style={styles.entryInfo}>
                         <Text
-                          style={[
-                            styles.entryValue,
-                            { color: entry.amountCents >= 0 ? theme.success : theme.danger },
-                          ]}>
-                          {entry.amountCents >= 0 ? '+ ' : '− '}
-                          {formatBRL(Math.abs(entry.amountCents))}
+                          style={[styles.entryTitle, { color: theme.text }]}
+                          numberOfLines={1}>
+                          {entry.gigTitle ?? 'Movimentação'}
+                        </Text>
+                        <Text style={[styles.entryMeta, { color: theme.textSecondary }]}>
+                          {entry.type === 'escrow_release'
+                            ? receivedLabel(entry.createdAt, true)
+                            : `${entryLabel(entry)} · ${receivedLabel(entry.createdAt, false)}`}
                         </Text>
                       </View>
-                    ))}
-                  </View>
-                ))
+                      <Text style={[styles.entryValue, { color: theme.success }]}>
+                        + {formatBRL(entry.amountCents)}
+                      </Text>
+                    </View>
+                  ))
+                )
+              ) : data.processingEntries.length === 0 ? (
+                <Text style={[styles.feedback, { color: theme.textSecondary }]}>
+                  Nenhum valor em processamento. Pagamentos de serviços concluídos ficam aqui
+                  por {PROCESSING_HOLD_DAYS} dias antes de liberar.
+                </Text>
+              ) : (
+                <>
+                  {data.processingEntries.map((entry) => (
+                    <View
+                      key={entry.id}
+                      style={[styles.entry, { borderBottomColor: theme.line }]}>
+                      <View style={styles.entryInfo}>
+                        <Text
+                          style={[styles.entryTitle, { color: theme.text }]}
+                          numberOfLines={1}>
+                          {entry.gigTitle ?? 'Movimentação'}
+                        </Text>
+                        <Text style={[styles.entryMeta, { color: theme.warning }]}>
+                          {releaseLabel(entry.releasesAt)}
+                        </Text>
+                      </View>
+                      <Text style={[styles.entryValue, { color: theme.warning }]}>
+                        {formatBRL(entry.amountCents)}
+                      </Text>
+                    </View>
+                  ))}
+                  <Text style={[styles.holdNote, { color: theme.textSecondary }]}>
+                    Serviços concluídos ficam {PROCESSING_HOLD_DAYS} dias em processamento e
+                    liberam sozinhos.
+                  </Text>
+                </>
               )}
 
-              <View style={[styles.withdraw, { backgroundColor: theme.backgroundSelected }]}>
-                <Text style={[styles.withdrawLabel, { color: theme.textSecondary }]}>
-                  Sacar para minha conta (em breve)
+              {feedback && (
+                <Text
+                  style={[
+                    styles.feedback,
+                    { color: feedback.kind === 'error' ? theme.danger : theme.success },
+                  ]}>
+                  {feedback.text}
                 </Text>
+              )}
+            </ScrollView>
+
+            {status !== 'signedOut' && (
+              <View style={styles.footer}>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={!canWithdraw || withdrawal.isPending}
+                  onPress={doWithdraw}
+                  style={[
+                    styles.withdraw,
+                    {
+                      backgroundColor: canWithdraw ? theme.primary : theme.backgroundSelected,
+                      opacity: withdrawal.isPending ? 0.7 : 1,
+                    },
+                  ]}>
+                  {withdrawal.isPending ? (
+                    <ActivityIndicator color={theme.onPrimary} />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.withdrawLabel,
+                        { color: canWithdraw ? theme.onPrimary : theme.textSecondary },
+                      ]}>
+                      {!canWithdraw
+                        ? 'Nada para sacar ainda'
+                        : withdrawArmed
+                          ? `Confirmar saque de ${formatBRL(data.availableCents)}`
+                          : 'Sacar via Pix'}
+                    </Text>
+                  )}
+                </Pressable>
               </View>
-            </>
-          )}
-        </ScrollView>
+            )}
+          </>
+        )}
       </View>
     </View>
   );
@@ -164,96 +269,136 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: Radius.xlarge,
     borderBottomRightRadius: Radius.xlarge,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.two,
     paddingBottom: Spacing.three,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  historyPill: {
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.two + 2,
+    paddingVertical: 5,
+  },
+  historyLabel: {
+    fontSize: 11.5,
+    fontWeight: '700',
+  },
+  loading: {
+    marginTop: Spacing.four,
+  },
+  balanceBlock: {
+    alignItems: 'center',
+    paddingTop: Spacing.three,
+    paddingBottom: Spacing.two,
+    gap: 2,
+  },
+  balanceLabel: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  balanceValue: {
+    fontSize: 38,
+    fontWeight: '800',
+    letterSpacing: -1,
+  },
+  balanceCaption: {
+    fontSize: 11.5,
+  },
+  tabs: {
+    flexDirection: 'row',
+    marginHorizontal: Spacing.three,
+    borderRadius: Radius.medium,
+    padding: 3,
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: Radius.medium - 3,
+  },
+  tabActive: {
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
+  },
+  tabLabel: {
+    fontSize: 12.5,
+    fontWeight: '700',
   },
   scroll: {
     flex: 1,
   },
   content: {
     padding: Spacing.three,
-    gap: Spacing.two + 2,
-    paddingBottom: Spacing.five,
-  },
-  cards: {
-    flexDirection: 'row',
-    gap: Spacing.two + 2,
-  },
-  card: {
-    flex: 1,
-    borderRadius: Radius.large,
-    padding: Spacing.three,
-    gap: 2,
-  },
-  cardLabel: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  cardValue: {
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  signIn: {
-    borderRadius: Radius.medium,
-    paddingVertical: 13,
-    alignItems: 'center',
-  },
-  signInLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  feedback: {
-    fontSize: 13.5,
-    lineHeight: 20,
-    textAlign: 'center',
-    paddingVertical: Spacing.two,
-  },
-  group: {
-    gap: 2,
-  },
-  groupLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-    marginTop: Spacing.one,
-    marginBottom: 2,
+    paddingTop: Spacing.two,
   },
   entry: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: Spacing.two + 1,
+    paddingVertical: Spacing.two + 2,
     borderBottomWidth: 1,
-    gap: Spacing.three,
+    gap: Spacing.two,
   },
   entryInfo: {
     flex: 1,
   },
   entryTitle: {
-    fontSize: 13.5,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
   },
   entryMeta: {
-    fontSize: 11.5,
+    fontSize: 12,
     marginTop: 1,
   },
   entryValue: {
-    fontSize: 13.5,
+    fontSize: 14.5,
     fontWeight: '800',
   },
-  withdraw: {
-    borderRadius: Radius.medium,
-    paddingVertical: 13,
+  holdNote: {
+    fontSize: 11.5,
+    textAlign: 'center',
+    lineHeight: 16.5,
+    marginTop: Spacing.two + 2,
+  },
+  feedback: {
+    fontSize: 13.5,
+    fontWeight: '600',
+    textAlign: 'center',
+    padding: Spacing.two,
+    lineHeight: 19,
+  },
+  signIn: {
+    borderRadius: Radius.large - 2,
+    paddingVertical: 14,
     alignItems: 'center',
-    marginTop: Spacing.two,
+  },
+  signInLabel: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  footer: {
+    padding: Spacing.three,
+    paddingTop: Spacing.one,
+  },
+  withdraw: {
+    borderRadius: Radius.large - 2,
+    paddingVertical: 14,
+    alignItems: 'center',
   },
   withdrawLabel: {
-    fontSize: 13.5,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
   },
 });
