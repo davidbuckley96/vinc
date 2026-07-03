@@ -74,4 +74,17 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     counterpartId: null,
     counterpartName: null,
   },
+  '6': {
+    id: '6',
+    title: 'Fotógrafo para evento (minha vaga)',
+    description: 'Cobertura de 3 horas de um evento corporativo.',
+    status: 'accepted',
+    role: 'poster',
+    startsAt: inDays(4, 9),
+    endsAt: inDays(4, 12),
+    priceCents: 24000,
+    address: 'Centro de Convenções',
+    counterpartId: 'demo-joao',
+    counterpartName: 'João Pedro',
+  },
 };

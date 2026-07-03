@@ -285,6 +285,43 @@ export async function updateGig(
   return (data as { code?: UpdateGigResult })?.code ?? "network_error";
 }
 
+export type CancelGigResult =
+  | "cancelled"
+  | "unauthorized"
+  | "not_found"
+  | "forbidden"
+  | "not_cancellable"
+  | "state_changed"
+  | "invalid_request"
+  | "network_error";
+
+/**
+ * Cancels an own gig AFTER approval (cancel-gig Edge Function): the worker
+ * amount returns to the poster and the D-018 fine is charged — 25% of the
+ * worker amount (min R$ 10), 80% of it paid to the harmed worker.
+ */
+export async function cancelGig(
+  client: SupabaseClient,
+  gigId: string,
+): Promise<CancelGigResult> {
+  const { data, error } = await client.functions.invoke("cancel-gig", {
+    body: { gigId },
+  });
+  if (error) {
+    try {
+      const context = (error as { context?: Response }).context;
+      if (context) {
+        const body = (await context.json()) as { code?: CancelGigResult };
+        if (body.code) return body.code;
+      }
+    } catch {
+      // fall through
+    }
+    return "network_error";
+  }
+  return (data as { code?: CancelGigResult })?.code ?? "network_error";
+}
+
 export type CreateGigResult = "created" | "unauthorized" | "invalid_draft" | "invalid_request" | "network_error";
 
 /**

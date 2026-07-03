@@ -20,3 +20,31 @@ export function computeGigPricing(netCents: number): GigPricing {
   const feeCents = Math.round(netCents * PLATFORM_FEE_RATE);
   return { netCents, feeCents, totalCents: netCents + feeCents };
 }
+
+/**
+ * Poster cancellation fine (docs/02 §3, D-018): cancelling after approving
+ * a candidate costs 25% of the worker amount (min R$ 10), charged on top
+ * of the (refunded) worker amount. 80% compensates the harmed worker, 20%
+ * stays with the platform.
+ */
+export const CANCELLATION_FINE_RATE = 0.25;
+export const CANCELLATION_FINE_FLOOR_CENTS = 1000;
+export const CANCELLATION_FINE_WORKER_SHARE = 0.8;
+
+export interface CancellationFine {
+  /** Total charged from the poster. */
+  fineCents: number;
+  /** Portion paid to the harmed worker (80%). */
+  workerShareCents: number;
+  /** Portion kept by the platform (20%). */
+  platformShareCents: number;
+}
+
+export function computeCancellationFine(netCents: number): CancellationFine {
+  const fineCents = Math.max(
+    Math.round(netCents * CANCELLATION_FINE_RATE),
+    CANCELLATION_FINE_FLOOR_CENTS,
+  );
+  const workerShareCents = Math.round(fineCents * CANCELLATION_FINE_WORKER_SHARE);
+  return { fineCents, workerShareCents, platformShareCents: fineCents - workerShareCents };
+}

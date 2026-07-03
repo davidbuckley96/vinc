@@ -17,7 +17,7 @@
 - [x] Candidatura com aprovação do anunciante (modelo Uber, docs/02 §3, D-012) — trava atômica de 1 candidato; recusa sem multa reabre a vaga e bloqueia o candidato só para ela; escrow retido na aprovação; verificado e2e (14 checagens)
 - [x] Bloqueio entre usuários (docs/02 §8) — botão no perfil público; vagas ocultas nas duas direções e candidatura impedida (verificado e2e); corte de mensagens entra junto com o chat
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
-- [~] Carteira simulada (ledger imutável + tela dois cartões, D-008); falta a multa do anunciante (cancelamento pós-aprovação)
+- [x] Carteira simulada (ledger imutável + tela dois cartões, D-008) com multa do anunciante (cancel-gig, D-018: 25% piso R$ 10, 80% ao prestador lesado), verificado e2e — reformulação da tela vem com D-015
 - [ ] Reformulação da carteira (D-015, docs/02 §5.2): só o saldo disponível em destaque (recebido desde o último saque); serviço concluído entra na hora numa seção "Em processamento" com prazo de 7 dias (D-016); extrato completo atrás de "Ver histórico"; serviços não prestados fora da carteira; saldo usável integral/parcialmente na criação de vagas. (Pedido de reembolso dentro do prazo → processo de disputas, Fase 2; saque real via Pix → Fase 3)
 - [~] Taxa de serviço na criação da vaga (D-013) — IMPLEMENTADO: pagamento antecipado via create-gig (taxa 10%-exemplo + escrow do líquido), taxa explícita na criação, prévia e busca com o líquido, reembolso do líquido na exclusão (delete-gig), tudo verificado e2e; FALTA: reembolso na expiração da vaga (job de expiração ainda não existe)
 - [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
@@ -98,8 +98,13 @@ revisados antes de abrir o app ao público:
   política de UPDATE do cliente removida (migrations 0007–0008 aplicadas);
   cartão "Vaga publicada" com botões Editar/Excluir e tela de edição com
   formulário compartilhado (GigForm).
-- **Faltam na Fase 1**: cancelamento com multa do anunciante (dúvida #1);
-  expiração de vaga com reembolso; reformulação da carteira (D-015, docs/02
+- **Cancelamento com multa (D-018) no ar**: cancel-gig deployada — só o
+  anunciante, só pós-aprovação (aceito/em andamento), atômica; devolve o
+  valor do prestador, cobra 25% (piso R$ 10) e credita 80% ao prestador
+  lesado; delete-gig recusa vagas pós-aprovação (sem fugir da multa);
+  botão "Cancelar serviço" com aviso da multa e confirmação em dois toques.
+- **Faltam na Fase 1**: expiração de vaga com reembolso; punição de
+  reputação do prestador que cancela (dúvida #5); reformulação da carteira (D-015, docs/02
   §5.2: saldo único + "em processamento" + histórico — rodada de design
   antes); localização por mapa (docs/02 §2.1, rodada de design + provedor,
   dúvida #15); mensagens no app (chat simples, respeitando bloqueios);

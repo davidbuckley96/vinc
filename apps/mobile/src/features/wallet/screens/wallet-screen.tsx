@@ -118,7 +118,9 @@ export function WalletScreen() {
                             {entry.gigTitle ?? 'Movimentação'}
                           </Text>
                           <Text style={[styles.entryMeta, { color: theme.textSecondary }]}>
-                            {ENTRY_LABELS[entry.type]}
+                            {entry.type === 'fine' && entry.amountCents > 0
+                              ? 'compensação por cancelamento'
+                              : ENTRY_LABELS[entry.type]}
                           </Text>
                         </View>
                         <Text

@@ -6,9 +6,9 @@
 
 ## Produto / regras de negócio
 
-1. 🔴 **Multa do anunciante** (exclui vaga ou rejeita prestador pós-aceite):
-   valor fixo ou % do serviço? Qual? Para onde vai a multa (plataforma,
-   prestador lesado, ou dividido)?
+1. ~~🔴 **Multa do anunciante**~~ ✅ Respondida em 2026-07-03: **25% do
+   valor do prestador, piso de R$ 10; 80% para o prestador lesado, 20%
+   para a plataforma** (ver `06-decisoes.md` D-018).
 2. 🟡 **Taxa da plataforma:** o MODELO foi decidido (D-013: paga pelo
    anunciante na criação, não reembolsável, prestador vê o líquido). Falta
    definir o **percentual/fórmula** — 10% está em uso como exemplo.

@@ -67,5 +67,13 @@ export function getMockCommitments(today: Date): AgendaCommitment[] {
       endsAt: at(today, 19),
       priceCents: 5000,
     },
+    {
+      id: '6',
+      title: 'Fotógrafo para evento (minha vaga)',
+      role: 'poster',
+      startsAt: at(addDays(today, 4), 9),
+      endsAt: at(addDays(today, 4), 12),
+      priceCents: 24000,
+    },
   ];
 }

@@ -211,3 +211,17 @@ edição/exclusão via Edge Functions; política de UPDATE do cliente removida
 (migration 0007 — fechava brecha de editar `price_cents` direto);
 migration 0008 ajusta a invariante de `worker_id` para permitir cancelar
 vaga que nunca teve prestador.
+
+## D-018 — Multa de cancelamento pós-aprovação: 25% (piso R$ 10), 80% ao prestador
+**Data:** 2026-07-03 · **Decidido por:** David
+
+Quando o anunciante cancela um serviço **depois de aprovar o candidato**
+(aceito ou em andamento): o valor do prestador volta para o anunciante (o
+serviço não vai acontecer; a taxa da criação continua com a empresa) e uma
+**multa de 25% do valor do prestador, com piso de R$ 10**, é cobrada por
+cima. Do valor da multa, **80% compensa o prestador lesado** (que bloqueou
+o horário na agenda) e **20% fica com a plataforma**. Exemplo: vaga de
+R$ 100 cancelada → anunciante recebe os R$ 100 de volta, paga R$ 25 de
+multa; prestador recebe R$ 20; plataforma fica com R$ 5 (+ R$ 10 da taxa).
+Excluir a vaga (delete-gig) segue impossível após a aprovação — o único
+caminho é o cancelamento com multa. Fecha a dúvida #1.

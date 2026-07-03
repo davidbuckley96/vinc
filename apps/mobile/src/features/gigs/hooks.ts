@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   applyGig,
+  cancelGig,
   createGig,
   deleteGig,
   fetchCategories,
@@ -9,6 +10,7 @@ import {
   fetchOpenGigs,
   updateGig,
   type ApplyGigResult,
+  type CancelGigResult,
   type CreateGigResult,
   type DeleteGigResult,
   type UpdateGigResult,
@@ -74,6 +76,23 @@ export function useDeleteGig() {
     },
     onSuccess: (result) => {
       if (result === 'deleted') {
+        queryClient.invalidateQueries({ queryKey: ['gigs'] });
+        queryClient.invalidateQueries({ queryKey: ['agenda'] });
+        queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      }
+    },
+  });
+}
+
+export function useCancelGig() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (gigId: string): Promise<CancelGigResult> => {
+      if (!supabase) return 'cancelled'; // demo mode: pretend success
+      return cancelGig(supabase, gigId);
+    },
+    onSuccess: (result) => {
+      if (result === 'cancelled') {
         queryClient.invalidateQueries({ queryKey: ['gigs'] });
         queryClient.invalidateQueries({ queryKey: ['agenda'] });
         queryClient.invalidateQueries({ queryKey: ['wallet'] });

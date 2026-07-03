@@ -14,13 +14,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ServiceDetail } from '@vinc/api';
 import {
   allowedLifecycleAction,
+  computeCancellationFine,
   formatBRL,
   posterCanEdit,
+  posterCancellationIncursFine,
   type GigStatus,
 } from '@vinc/core';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
-import { useDeleteGig } from '@/features/gigs/hooks';
+import { useCancelGig, useDeleteGig } from '@/features/gigs/hooks';
 import { useHasReviewed } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -140,10 +142,35 @@ export function ServiceDetailScreen() {
   const candidacy = useRespondCandidacy(id);
   const reviewed = useHasReviewed(id);
   const deletion = useDeleteGig();
+  const cancellation = useCancelGig();
   const [error, setError] = useState<string | null>(null);
   const [candidacyNote, setCandidacyNote] = useState<string | null>(null);
   const [deleteArmed, setDeleteArmed] = useState(false);
   const [deletedNote, setDeletedNote] = useState<string | null>(null);
+  const [cancelArmed, setCancelArmed] = useState(false);
+  const [cancelledNote, setCancelledNote] = useState<string | null>(null);
+
+  const cancelWithFine = async () => {
+    if (!service.data) return;
+    if (!cancelArmed) {
+      setCancelArmed(true);
+      return;
+    }
+    setError(null);
+    const result = await cancellation.mutateAsync(service.data.id);
+    setCancelArmed(false);
+    if (result === 'cancelled') {
+      const fine = computeCancellationFine(service.data.priceCents);
+      setCancelledNote(
+        `Serviço cancelado. ${formatBRL(service.data.priceCents)} voltaram para a sua carteira e a multa de ${formatBRL(fine.fineCents)} foi cobrada.`,
+      );
+      setTimeout(() => router.back(), 1800);
+    } else if (result === 'not_cancellable' || result === 'state_changed') {
+      setError('Este serviço não pode mais ser cancelado — atualize e tente de novo.');
+    } else {
+      setError('Não foi possível cancelar agora. Tente de novo.');
+    }
+  };
 
   const removeGig = async () => {
     if (!service.data) return;
@@ -364,6 +391,50 @@ export function ServiceDetailScreen() {
                 </View>
               )}
 
+            {cancelledNote && (
+              <Text style={[styles.error, { color: theme.success }]}>{cancelledNote}</Text>
+            )}
+            {data.role === 'poster' &&
+              posterCancellationIncursFine(data.status as GigStatus) &&
+              !cancelledNote && (
+                <View style={styles.cancelBlock}>
+                  {cancelArmed && (
+                    <Text style={[styles.fineWarning, { color: theme.danger }]}>
+                      Cancelar agora tem multa de{' '}
+                      {formatBRL(computeCancellationFine(data.priceCents).fineCents)} (25%,
+                      mínimo R$ 10) —{' '}
+                      {formatBRL(computeCancellationFine(data.priceCents).workerShareCents)} vão
+                      para {data.counterpartName ?? 'o prestador'}. Os{' '}
+                      {formatBRL(data.priceCents)} do serviço voltam para você.
+                    </Text>
+                  )}
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={cancellation.isPending}
+                    onPress={cancelWithFine}
+                    style={[
+                      styles.action,
+                      styles.refuseButton,
+                      {
+                        borderColor: theme.danger,
+                        backgroundColor: cancelArmed ? theme.danger : theme.background,
+                      },
+                    ]}>
+                    {cancellation.isPending ? (
+                      <ActivityIndicator color={theme.danger} />
+                    ) : (
+                      <Text
+                        style={[
+                          styles.actionLabel,
+                          { color: cancelArmed ? theme.onPrimary : theme.danger },
+                        ]}>
+                        {cancelArmed ? 'Confirmar cancelamento (com multa)' : 'Cancelar serviço'}
+                      </Text>
+                    )}
+                  </Pressable>
+                </View>
+              )}
+
             {card.actionLabel && (
               <Pressable
                 accessibilityRole="button"
@@ -514,5 +585,15 @@ const styles = StyleSheet.create({
   actionLabel: {
     fontSize: 15.5,
     fontWeight: '800',
+  },
+  cancelBlock: {
+    marginTop: Spacing.two,
+  },
+  fineWarning: {
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18.5,
+    textAlign: 'center',
+    paddingHorizontal: Spacing.two,
   },
 });
