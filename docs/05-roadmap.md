@@ -19,7 +19,7 @@
   `supabase functions deploy accept-gig` (requer Supabase CLI logada)
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
 - [~] Carteira simulada: escrow no aceite e liberação na confirmação prontos (ledger imutável + tela dois cartões, D-008); falta a multa do anunciante (cancelamento pós-aceite)
-- [ ] Avaliações mútuas (1–5) e reputação no perfil público
+- [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
 - [ ] Localização por mapa (pino arrastável + busca no mapa ao anunciar; modal de mapa ao ver a vaga — docs/02 §2.1; requer provedor de mapas, ver dúvidas #15)
 - [ ] Web e mobile funcionando com paridade
 
@@ -133,5 +133,11 @@ revisados antes de abrir o app ao público:
   (hold no aceite, ações por papel/ordem, release na confirmação, RLS);
   telas do serviço ("uma ação por vez") e da Carteira (dois cartões +
   extrato por dia) implementadas e verificadas com screenshots.
-- Próximos passos da Fase 1: avaliações mútuas (1–5) e reputação no perfil;
-  cancelamento com multa do anunciante; editar/excluir vaga própria.
+- Avaliações entregues (D-009): migrations 0003/0004 aplicadas ao banco
+  real (reviews imutáveis com RLS de participante + view profile_stats),
+  tela de avaliação híbrida (estrelas com rótulo, marcadores que mudam com
+  a nota e com o papel, comentário opcional) e perfil com reputação por
+  papel + avaliações recentes; verificado com screenshots.
+- Próximos passos da Fase 1: cancelamento com multa do anunciante;
+  editar/excluir vaga própria; localização por mapa (docs/02 §2.1 — rodada
+  de design + decisão do provedor, dúvida #15).
