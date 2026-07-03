@@ -17,13 +17,14 @@ interface Props {
   commitments: AgendaCommitment[];
   onSearchSlot: (hour: number) => void;
   onPostSlot: (hour: number) => void;
+  onOpenCommitment: (commitment: AgendaCommitment) => void;
 }
 
 /**
  * Day view: one row per hour. Busy hours show the commitment card; free hours
  * expand on tap into the two core actions (buscar serviço / anunciar vaga).
  */
-export function DayTimeline({ commitments, onSearchSlot, onPostSlot }: Props) {
+export function DayTimeline({ commitments, onSearchSlot, onPostSlot, onOpenCommitment }: Props) {
   const theme = useTheme();
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
 
@@ -47,7 +48,9 @@ export function DayTimeline({ commitments, onSearchSlot, onPostSlot }: Props) {
             </Text>
 
             {commitment ? (
-              <View
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => onOpenCommitment(commitment)}
                 style={[
                   styles.busy,
                   { backgroundColor: theme.primarySoft, borderLeftColor: theme.primary },
@@ -63,7 +66,7 @@ export function DayTimeline({ commitments, onSearchSlot, onPostSlot }: Props) {
                     : ''}
                   {commitment.role === 'poster' ? ' · minha vaga' : ''}
                 </Text>
-              </View>
+              </Pressable>
             ) : covering ? (
               <View style={[styles.covered, { backgroundColor: theme.primarySoft }]} />
             ) : selected ? (

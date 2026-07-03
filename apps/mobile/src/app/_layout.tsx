@@ -37,6 +37,7 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="auth" />
             <Stack.Screen name="gig/[id]" />
+            <Stack.Screen name="service/[id]" />
           </Stack>
         </ThemeProvider>
       </SessionProvider>
