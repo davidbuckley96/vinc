@@ -1,11 +1,3 @@
-import { PlaceholderScreen } from '@/components/placeholder-screen';
+import { WalletScreen } from '@/features/wallet/screens/wallet-screen';
 
-export default function WalletScreen() {
-  return (
-    <PlaceholderScreen
-      icon="wallet"
-      title="Carteira"
-      description="Aqui você vai acompanhar seus ganhos e receber pelos serviços concluídos. Em construção."
-    />
-  );
-}
+export default WalletScreen;
