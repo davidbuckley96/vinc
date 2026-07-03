@@ -33,6 +33,7 @@ const ERROR_MESSAGES: Record<GigDraftError, string> = {
   starts_in_past: 'Escolha um horário no futuro.',
   ends_before_starts: 'O fim precisa ser depois do início.',
   price_required: 'Diga quanto vai pagar.',
+  price_too_low: 'O valor mínimo de uma vaga é R$ 10,00.',
   address_required: 'Diga onde será o serviço.',
 };
 

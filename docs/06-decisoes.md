@@ -225,3 +225,15 @@ R$ 100 cancelada → anunciante recebe os R$ 100 de volta, paga R$ 25 de
 multa; prestador recebe R$ 20; plataforma fica com R$ 5 (+ R$ 10 da taxa).
 Excluir a vaga (delete-gig) segue impossível após a aprovação — o único
 caminho é o cancelamento com multa. Fecha a dúvida #1.
+
+## D-019 — Valor mínimo de vaga: R$ 10; multa apresentada como compensação
+**Data:** 2026-07-03 · **Decidido por:** David
+
+**Nenhuma vaga pode pagar menos de R$ 10** ao prestador: serviços
+quase-gratuitos abririam espaço para uso malicioso (ex.: publicar "vagas"
+como anúncios). O mínimo coincide com o piso da multa (D-018). Validação
+no formulário, nas functions (create/update) e constraint no banco
+(migration 0009). Além disso, o aviso de cancelamento NÃO expõe a divisão
+80/20 da multa (D-018, que segue valendo internamente): a interface
+apresenta **o valor total da multa como compensação pelo prestador
+lesado**.

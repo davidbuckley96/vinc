@@ -28,7 +28,7 @@ Campos essenciais:
 | Título curto | "Babá para 2 crianças" |
 | Descrição do serviço esperado | Texto livre, com o que deve ser feito |
 | Data e horário | dia X, 15h–22h |
-| Valor do serviço (BRL) | R$ 160,00 |
+| Valor do serviço (BRL) | R$ 160,00 — **mínimo R$ 10** (D-019, contra anúncios maliciosos quase-grátis) |
 | Local | Escolhido **no mapa** (ver §2.1) — nível de detalhe exibido antes do aceite ⚠️ em aberto |
 
 ### 2.1 Localização por mapa (definido pelo David em 2026-07-03)
@@ -82,7 +82,9 @@ ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
 
 - O prestador **se candidata** a uma vaga ABERTA com poucos cliques. A
   candidatura deve ser **atômica** no backend: no momento em que existe um
-  candidato, a vaga sai da busca e **ninguém mais pode se candidatar**.
+  candidato, **a vaga deixa de aparecer na busca para todos** e ninguém
+  mais pode se candidatar (confirmado pelo David em 2026-07-03); se o
+  anunciante recusar, ela volta a aparecer.
 - O **anunciante recebe uma notificação** para **aceitar ou recusar** o
   candidato (no MVP, aviso dentro do app — agenda e tela do serviço; push
   real na Fase 2). Ele **não escolhe entre vários candidatos**: como no Uber
@@ -106,7 +108,9 @@ ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
   paga **multa de 25% do valor do prestador, com piso de R$ 10** (D-018).
   O valor do prestador volta para o anunciante (o serviço não acontece; a
   taxa da criação fica com a empresa) e a multa é cobrada por cima: **80%
-  compensa o prestador lesado**, **20% fica com a plataforma**. Excluir a
+  compensa o prestador lesado**, **20% fica com a plataforma**. Na
+  interface, a multa é apresentada pelo valor total, "como compensação
+  pelo prestador lesado" — a divisão 80/20 é interna (D-019). Excluir a
   vaga deixa de ser possível após a aprovação — só existe o cancelamento
   com multa. Recusar uma candidatura NÃO gera multa.
 - **Prestador** cancela após a aprovação → sem multa financeira na fase

@@ -23,11 +23,17 @@ export type GigDraftError =
   | "starts_in_past"
   | "ends_before_starts"
   | "price_required"
+  | "price_too_low"
   | "address_required";
 
 export const GIG_TITLE_MIN = 3;
 export const GIG_TITLE_MAX = 80;
 export const GIG_DESCRIPTION_MAX = 2000;
+/**
+ * No gig may pay less than R$ 10 (D-019): blocks malicious near-free
+ * postings (e.g. using gigs as ads) and matches the fine floor.
+ */
+export const GIG_MIN_PRICE_CENTS = 1000;
 
 export function validateGigDraft(draft: GigDraft, now: Date): GigDraftError[] {
   const errors: GigDraftError[] = [];
@@ -39,7 +45,11 @@ export function validateGigDraft(draft: GigDraft, now: Date): GigDraftError[] {
   if (draft.description.length > GIG_DESCRIPTION_MAX) errors.push("description_too_long");
   if (new Date(draft.startsAt) <= now) errors.push("starts_in_past");
   if (draft.endsAt <= draft.startsAt) errors.push("ends_before_starts");
-  if (!Number.isInteger(draft.priceCents) || draft.priceCents <= 0) errors.push("price_required");
+  if (!Number.isInteger(draft.priceCents) || draft.priceCents <= 0) {
+    errors.push("price_required");
+  } else if (draft.priceCents < GIG_MIN_PRICE_CENTS) {
+    errors.push("price_too_low");
+  }
   if (!draft.address.trim()) errors.push("address_required");
 
   return errors;

@@ -45,6 +45,11 @@ describe("validateGigDraft", () => {
     ).toContain("ends_before_starts");
   });
 
+  it("rejects gigs paying less than R$ 10 (D-019)", () => {
+    expect(validateGigDraft({ ...VALID, priceCents: 999 }, NOW)).toContain("price_too_low");
+    expect(validateGigDraft({ ...VALID, priceCents: 1000 }, NOW)).toEqual([]);
+  });
+
   it("rejects fractional price cents", () => {
     expect(validateGigDraft({ ...VALID, priceCents: 100.5 }, NOW)).toContain("price_required");
   });

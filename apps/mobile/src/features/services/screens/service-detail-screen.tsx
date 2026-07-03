@@ -162,7 +162,7 @@ export function ServiceDetailScreen() {
     if (result === 'cancelled') {
       const fine = computeCancellationFine(service.data.priceCents);
       setCancelledNote(
-        `Serviço cancelado. ${formatBRL(service.data.priceCents)} voltaram para a sua carteira e a multa de ${formatBRL(fine.fineCents)} foi cobrada.`,
+        `Serviço cancelado. ${formatBRL(service.data.priceCents)} voltaram para a sua carteira e a multa de ${formatBRL(fine.fineCents)} foi cobrada como compensação pelo prestador lesado.`,
       );
       setTimeout(() => router.back(), 1800);
     } else if (result === 'not_cancellable' || result === 'state_changed') {
@@ -402,9 +402,7 @@ export function ServiceDetailScreen() {
                     <Text style={[styles.fineWarning, { color: theme.danger }]}>
                       Cancelar agora tem multa de{' '}
                       {formatBRL(computeCancellationFine(data.priceCents).fineCents)} (25%,
-                      mínimo R$ 10) —{' '}
-                      {formatBRL(computeCancellationFine(data.priceCents).workerShareCents)} vão
-                      para {data.counterpartName ?? 'o prestador'}. Os{' '}
+                      mínimo R$ 10), como compensação pelo prestador lesado. Os{' '}
                       {formatBRL(data.priceCents)} do serviço voltam para você.
                     </Text>
                   )}
