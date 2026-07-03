@@ -36,6 +36,7 @@ export interface ServiceDetail {
   endsAt: string;
   priceCents: number;
   address: string;
+  counterpartId: string | null;
   counterpartName: string | null;
 }
 
@@ -65,6 +66,7 @@ export async function fetchServiceDetail(
     endsAt: row.ends_at,
     priceCents: row.price_cents,
     address: row.address,
+    counterpartId: role === "poster" ? row.worker_id : row.poster_id,
     counterpartName: role === "poster" ? (row.worker?.name ?? null) : (row.poster?.name ?? null),
   };
 }

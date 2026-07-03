@@ -19,6 +19,7 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     endsAt: inDays(0, 17),
     priceCents: 12000,
     address: 'Rua das Flores, 100',
+    counterpartId: 'demo-ana',
     counterpartName: 'Ana Souza',
   },
   '2': {
@@ -31,6 +32,7 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     endsAt: inDays(1, 22),
     priceCents: 16000,
     address: 'Av. Central, 45',
+    counterpartId: 'demo-ana',
     counterpartName: 'Ana Souza',
   },
   '3': {
@@ -43,6 +45,7 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     endsAt: inDays(3, 23),
     priceCents: 20000,
     address: 'Salão Jardim América',
+    counterpartId: 'demo-paulo',
     counterpartName: 'Paulo Dias',
   },
 };
