@@ -14,8 +14,8 @@
 - [x] Calendário home (visões dia/semana/mês; horário livre → buscar/anunciar) — ligado à agenda real do usuário
 - [~] CRUD de vagas — criação pronta (Anunciar com prévia, D-007); faltam editar/excluir
 - [~] Busca/listagem de vagas — categorias primeiro + vagas recentes (D-007); falta filtro por horário
-- [~] Candidatura com aprovação do anunciante (modelo Uber, docs/02 §3) — substitui o aceite direto; recusa bloqueia o candidato só para aquela vaga; escrow passa a ser retido na aprovação (em implementação)
-- [ ] Bloqueio entre usuários (docs/02 §8): esconde vagas nas duas direções, impede candidatura e cortará mensagens
+- [x] Candidatura com aprovação do anunciante (modelo Uber, docs/02 §3, D-012) — trava atômica de 1 candidato; recusa sem multa reabre a vaga e bloqueia o candidato só para ela; escrow retido na aprovação; verificado e2e (14 checagens)
+- [x] Bloqueio entre usuários (docs/02 §8) — botão no perfil público; vagas ocultas nas duas direções e candidatura impedida (verificado e2e); corte de mensagens entra junto com o chat
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
 - [~] Carteira simulada: escrow no aceite e liberação na confirmação prontos (ledger imutável + tela dois cartões, D-008); falta a multa do anunciante (cancelamento pós-aceite)
 - [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
@@ -86,6 +86,11 @@ revisados antes de abrir o app ao público:
   Playwright; para testar contra o backend real no navegador daqui, rotear
   as chamadas do Supabase via `page.route` → `context.request` (o Chromium
   não fala com o proxy do ambiente diretamente).
+- **Fluxo de candidatura (D-012) no ar**: apply-gig + respond-candidacy
+  deployadas (accept-gig legada removida); view visible_open_gigs filtra
+  recusados e bloqueados; UI completa (candidatar-se, decisão do
+  anunciante com aviso in-app, bloquear/desbloquear no perfil).
 - **Faltam na Fase 1**: cancelamento com multa do anunciante;
   editar/excluir vaga própria; localização por mapa (docs/02 §2.1, rodada
-  de design + provedor, dúvida #15); revisão final de paridade web/mobile.
+  de design + provedor, dúvida #15); mensagens no app (chat simples,
+  respeitando bloqueios); revisão final de paridade web/mobile.
