@@ -107,10 +107,12 @@ ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
   1. **Na criação da vaga o anunciante paga o valor total** (bruto), composto
      de: **taxa de serviço da plataforma** (não reembolsável) + **valor
      líquido** que fica retido em escrow para o prestador.
-  2. Serviço concluído e confirmado → o **líquido** é liberado para a
-     carteira do prestador.
-  3. Prestador **saca** para conta bancária (no MVP: saque simulado; no
-     futuro: Pix via gateway — Fase 3).
+  2. Serviço concluído e confirmado → o valor do prestador entra na carteira
+     dele **em processamento** (ver §5.2) e, vencido o prazo de liberação,
+     vira **saldo disponível**.
+  3. Prestador **saca** o saldo disponível para conta bancária (no MVP:
+     saque simulado; no futuro: Pix via gateway — Fase 3) ou o usa para
+     **criar vagas**.
 
 ### 5.1 Taxa de serviço na criação (D-013, ajustada por D-014)
 
@@ -131,6 +133,31 @@ ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
   arrepender-se de abrir a vaga custa a taxa.
 - Multas são cobradas do saldo/forma de pagamento do anunciante infrator.
 - Todo movimento financeiro gera **registro imutável em ledger** (auditoria).
+
+### 5.2 Carteira (D-015 — a implementar)
+
+Reformulação da tela da carteira, que hoje confunde ao misturar "recebido"
+com "a receber":
+
+- A carteira destaca **um único saldo: o disponível para saque** — o total
+  recebido desde o último saque. Serviços **ainda não prestados não
+  aparecem** na carteira (compromissos futuros vivem na agenda).
+- Serviço concluído entra na carteira **imediatamente**, mas numa seção
+  separada, **"Em processamento"**: por um prazo de alguns dias (duração
+  ⚠️ dúvida #16) o valor não pode ser sacado. Esse prazo existe para dar
+  tempo de o anunciante abrir um **pedido de reembolso** por serviço
+  malfeito, que passa por análise e é **aceito ou negado** (processo de
+  disputas, §6).
+- Vencido o prazo sem contestação (ou com a contestação negada), o valor
+  migra automaticamente para o **saldo disponível**.
+- O saldo disponível pode ser:
+  - **sacado para a conta bancária do usuário** — via **Pix** no
+    lançamento; outras opções de pagamento digital a avaliar (⚠️ dúvida
+    #17);
+  - **usado, integral ou parcialmente, para criar vagas**: o saldo abate o
+    total "você paga" e o restante (se houver) vem da forma de pagamento.
+- O **extrato completo** (todos os pagamentos e recebimentos) sai da tela
+  principal e fica atrás de um botão **"Ver histórico"**.
 
 ## 6. Denúncias, disputas e reembolsos ⚠️ (parte mais complexa — em aberto)
 

@@ -164,3 +164,17 @@ prestador receberá (x)** e paga **x + taxa** ao confirmar a vaga. Exemplo
 ilustrativo: prestador recebe R$ 100, taxa R$ 10, anunciante paga R$ 110.
 Tela de criação: "O prestador recebe R$ 100 · Taxa de serviço + R$ 10 ·
 Você paga R$ 110". Reembolso continua sendo apenas o valor do prestador.
+
+## D-015 — Carteira: saldo único, seção "em processamento" e histórico separado
+**Data:** 2026-07-03 · **Decidido por:** David
+
+A tela atual da carteira ("recebido" vs "a receber") é confusa. Nova
+estrutura (docs/02 §5.2): a carteira mostra **só o saldo disponível para
+saque** (recebido desde o último saque); serviços ainda não prestados não
+aparecem nela. Serviço concluído entra na hora, mas numa seção separada
+**"Em processamento"** por um prazo de alguns dias (duração ⚠️ dúvida #16)
+— janela para o anunciante pedir reembolso por serviço malfeito, analisado
+e aceito ou negado (§6). Após o prazo o valor vira saldo disponível, que
+pode ser **sacado** (Pix; outras opções de pagamento digital a avaliar —
+dúvida #17) ou **usado, integral ou parcialmente, para criar vagas**. O
+extrato completo fica atrás de um botão **"Ver histórico"**.

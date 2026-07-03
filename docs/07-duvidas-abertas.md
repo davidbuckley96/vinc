@@ -31,6 +31,12 @@
    entretenimento e serviços domésticos).
 10. 🟢 **Avaliações:** comentário textual além da nota? Avaliação é pública no
     perfil ou só a média?
+16. 🔴 **Prazo de processamento na carteira** (D-015, docs/02 §5.2): quantos
+    dias entre a conclusão do serviço e o valor virar saldo sacável? É a
+    janela para o anunciante pedir reembolso. Até a definição, a
+    implementação usará **7 dias** como exemplo (mesmo espírito dos 10% da
+    taxa). Relaciona-se com a dúvida #4 (auto-liberação da confirmação) e
+    com o processo de disputas (dúvida #6).
 
 ## Design
 
@@ -52,3 +58,8 @@
     cartão cadastrado, tem cota gratuita), Mapbox (cota gratuita generosa) ou
     OpenStreetMap/Nominatim (gratuito, visual menos polido). Recomendação
     será apresentada junto com a rodada de design do mapa.
+
+17. 🟡 **Meios de saque além do Pix** (D-015, Fase 3): o saque para a conta
+    do usuário será via Pix; avaliar que outras opções de pagamento digital
+    oferecer (TED, carteiras como Mercado Pago/PicPay, etc.) quando o
+    gateway real entrar (junto com a dúvida #13).
