@@ -3,10 +3,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useState } from 'react';
+
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useProfileStats } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
+import { useBlockStatus, useToggleBlock } from '../block-hooks';
 import { ProfileView, type ProfileRole } from '../components/profile-view';
 
 /**
@@ -20,6 +23,24 @@ export function PublicProfileScreen() {
   const params = useLocalSearchParams<{ id: string; role?: string; name?: string }>();
   const role: ProfileRole = params.role === 'worker' ? 'worker' : 'poster';
   const stats = useProfileStats(params.id);
+  const blockStatus = useBlockStatus(params.id);
+  const toggleBlock = useToggleBlock(params.id);
+  const [blockNote, setBlockNote] = useState<string | null>(null);
+
+  const blocked = blockStatus.data?.blockedByMe ?? false;
+  const onToggleBlock = async () => {
+    setBlockNote(null);
+    try {
+      await toggleBlock.mutateAsync(!blocked);
+      setBlockNote(
+        blocked
+          ? 'Usuário desbloqueado.'
+          : 'Usuário bloqueado: vocês não verão mais as vagas um do outro.',
+      );
+    } catch {
+      setBlockNote('Não foi possível completar. Tente de novo.');
+    }
+  };
 
   const name = stats.data?.name ?? params.name ?? 'Perfil';
   const initial = name.trim().charAt(0).toUpperCase();
@@ -52,6 +73,24 @@ export function PublicProfileScreen() {
             <Text style={[styles.name, { color: theme.text }]}>{name}</Text>
           </View>
           <ProfileView userId={params.id} role={role} fallbackName={name} />
+
+          {blockNote && (
+            <Text style={[styles.blockNote, { color: theme.textSecondary }]}>{blockNote}</Text>
+          )}
+          <Pressable
+            accessibilityRole="button"
+            disabled={toggleBlock.isPending}
+            onPress={onToggleBlock}
+            style={[styles.blockButton, { borderColor: theme.danger }]}>
+            <Ionicons
+              name={blocked ? 'lock-open-outline' : 'ban-outline'}
+              size={16}
+              color={theme.danger}
+            />
+            <Text style={[styles.blockLabel, { color: theme.danger }]}>
+              {blocked ? 'Desbloquear usuário' : 'Bloquear usuário'}
+            </Text>
+          </Pressable>
         </ScrollView>
       </View>
     </View>
@@ -113,5 +152,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     marginTop: Spacing.one,
+  },
+  blockNote: {
+    fontSize: 12.5,
+    textAlign: 'center',
+  },
+  blockButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1.5,
+    borderRadius: Radius.medium,
+    paddingVertical: 11,
+    marginTop: Spacing.two,
+  },
+  blockLabel: {
+    fontSize: 13.5,
+    fontWeight: '700',
   },
 });

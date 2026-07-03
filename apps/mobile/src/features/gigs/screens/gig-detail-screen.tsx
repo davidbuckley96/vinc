@@ -11,20 +11,22 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { AcceptGigResult } from '@vinc/api';
+import type { ApplyGigResult } from '@vinc/api';
 import { formatBRL } from '@vinc/core';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
 import { useTheme } from '@/hooks/use-theme';
 
-import { useAcceptGig, useCategories, useGig } from '../hooks';
+import { useApplyGig, useCategories, useGig } from '../hooks';
 
-const RESULT_MESSAGES: Record<Exclude<AcceptGigResult, 'accepted'>, string> = {
-  unauthorized: 'Entre na sua conta para aceitar serviços.',
+const RESULT_MESSAGES: Record<Exclude<ApplyGigResult, 'applied'>, string> = {
+  unauthorized: 'Entre na sua conta para se candidatar.',
   not_found: 'Esta vaga não existe mais.',
   own_gig: 'Esta vaga foi anunciada por você.',
-  already_taken: 'Alguém aceitou esta vaga antes de você.',
+  not_available: 'Alguém se candidatou antes de você. Se for recusado, a vaga volta a aparecer.',
+  refused_before: 'O anunciante recusou sua candidatura para esta vaga.',
+  blocked: 'Não é possível se candidatar a vagas deste anunciante.',
   schedule_conflict: 'Você já tem um compromisso nesse horário.',
   invalid_request: 'Algo deu errado. Tente de novo.',
   network_error: 'Sem conexão. Verifique sua internet e tente de novo.',
@@ -40,27 +42,27 @@ export function GigDetailScreen() {
   const { status } = useSession();
   const gig = useGig(id);
   const categories = useCategories();
-  const accept = useAcceptGig();
+  const apply = useApplyGig();
   const [feedback, setFeedback] = useState<{ kind: 'error' | 'success'; text: string } | null>(
     null,
   );
-  const [accepted, setAccepted] = useState(false);
+  const [applied, setApplied] = useState(false);
 
-  const onAccept = async () => {
+  const onApply = async () => {
     setFeedback(null);
     if (status === 'signedOut') {
       router.push('/auth');
       return;
     }
-    const result = await accept.mutateAsync(id);
-    if (result === 'accepted') {
-      setAccepted(true);
+    const result = await apply.mutateAsync(id);
+    if (result === 'applied') {
+      setApplied(true);
       setFeedback({
         kind: 'success',
         text:
           status === 'unconfigured'
-            ? 'Modo demonstração: o serviço seria aceito agora.'
-            : 'Serviço aceito! Ele já está na sua agenda.',
+            ? 'Modo demonstração: sua candidatura seria enviada agora.'
+            : `Candidatura enviada! ${gig.data?.posterName ?? 'O anunciante'} vai responder em breve.`,
       });
     } else {
       setFeedback({ kind: 'error', text: RESULT_MESSAGES[result] });
@@ -152,7 +154,7 @@ export function GigDetailScreen() {
               </Text>
             )}
 
-            {accepted ? (
+            {applied ? (
               <Pressable
                 accessibilityRole="button"
                 onPress={() => router.replace('/')}
@@ -164,24 +166,24 @@ export function GigDetailScreen() {
             ) : (
               <Pressable
                 accessibilityRole="button"
-                disabled={accept.isPending}
-                onPress={onAccept}
+                disabled={apply.isPending}
+                onPress={onApply}
                 style={[
                   styles.accept,
-                  { backgroundColor: theme.primary, opacity: accept.isPending ? 0.7 : 1 },
+                  { backgroundColor: theme.primary, opacity: apply.isPending ? 0.7 : 1 },
                 ]}>
-                {accept.isPending ? (
+                {apply.isPending ? (
                   <ActivityIndicator color={theme.onPrimary} />
                 ) : (
                   <Text style={[styles.acceptLabel, { color: theme.onPrimary }]}>
-                    Aceitar serviço · {formatBRL(gig.data.priceCents)}
+                    Me candidatar · {formatBRL(gig.data.priceCents)}
                   </Text>
                 )}
               </Pressable>
             )}
             <Text style={[styles.note, { color: theme.textSecondary }]}>
-              Ao aceitar, o serviço entra na sua agenda e o anunciante é avisado. Cancelar
-              depois prejudica sua reputação.
+              O anunciante aceita ou recusa sua candidatura. Enquanto ele decide, a vaga
+              fica reservada para você.
             </Text>
           </ScrollView>
         )}

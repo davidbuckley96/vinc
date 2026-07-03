@@ -51,5 +51,13 @@ export function getMockCommitments(today: Date): AgendaCommitment[] {
       endsAt: at(addDays(today, 3), 23),
       priceCents: 20000,
     },
+    {
+      id: '4',
+      title: 'DJ para aniversário (minha vaga)',
+      role: 'poster',
+      startsAt: at(addDays(today, 2), 20),
+      endsAt: at(addDays(today, 2), 23),
+      priceCents: 30000,
+    },
   ];
 }

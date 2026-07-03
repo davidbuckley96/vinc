@@ -85,7 +85,7 @@ export async function fetchMyAgenda(
       "id, title, starts_at, ends_at, price_cents, status, poster_id, worker_id, poster:poster_id (name), worker:worker_id (name)",
     )
     .or(`worker_id.eq.${userId},poster_id.eq.${userId}`)
-    .in("status", ["open", "accepted", "in_progress", "awaiting_confirmation"])
+    .in("status", ["open", "pending_approval", "accepted", "in_progress", "awaiting_confirmation"])
     .order("starts_at");
   if (error) throw new Error(error.message);
 

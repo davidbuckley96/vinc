@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
-  acceptGig,
+  applyGig,
   createGig,
   fetchCategories,
   fetchGigById,
   fetchOpenGigs,
-  type AcceptGigResult,
+  type ApplyGigResult,
 } from '@vinc/api';
 import type { GigDraft } from '@vinc/core';
 
@@ -44,15 +44,15 @@ export function useGig(gigId: string) {
   });
 }
 
-export function useAcceptGig() {
+export function useApplyGig() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (gigId: string): Promise<AcceptGigResult> => {
-      if (!supabase) return 'accepted'; // demo mode: pretend success
-      return acceptGig(supabase, gigId);
+    mutationFn: async (gigId: string): Promise<ApplyGigResult> => {
+      if (!supabase) return 'applied'; // demo mode: pretend success
+      return applyGig(supabase, gigId);
     },
     onSuccess: (result) => {
-      if (result === 'accepted' || result === 'already_taken') {
+      if (result === 'applied' || result === 'not_available') {
         queryClient.invalidateQueries({ queryKey: ['gigs'] });
         queryClient.invalidateQueries({ queryKey: ['agenda'] });
       }

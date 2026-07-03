@@ -3,8 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   fetchServiceDetail,
   gigLifecycle,
+  respondCandidacy,
   type LifecycleAction,
   type LifecycleResult,
+  type RespondCandidacyResult,
   type ServiceDetail,
 } from '@vinc/api';
 
@@ -40,6 +42,22 @@ export function useLifecycleAction(gigId: string) {
         queryClient.invalidateQueries({ queryKey: ['agenda'] });
         queryClient.invalidateQueries({ queryKey: ['wallet'] });
       }
+    },
+  });
+}
+
+export function useRespondCandidacy(gigId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (action: 'approve' | 'refuse'): Promise<RespondCandidacyResult> => {
+      if (!supabase) return action === 'approve' ? 'approved' : 'refused'; // demo
+      return respondCandidacy(supabase, gigId, action);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['service', gigId] });
+      queryClient.invalidateQueries({ queryKey: ['agenda'] });
+      queryClient.invalidateQueries({ queryKey: ['gigs'] });
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
     },
   });
 }

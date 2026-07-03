@@ -43,24 +43,24 @@ export async function fetchCategories(client: SupabaseClient): Promise<Category[
   return data;
 }
 
+/**
+ * Lists via the visible_open_gigs view, which already excludes gigs the
+ * caller was refused for and gigs from blocked pairs (docs/02 §3/§8).
+ */
 export async function fetchOpenGigs(
   client: SupabaseClient,
   filter: { categoryId?: string } = {},
 ): Promise<OpenGig[]> {
   let query = client
-    .from("gigs")
-    .select(
-      "id, title, description, starts_at, ends_at, price_cents, address, category_id, poster_id, poster:poster_id (name)",
-    )
-    .eq("status", "open")
-    .gt("starts_at", new Date().toISOString())
+    .from("visible_open_gigs")
+    .select("id, title, description, starts_at, ends_at, price_cents, address, category_id, poster_id, poster_name")
     .order("starts_at")
     .limit(50);
   if (filter.categoryId) query = query.eq("category_id", filter.categoryId);
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);
-  return (data as unknown as GigRow[]).map((row) => ({
+  return (data as unknown as (Omit<GigRow, "poster"> & { poster_name: string })[]).map((row) => ({
     id: row.id,
     title: row.title,
     posterId: row.poster_id,
@@ -70,7 +70,7 @@ export async function fetchOpenGigs(
     priceCents: row.price_cents,
     address: row.address,
     categoryId: row.category_id,
-    posterName: row.poster?.name ?? "Anunciante",
+    posterName: row.poster_name,
   }));
 }
 
@@ -102,22 +102,24 @@ export async function fetchGigById(
   };
 }
 
-export type AcceptGigResult =
-  | "accepted"
+export type ApplyGigResult =
+  | "applied"
   | "unauthorized"
   | "not_found"
   | "own_gig"
-  | "already_taken"
+  | "not_available"
+  | "refused_before"
+  | "blocked"
   | "schedule_conflict"
   | "invalid_request"
   | "network_error";
 
-/** Calls the accept-gig Edge Function (atomic claim + conflict check). */
-export async function acceptGig(
+/** Calls the apply-gig Edge Function (atomic candidacy lock — D-012). */
+export async function applyGig(
   client: SupabaseClient,
   gigId: string,
-): Promise<AcceptGigResult> {
-  const { data, error } = await client.functions.invoke("accept-gig", {
+): Promise<ApplyGigResult> {
+  const { data, error } = await client.functions.invoke("apply-gig", {
     body: { gigId },
   });
   if (error) {
@@ -125,7 +127,7 @@ export async function acceptGig(
     try {
       const context = (error as { context?: Response }).context;
       if (context) {
-        const body = (await context.json()) as { code?: AcceptGigResult };
+        const body = (await context.json()) as { code?: ApplyGigResult };
         if (body.code) return body.code;
       }
     } catch {
@@ -133,7 +135,43 @@ export async function acceptGig(
     }
     return "network_error";
   }
-  return (data as { code?: AcceptGigResult })?.code ?? "network_error";
+  return (data as { code?: ApplyGigResult })?.code ?? "network_error";
+}
+
+export type RespondCandidacyResult =
+  | "approved"
+  | "refused"
+  | "candidate_unavailable"
+  | "unauthorized"
+  | "not_found"
+  | "forbidden"
+  | "invalid_action"
+  | "state_changed"
+  | "invalid_request"
+  | "network_error";
+
+/** Poster approves/refuses the pending candidate (respond-candidacy). */
+export async function respondCandidacy(
+  client: SupabaseClient,
+  gigId: string,
+  action: "approve" | "refuse",
+): Promise<RespondCandidacyResult> {
+  const { data, error } = await client.functions.invoke("respond-candidacy", {
+    body: { gigId, action },
+  });
+  if (error) {
+    try {
+      const context = (error as { context?: Response }).context;
+      if (context) {
+        const body = (await context.json()) as { code?: RespondCandidacyResult };
+        if (body.code) return body.code;
+      }
+    } catch {
+      // fall through
+    }
+    return "network_error";
+  }
+  return (data as { code?: RespondCandidacyResult })?.code ?? "network_error";
 }
 
 export type LifecycleAction = "start" | "complete" | "confirm";
