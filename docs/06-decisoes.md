@@ -178,3 +178,20 @@ e aceito ou negado (§6). Após o prazo o valor vira saldo disponível, que
 pode ser **sacado** (Pix; outras opções de pagamento digital a avaliar —
 dúvida #17) ou **usado, integral ou parcialmente, para criar vagas**. O
 extrato completo fica atrás de um botão **"Ver histórico"**.
+
+## D-016 — Prazo de processamento de 7 dias; direção dos meios de pagamento
+**Data:** 2026-07-03 · **Decidido por:** David
+
+Complementa D-015: o prazo em que o valor de um serviço concluído fica "em
+processamento" (janela de pedido de reembolso do anunciante) é de **7 dias,
+inicialmente** — valor de partida, revisável com o uso real.
+
+Meios de pagamento (pagar vaga / sacar saldo): oferecer **as opções mais
+populares do Brasil** — Pix, cartão de crédito e débito e carteiras
+digitais (Mercado Pago, PicPay etc.). Pesquisa de mercado feita em
+2026-07-03 (fontes na dúvida #17): Pix domina (~55% das transações no 2º
+sem/2025; ~49% do e-commerce), cartões em seguida (~30%), e as carteiras
+mais usadas/confiáveis são PayPal, Mercado Pago e PicPay. Direção prática
+para a Fase 3: lançar com **Pix + cartões** (cobertos por qualquer gateway
+brasileiro — dúvida #13) e adicionar carteiras conforme o suporte do
+gateway. No MVP nada muda (pagamentos simulados).

@@ -31,12 +31,10 @@
    entretenimento e serviços domésticos).
 10. 🟢 **Avaliações:** comentário textual além da nota? Avaliação é pública no
     perfil ou só a média?
-16. 🔴 **Prazo de processamento na carteira** (D-015, docs/02 §5.2): quantos
-    dias entre a conclusão do serviço e o valor virar saldo sacável? É a
-    janela para o anunciante pedir reembolso. Até a definição, a
-    implementação usará **7 dias** como exemplo (mesmo espírito dos 10% da
-    taxa). Relaciona-se com a dúvida #4 (auto-liberação da confirmação) e
-    com o processo de disputas (dúvida #6).
+16. ~~🔴 **Prazo de processamento na carteira**~~ ✅ Respondida em
+    2026-07-03: **7 dias**, inicialmente (ver `06-decisoes.md` D-016).
+    Relaciona-se com a dúvida #4 (auto-liberação da confirmação) e com o
+    processo de disputas (dúvida #6).
 
 ## Design
 
@@ -59,7 +57,14 @@
     OpenStreetMap/Nominatim (gratuito, visual menos polido). Recomendação
     será apresentada junto com a rodada de design do mapa.
 
-17. 🟡 **Meios de saque além do Pix** (D-015, Fase 3): o saque para a conta
-    do usuário será via Pix; avaliar que outras opções de pagamento digital
-    oferecer (TED, carteiras como Mercado Pago/PicPay, etc.) quando o
-    gateway real entrar (junto com a dúvida #13).
+17. 🟡 **Meios de pagamento e saque** (D-016 dá a direção; escolha final na
+    Fase 3, junto com o gateway — dúvida #13): David quer as opções mais
+    populares do Brasil — Pix, cartão de crédito e débito, Mercado Pago,
+    PicPay etc. A pesquisa de mercado (2026-07-03) apontou: **Pix** é o
+    meio dominante (~55% das transações no 2º semestre de 2025 e ~49% do
+    e-commerce), **cartões** vêm em seguida (~30% das transações; crédito
+    R$ 3,1 tri em 2025), e as **carteiras digitais** mais usadas/confiáveis
+    são PayPal, Mercado Pago e PicPay (seguidas de PagBank e Google Pay).
+    Direção registrada em D-016: lançar com **Pix + cartões** via gateway e
+    adicionar carteiras conforme o suporte do gateway escolhido. Falta:
+    escolher o gateway e confirmar o leque exato no lançamento.

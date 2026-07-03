@@ -143,17 +143,17 @@ com "a receber":
   recebido desde o último saque. Serviços **ainda não prestados não
   aparecem** na carteira (compromissos futuros vivem na agenda).
 - Serviço concluído entra na carteira **imediatamente**, mas numa seção
-  separada, **"Em processamento"**: por um prazo de alguns dias (duração
-  ⚠️ dúvida #16) o valor não pode ser sacado. Esse prazo existe para dar
-  tempo de o anunciante abrir um **pedido de reembolso** por serviço
-  malfeito, que passa por análise e é **aceito ou negado** (processo de
-  disputas, §6).
+  separada, **"Em processamento"**: por **7 dias** (valor inicial — D-016)
+  o valor não pode ser sacado. Esse prazo existe para dar tempo de o
+  anunciante abrir um **pedido de reembolso** por serviço malfeito, que
+  passa por análise e é **aceito ou negado** (processo de disputas, §6).
 - Vencido o prazo sem contestação (ou com a contestação negada), o valor
   migra automaticamente para o **saldo disponível**.
 - O saldo disponível pode ser:
   - **sacado para a conta bancária do usuário** — via **Pix** no
-    lançamento; outras opções de pagamento digital a avaliar (⚠️ dúvida
-    #17);
+    lançamento; demais opções (cartões, carteiras digitais como Mercado
+    Pago/PicPay) seguem a direção de D-016 e a escolha do gateway (⚠️
+    dúvida #17);
   - **usado, integral ou parcialmente, para criar vagas**: o saldo abate o
     total "você paga" e o restante (se houver) vem da forma de pagamento.
 - O **extrato completo** (todos os pagamentos e recebimentos) sai da tela

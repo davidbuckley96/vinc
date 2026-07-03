@@ -18,7 +18,7 @@
 - [x] Bloqueio entre usuários (docs/02 §8) — botão no perfil público; vagas ocultas nas duas direções e candidatura impedida (verificado e2e); corte de mensagens entra junto com o chat
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
 - [~] Carteira simulada (ledger imutável + tela dois cartões, D-008); falta a multa do anunciante (cancelamento pós-aprovação)
-- [ ] Reformulação da carteira (D-015, docs/02 §5.2): só o saldo disponível em destaque (recebido desde o último saque); serviço concluído entra na hora numa seção "Em processamento" com prazo de liberação (dúvida #16 — 7 dias como exemplo); extrato completo atrás de "Ver histórico"; serviços não prestados fora da carteira; saldo usável integral/parcialmente na criação de vagas. (Pedido de reembolso dentro do prazo → processo de disputas, Fase 2; saque real via Pix → Fase 3)
+- [ ] Reformulação da carteira (D-015, docs/02 §5.2): só o saldo disponível em destaque (recebido desde o último saque); serviço concluído entra na hora numa seção "Em processamento" com prazo de 7 dias (D-016); extrato completo atrás de "Ver histórico"; serviços não prestados fora da carteira; saldo usável integral/parcialmente na criação de vagas. (Pedido de reembolso dentro do prazo → processo de disputas, Fase 2; saque real via Pix → Fase 3)
 - [~] Taxa de serviço na criação da vaga (D-013) — IMPLEMENTADO: pagamento antecipado via create-gig (taxa 10%-exemplo + escrow do líquido), taxa explícita na criação, prévia e busca com o líquido, verificado e2e; FALTA: reembolso do líquido na exclusão/expiração (entra com o bloco excluir vaga)
 - [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
 - [ ] Localização por mapa (pino arrastável + busca no mapa ao anunciar; modal de mapa ao ver a vaga — docs/02 §2.1; requer provedor de mapas, ver dúvidas #15)
@@ -32,7 +32,7 @@
 - [ ] Painel administrativo mínimo (análise de disputas)
 
 ## Fase 3 — Pagamentos reais
-- [ ] Gateway brasileiro (Mercado Pago/Pagar.me — a decidir) com split
+- [ ] Gateway brasileiro (Mercado Pago/Pagar.me — a decidir, dúvida #13) com split; meios de pagamento: Pix + cartões no lançamento, carteiras digitais conforme o gateway (D-016, dúvida #17)
 - [ ] Saque via Pix para conta bancária do prestador (avaliar outras opções de pagamento digital — dúvida #17)
 - [ ] KYC / verificação de identidade
 - [ ] Cobrança real da multa e da taxa da plataforma
