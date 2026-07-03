@@ -63,7 +63,7 @@ Deno.serve(async (request) => {
 
   const { data: gig } = await admin
     .from("gigs")
-    .select("id, poster_id, status, starts_at, ends_at")
+    .select("id, poster_id, status, starts_at, ends_at, price_cents")
     .eq("id", gigId)
     .maybeSingle();
   if (!gig) return respond("not_found", 404);
@@ -101,5 +101,16 @@ Deno.serve(async (request) => {
     .select("id");
 
   if (!claimed || claimed.length === 0) return respond("already_taken", 409);
+
+  // Escrow hold (docs/02 §5): the gig price leaves the poster's simulated
+  // wallet the moment the gig is claimed. Released to the worker on
+  // confirmation (gig-lifecycle), refunded on legitimate cancellation.
+  await admin.from("ledger_entries").insert({
+    user_id: gig.poster_id,
+    gig_id: gig.id,
+    type: "escrow_hold",
+    amount_cents: -gig.price_cents,
+  });
+
   return respond("accepted", 200);
 });

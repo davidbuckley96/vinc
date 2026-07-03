@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { canTransition, posterCancellationIncursFine } from "./gig";
+import { allowedLifecycleAction, canTransition, posterCancellationIncursFine } from "./gig";
 import { formatBRL } from "./money";
 import { hasScheduleConflict, rangesOverlap } from "./schedule";
 
@@ -41,12 +41,15 @@ describe("gig state machine", () => {
   it("allows the happy path", () => {
     expect(canTransition("open", "accepted")).toBe(true);
     expect(canTransition("accepted", "in_progress")).toBe(true);
-    expect(canTransition("in_progress", "completed")).toBe(true);
+    expect(canTransition("in_progress", "awaiting_confirmation")).toBe(true);
+    expect(canTransition("awaiting_confirmation", "completed")).toBe(true);
   });
 
   it("rejects invalid transitions", () => {
     expect(canTransition("open", "completed")).toBe(false);
     expect(canTransition("completed", "open")).toBe(false);
+    expect(canTransition("in_progress", "completed")).toBe(false);
+    expect(canTransition("awaiting_confirmation", "cancelled_by_poster")).toBe(false);
   });
 
   it("fines the poster only after acceptance", () => {
@@ -59,5 +62,20 @@ describe("gig state machine", () => {
 describe("formatBRL", () => {
   it("formats cents as BRL", () => {
     expect(formatBRL(16000).replace(/ /g, " ")).toBe("R$ 160,00");
+  });
+});
+
+describe("allowedLifecycleAction", () => {
+  it("maps each role/status to its action", () => {
+    expect(allowedLifecycleAction("accepted", "worker")).toBe("start");
+    expect(allowedLifecycleAction("in_progress", "worker")).toBe("complete");
+    expect(allowedLifecycleAction("awaiting_confirmation", "poster")).toBe("confirm");
+  });
+
+  it("returns null when the role has nothing to do", () => {
+    expect(allowedLifecycleAction("accepted", "poster")).toBeNull();
+    expect(allowedLifecycleAction("awaiting_confirmation", "worker")).toBeNull();
+    expect(allowedLifecycleAction("completed", "poster")).toBeNull();
+    expect(allowedLifecycleAction("open", "worker")).toBeNull();
   });
 });
