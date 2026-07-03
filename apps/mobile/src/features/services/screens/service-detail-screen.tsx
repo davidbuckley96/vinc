@@ -19,6 +19,7 @@ import {
 } from '@vinc/core';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
+import { useHasReviewed } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
 import { useLifecycleAction, useServiceDetail } from '../hooks';
@@ -116,6 +117,7 @@ export function ServiceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const service = useServiceDetail(id);
   const lifecycle = useLifecycleAction(id);
+  const reviewed = useHasReviewed(id);
   const [error, setError] = useState<string | null>(null);
 
   const act = async () => {
@@ -223,6 +225,16 @@ export function ServiceDetailScreen() {
                     {card.actionLabel}
                   </Text>
                 )}
+              </Pressable>
+            )}
+            {data.status === 'completed' && reviewed.isSuccess && !reviewed.data && (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push(`/review/${data.id}`)}
+                style={[styles.action, { backgroundColor: theme.primary }]}>
+                <Text style={[styles.actionLabel, { color: theme.onPrimary }]}>
+                  ⭐ Avaliar {data.counterpartName ?? 'a outra pessoa'}
+                </Text>
               </Pressable>
             )}
             {data.status === 'completed' && data.role === 'worker' && (

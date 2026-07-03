@@ -26,7 +26,7 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     id: '2',
     title: 'Babá — 2 crianças',
     description: 'Crianças de 4 e 7 anos, jantar incluído.',
-    status: 'accepted',
+    status: 'completed',
     role: 'worker',
     startsAt: inDays(1, 15),
     endsAt: inDays(1, 22),
