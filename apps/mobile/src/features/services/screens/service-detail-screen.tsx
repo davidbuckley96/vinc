@@ -160,9 +160,11 @@ export function ServiceDetailScreen() {
     if (result === 'cancelled') {
       const fine = computeCancellationFine(service.data.priceCents);
       setCancelledNote(
-        fine.posterRefundCents > 0
-          ? `Serviço cancelado. ${formatBRL(fine.posterRefundCents)} voltaram para a sua carteira (${formatBRL(service.data.priceCents)} do serviço menos a multa de ${formatBRL(fine.fineCents)}, compensação pelo prestador lesado).`
-          : `Serviço cancelado. A multa de ${formatBRL(fine.fineCents)} consumiu o valor do serviço (compensação pelo prestador lesado).`,
+        service.data.role === 'worker'
+          ? `Serviço cancelado. A multa de ${formatBRL(fine.fineCents)} foi cobrada da sua carteira como compensação pelo anunciante.`
+          : fine.posterRefundCents > 0
+            ? `Serviço cancelado. ${formatBRL(fine.posterRefundCents)} voltaram para a sua carteira (${formatBRL(service.data.priceCents)} do serviço menos a multa de ${formatBRL(fine.fineCents)}, compensação pelo prestador lesado).`
+            : `Serviço cancelado. A multa de ${formatBRL(fine.fineCents)} consumiu o valor do serviço (compensação pelo prestador lesado).`,
       );
       setTimeout(() => router.back(), 1800);
     } else if (result === 'not_cancellable' || result === 'state_changed') {
@@ -385,17 +387,14 @@ export function ServiceDetailScreen() {
             {cancelledNote && (
               <Text style={[styles.error, { color: theme.success }]}>{cancelledNote}</Text>
             )}
-            {data.role === 'poster' &&
-              posterCancellationIncursFine(data.status as GigStatus) &&
+            {posterCancellationIncursFine(data.status as GigStatus) &&
               !cancelledNote && (
                 <View style={styles.cancelBlock}>
                   {cancelArmed && (
                     <Text style={[styles.fineWarning, { color: theme.danger }]}>
-                      Cancelar agora tem multa de{' '}
-                      {formatBRL(computeCancellationFine(data.priceCents).fineCents)} (25%,
-                      mínimo R$ 10), como compensação pelo prestador lesado. Você recebe de
-                      volta {formatBRL(computeCancellationFine(data.priceCents).posterRefundCents)}{' '}
-                      dos {formatBRL(data.priceCents)} do serviço.
+                      {data.role === 'poster'
+                        ? `Cancelar agora tem multa de ${formatBRL(computeCancellationFine(data.priceCents).fineCents)} (25%, mínimo R$ 10), como compensação pelo prestador lesado. Você recebe de volta ${formatBRL(computeCancellationFine(data.priceCents).posterRefundCents)} dos ${formatBRL(data.priceCents)} do serviço.`
+                        : `Cancelar agora tem multa de ${formatBRL(computeCancellationFine(data.priceCents).fineCents)} (25%, mínimo R$ 10), cobrada de você como compensação pelo anunciante.`}
                     </Text>
                   )}
                   <Pressable

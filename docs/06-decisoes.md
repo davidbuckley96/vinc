@@ -346,3 +346,19 @@ andamento ou aguardando confirmação) — cortado no banco (migration 0015).
 O **histórico continua legível** para os dois (registro para disputas,
 §6); na conclusão o botão vira "Ver conversa" e o chat mostra "a conversa
 foi encerrada", sem campo de envio. Verificado e2e no ciclo completo.
+
+## D-027 — Prestador que cancela paga multa espelhada; cartão na Fase 3
+**Data:** 2026-07-06 · **Decidido por:** David (fecha as dúvidas #5 e #18)
+
+**Valor da vaga segue imutável** (confirma D-017 — dúvida #18 encerrada).
+**Prestador que cancela** um serviço aceito/em andamento paga **multa igual
+à do anunciante** (D-018): 25% do valor da vaga, piso de R$ 10,
+**restituindo o anunciante** — espelhado: 80% da multa vai ao anunciante
+lesado, 20% à plataforma, apresentada pelo total como compensação (D-019).
+O anunciante ainda recebe **o valor integral do prestador de volta**
+(o serviço não vai acontecer; a taxa da criação segue não reembolsável —
+a compensação de 80% sempre a cobre, pois 20% do valor ≥ taxa de 10%).
+No MVP a multa é debitada da carteira simulada do prestador (pode ficar
+negativa); a **cobrança real no cartão** do prestador quando o saldo não
+cobrir entra com o gateway da **Fase 3** (requisito registrado no
+roadmap). Verificado e2e.

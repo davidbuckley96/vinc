@@ -35,7 +35,7 @@
 - [ ] Gateway brasileiro (Mercado Pago/Pagar.me — a decidir, dúvida #13) com split; meios de pagamento: Pix + cartões no lançamento, carteiras digitais conforme o gateway (D-016, dúvida #17)
 - [ ] Saque via Pix para conta bancária do prestador (avaliar outras opções de pagamento digital — dúvida #17)
 - [ ] KYC / verificação de identidade
-- [ ] Cobrança real da multa e da taxa da plataforma
+- [ ] Cobrança real da multa e da taxa da plataforma — incl. **cobrar no cartão do prestador** a multa de cancelamento (D-027) quando o saldo da carteira não cobrir
 
 ## Fase 4 — Crescimento
 - [ ] Geolocalização e busca por proximidade/mapa
@@ -135,6 +135,8 @@ revisados antes de abrir o app ao público:
   legível — verificado e2e).
 - **Filtro de busca por horário no ar**: chips de dia + hora na busca
   (sobreposição de horário), pré-seleção vinda do horário livre da agenda.
-- **Faltam na Fase 1**: punição de reputação do prestador que cancela
-  (dúvida #5); filtro de busca por horário; revisão final de paridade
-  web/mobile.
+- **Multa do prestador (D-027) no ar**: cancel-gig aceita os dois lados —
+  prestador que cancela paga 25% (piso R$ 10) da carteira (negativa no
+  MVP; cartão na Fase 3), anunciante recebe o valor integral + 80% da
+  multa; verificado e2e.
+- **Falta na Fase 1**: revisão final de paridade web/mobile.

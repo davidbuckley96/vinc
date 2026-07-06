@@ -125,8 +125,12 @@ iniciadas e a candidatura a elas é recusada.
   é interna (D-019). Excluir a vaga deixa de ser possível após a
   aprovação — só existe o cancelamento com multa. Recusar uma candidatura
   NÃO gera multa.
-- **Prestador** cancela após a aprovação → sem multa financeira na fase
-  inicial, mas sofre punição de reputação/prioridade (modelo Uber). ⚠️.
+- **Prestador** cancela após a escolha (serviço aceito ou em andamento) →
+  paga **a mesma multa** (D-027): 25% do valor da vaga, piso de R$ 10,
+  como compensação pelo anunciante lesado (80/20 interno, D-019). O
+  anunciante recebe **o valor integral de volta** + a compensação. No MVP
+  a multa sai da carteira simulada do prestador (pode ficar negativa);
+  na Fase 3 é cobrada **no cartão** quando o saldo não cobrir.
 
 ## 4. Execução e conclusão do serviço
 

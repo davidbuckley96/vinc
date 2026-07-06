@@ -1,11 +1,19 @@
 // Edge Function: cancel-gig
-// The poster cancels a service AFTER approving the candidate (docs/02 §3,
-// D-018/D-020): accepted/in_progress → cancelled_by_poster. The FINE is
-// 25% of the worker amount (min R$ 10); the poster receives ONE refund
-// with the fine already deducted (worker amount − fine; the creation fee
-// stays with the platform), and the harmed worker is paid 80% of the fine
-// directly. The 80/20 split is internal — the UI presents the whole fine
-// as compensation for the worker (D-019).
+// EITHER party cancels a service after the choice (docs/02 §3):
+//
+// POSTER cancels (D-018/D-020): accepted/in_progress →
+// cancelled_by_poster. Fine of 25% of the worker amount (min R$ 10); the
+// poster gets ONE refund with the fine already deducted; the harmed
+// worker is paid 80% of the fine directly.
+//
+// WORKER cancels (D-027, mirror rule): accepted/in_progress →
+// cancelled_by_worker. Same fine (25%, min R$ 10) charged FROM the
+// worker's wallet (may go negative in the MVP simulation; the real card
+// charge arrives with the Fase 3 gateway); the harmed poster gets the
+// FULL worker amount back plus 80% of the fine.
+//
+// The 80/20 split is internal — the UI presents the whole fine as
+// compensation for the harmed party (D-019).
 //
 // Deleting BEFORE approval (no fine) is delete-gig, not this function.
 //
@@ -68,7 +76,10 @@ Deno.serve(async (request) => {
     .eq("id", gigId)
     .maybeSingle();
   if (!gig) return respond("not_found", 404);
-  if (gig.poster_id !== userId) return respond("forbidden", 403);
+  if (gig.poster_id !== userId && gig.worker_id !== userId) {
+    return respond("forbidden", 403);
+  }
+  const role = gig.poster_id === userId ? "poster" : "worker";
   if (!posterCancellationIncursFine(gig.status as GigStatus) || !gig.worker_id) {
     return respond("not_cancellable", 409);
   }
@@ -78,33 +89,46 @@ Deno.serve(async (request) => {
   // for history.
   const { data: cancelled } = await admin
     .from("gigs")
-    .update({ status: "cancelled_by_poster" })
+    .update({ status: role === "poster" ? "cancelled_by_poster" : "cancelled_by_worker" })
     .eq("id", gig.id)
     .in("status", ["accepted", "in_progress"])
     .select("id");
   if (!cancelled || cancelled.length === 0) return respond("state_changed", 409);
 
-  // ONE movement per person (D-020): the poster gets a single refund with
-  // the fine already deducted (net − fine; the creation fee stays with the
-  // platform), and the harmed worker is paid his share directly. The
-  // platform keeps the remainder of the fine implicitly. On a
-  // minimum-price gig the poster refund is zero — no entry is written.
   const fine = computeCancellationFine(gig.price_cents);
-  const entries = [
-    { user_id: gig.worker_id, gig_id: gig.id, type: "fine", amount_cents: fine.workerShareCents },
-  ];
-  if (fine.posterRefundCents > 0) {
-    entries.unshift({
-      user_id: userId,
-      gig_id: gig.id,
-      type: "refund",
-      amount_cents: fine.posterRefundCents,
+
+  if (role === "poster") {
+    // ONE movement per person (D-020): the poster gets a single refund
+    // with the fine already deducted (the creation fee stays with the
+    // platform), and the harmed worker is paid his share directly. On a
+    // minimum-price gig the poster refund is zero — no entry is written.
+    const entries = [
+      { user_id: gig.worker_id, gig_id: gig.id, type: "fine", amount_cents: fine.workerShareCents },
+    ];
+    if (fine.posterRefundCents > 0) {
+      entries.unshift({
+        user_id: userId,
+        gig_id: gig.id,
+        type: "refund",
+        amount_cents: fine.posterRefundCents,
+      });
+    }
+    await admin.from("ledger_entries").insert(entries);
+    return respond("cancelled", 200, {
+      role,
+      fineCents: fine.fineCents,
+      posterRefundCents: fine.posterRefundCents,
     });
   }
-  await admin.from("ledger_entries").insert(entries);
 
-  return respond("cancelled", 200, {
-    fineCents: fine.fineCents,
-    posterRefundCents: fine.posterRefundCents,
-  });
+  // WORKER cancels (D-027): the innocent poster gets the full worker
+  // amount back plus the harmed share of the fine; the worker pays the
+  // fine from his wallet (negative balance allowed in the MVP simulation;
+  // real card charge in Fase 3 when the balance doesn't cover it).
+  await admin.from("ledger_entries").insert([
+    { user_id: gig.poster_id, gig_id: gig.id, type: "refund", amount_cents: gig.price_cents },
+    { user_id: gig.poster_id, gig_id: gig.id, type: "fine", amount_cents: fine.workerShareCents },
+    { user_id: userId, gig_id: gig.id, type: "fine", amount_cents: -fine.fineCents },
+  ]);
+  return respond("cancelled", 200, { role, fineCents: fine.fineCents });
 });

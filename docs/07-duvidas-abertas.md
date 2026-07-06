@@ -16,9 +16,9 @@
    apenas alertar fortemente?
 4. 🔴 **Confirmação de conclusão:** se o anunciante não confirmar nem contestar,
    liberar pagamento automaticamente após quanto tempo (24h? 48h?)?
-5. 🟡 **Cancelamento pelo prestador:** regras exatas da punição (queda de
-   prioridade? suspensão após N cancelamentos? janela de cancelamento sem
-   punição logo após o aceite?).
+5. ~~🟡 **Cancelamento pelo prestador**~~ ✅ Respondida em 2026-07-06:
+   multa espelhada de 25% (piso R$ 10) restituindo o anunciante, cobrança
+   no cartão na Fase 3 (ver `06-decisoes.md` D-027).
 6. 🟡 **Denúncias/disputas/reembolsos** (parte mais complexa, reconhecida pelo
    David como ainda não resolvida): quem analisa no início (o próprio David
    como admin?), quais evidências (fotos, descrição), prazos, consequências
@@ -31,11 +31,8 @@
    entretenimento e serviços domésticos).
 10. 🟢 **Avaliações:** comentário textual além da nota? Avaliação é pública no
     perfil ou só a média?
-18. 🟢 **Edição de vaga sem mudar o valor** (D-017): implementei a edição da
-    vaga aberta permitindo mudar tudo MENOS o valor (que está amarrado ao
-    pagamento da criação; para outro valor: excluir, receber o líquido de
-    volta e recriar). Confirma essa regra, ou quer permitir mudar o valor
-    com ajuste de cobrança/reembolso da diferença?
+18. ~~🟢 **Edição de vaga sem mudar o valor**~~ ✅ Confirmada em
+    2026-07-06 pelo David: o valor NÃO pode ser alterado (D-017/D-027).
 16. ~~🔴 **Prazo de processamento na carteira**~~ ✅ Respondida em
     2026-07-03: **7 dias**, inicialmente (ver `06-decisoes.md` D-016).
     Relaciona-se com a dúvida #4 (auto-liberação da confirmação) e com o
