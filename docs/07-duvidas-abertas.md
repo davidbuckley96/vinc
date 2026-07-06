@@ -9,9 +9,9 @@
 1. ~~🔴 **Multa do anunciante**~~ ✅ Respondida em 2026-07-03: **25% do
    valor do prestador, piso de R$ 10; 80% para o prestador lesado, 20%
    para a plataforma** (ver `06-decisoes.md` D-018).
-2. 🟡 **Taxa da plataforma:** o MODELO foi decidido (D-013: paga pelo
-   anunciante na criação, não reembolsável, prestador vê o líquido). Falta
-   definir o **percentual/fórmula** — 10% está em uso como exemplo.
+2. ~~🟡 **Taxa da plataforma**~~ ✅ Respondida em 2026-07-06: **10%
+   oficial** (D-035; modelo já vinha de D-013 — paga pelo anunciante na
+   criação, não reembolsável, prestador vê o líquido).
 3. 🔴 **Conflito de agenda no aceite:** bloquear de vez o aceite conflitante ou
    apenas alertar fortemente?
 4. ~~🔴 **Confirmação de conclusão**~~ ✅ Respondida em 2026-07-06:
@@ -58,8 +58,10 @@
 
 ## Técnico / negócio
 
-13. 🟡 **Gateway de pagamento** da Fase 3: Mercado Pago, Pagar.me ou outro?
-    (depende de conta/credenciais do David)
+13. 🟡 **Gateway de pagamento** da Fase 3 — REDUZIDA em 2026-07-06
+    (D-035): modelo A (subcontas/split), candidatos **Mercado Pago e
+    Pagar.me**; desenvolvimento em sandbox desde já. Falta só a escolha
+    CONTRATUAL, que depende do CNPJ (sem pressa — o adapter é trocável).
 14. ~~🔴 **Contas de infraestrutura**~~ ✅ Resolvida em 2026-07-03: projeto
     Supabase criado, migrations aplicadas, Google OAuth configurado, `.env`
     preenchido e backend verificado e2e. Contas Apple Developer / Google
@@ -80,6 +82,7 @@
     e-commerce), **cartões** vêm em seguida (~30% das transações; crédito
     R$ 3,1 tri em 2025), e as **carteiras digitais** mais usadas/confiáveis
     são PayPal, Mercado Pago e PicPay (seguidas de PagBank e Google Pay).
-    Direção registrada em D-016: lançar com **Pix + cartões** via gateway e
-    adicionar carteiras conforme o suporte do gateway escolhido. Falta:
-    escolher o gateway e confirmar o leque exato no lançamento.
+    Direção atualizada em D-035 (2026-07-06): **lançamento Pix-only**
+    (paga por QR, recebe na chave); cartões entram depois — e com eles a
+    cobrança real da multa do prestador sem saldo (D-027). Carteiras
+    digitais conforme o suporte do provedor contratado.

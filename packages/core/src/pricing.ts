@@ -1,8 +1,8 @@
 /**
  * Platform pricing (docs/02 §5.1 — D-013/D-014). The poster chooses the
  * exact amount the WORKER receives (net) and pays net + service fee at gig
- * creation; the fee is non-refundable and stays with the platform. The
- * rate below is an EXAMPLE pending the final decision (docs/07 #2).
+ * creation; the fee is non-refundable and stays with the platform.
+ * 10% is the OFFICIAL rate (D-035).
  */
 
 export const PLATFORM_FEE_RATE = 0.1;

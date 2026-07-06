@@ -205,8 +205,8 @@ iniciadas e a candidatura a elas é recusada.
 
 - **O anunciante escolhe o valor que o PRESTADOR RECEBERÁ (x)** e a taxa de
   serviço é somada por cima: ao confirmar a vaga ele paga **x + taxa**.
-  Exemplo (valores ilustrativos, percentual final ⚠️ em aberto): prestador
-  recebe R$ 100 → taxa de R$ 10 → o anunciante paga R$ 110.
+  **Taxa oficial: 10% (D-035)**: prestador recebe R$ 100 → taxa de
+  R$ 10 → o anunciante paga R$ 110.
 - **O prestador sempre vê o valor escolhido (x)** (na busca, no detalhe, na
   agenda, na carteira): ele recebe integralmente o valor pelo qual se
   candidatou. A **prévia** do anúncio na criação mostra esse valor.

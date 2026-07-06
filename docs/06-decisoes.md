@@ -534,3 +534,44 @@ Verificado
 e2e em 2026-07-06 (janela criada no cancelamento, prioritário reordenado
 na lista sobreposta mesmo se candidatando por último, sem efeito em
 horários que não sobrepõem, RLS de janelas só para o próprio).
+
+## D-035 — Desenho da Fase 3: Pix-only, modelo A (subcontas/split), taxa oficial 10%, sandbox até o CNPJ
+**Data:** 2026-07-06 · **Decidido por:** David
+
+1. **Taxa da plataforma: 10% oficial** (fecha a dúvida #2; era exemplo
+   desde D-013). Com Pix custando ~1% por transação, margem confortável.
+2. **Pix-only no lançamento**: anunciante paga por QR dinâmico, prestador
+   recebe na chave Pix. Cartão entra depois — junto com ele a cobrança
+   real da multa do prestador sem saldo (D-027); até lá, carteira
+   negativa/compensação em recebimentos futuros.
+3. **Modelo A — subcontas/split no provedor**: cada prestador tem uma
+   subconta/conta de recebedor no provedor; o dinheiro **nunca passa
+   juridicamente pela conta do Vinc** (a custódia é da instituição de
+   pagamento autorizada — risco regulatório mínimo). Candidatos: Mercado
+   Pago e Pagar.me (marketplace maduro, recebedor pessoa física com CPF);
+   a escolha contratual final acontece na obtenção do CNPJ (dúvida #13).
+4. **Disputas/reembolsos no modelo A — confirmado que funcionam, com
+   adaptações** (esclarecimento pedido pelo David):
+   - A regra de ouro: o **ledger interno continua a fonte de verdade das
+     decisões**; o provedor executa os movimentos líquidos.
+   - **Retenção**: a cobrança entra com split marcado mas com liberação
+     CONTROLADA pela plataforma; a confirmação do anunciante (ou o job de
+     48h) dispara a liberação via API.
+   - **Janela de 7 dias (D-016)**: no modelo A ela vira literal — a
+     liberação real ao prestador só acontece quando a janela fecha sem
+     pedido de reembolso. O desenho da Fase 2 ("em processamento") casa
+     perfeitamente, sem mudança de produto.
+   - **Disputa**: liberação fica suspensa (status disputed); resolução =
+     devolução Pix parcial/total ao anunciante via API + liberação do
+     restante ao prestador. Devolução Pix tem prazo regulatório de 90
+     dias — folga enorme sobre nossos 7 dias + análise.
+   - **Multas**: pagas a partir do valor ainda retido (cancelamento do
+     anunciante: devolução com multa deduzida + repasse da compensação ao
+     prestador — uma operação por pessoa, D-020).
+   - Prazos exatos de liquidação/estorno podem variar por provedor; o
+     David aceitou adaptá-los mantendo as regras de produto.
+5. **Sem CNPJ ainda**: desenvolvimento 100% em **sandbox**, atrás de uma
+   porta `PaymentProvider` no backend — implementação `simulated` (a
+   atual) e `gateway` (sandbox), trocáveis por configuração. Quando o
+   CNPJ existir, "plugar" é: contratar o provedor, trocar credenciais e
+   ativar o adapter em produção.

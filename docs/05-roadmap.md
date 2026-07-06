@@ -36,11 +36,15 @@
 - [x] 2.7 Prioridade para lesados por cancelamento (D-034): janela de prioridade no PERÍODO do serviço cancelado (trigger no banco, expira sozinha), candidato em destaque no topo da lista com selo "⚡ Destaque" (nome escolhido pelo David), aviso ao prestador na vaga sobreposta e na notificação; verificado e2e
 - [x] 2.8 Busca por região (D-029, docs/02 §2.3): barra de região na busca + modal (GPS via expo-location com fallback manual no mapa, raio 5–100 km padrão 30), região salva no aparelho, corte por caixa no servidor + círculo/ordenação por proximidade no cliente, "≈ 3 km" no cartão (do pino aproximado); verificado e2e (Recife × São Paulo) e unitário (47 testes)
 
-## Fase 3 — Pagamentos reais
-- [ ] Gateway brasileiro (Mercado Pago/Pagar.me — a decidir, dúvida #13) com split; meios de pagamento: Pix + cartões no lançamento, carteiras digitais conforme o gateway (D-016, dúvida #17)
-- [ ] Saque via Pix para conta bancária do prestador (avaliar outras opções de pagamento digital — dúvida #17)
-- [ ] KYC / verificação de identidade
-- [ ] Cobrança real da multa e da taxa da plataforma — incl. **cobrar no cartão do prestador** a multa de cancelamento (D-027) quando o saldo da carteira não cobrir
+## Fase 3 — Pagamentos reais (desenho fechado em D-035: Pix-only, modelo A subcontas/split, taxa 10%, sandbox até o CNPJ)
+- [ ] 3.1 Porta `PaymentProvider` no backend: as Edge Functions passam a falar com uma interface (hold/release/refund/payout); implementação `simulated` = comportamento atual, trocável por configuração
+- [ ] 3.2 Adapter sandbox (Mercado Pago): cobrança Pix por QR dinâmico na criação da vaga + webhook de confirmação (vaga só publica com pagamento confirmado)
+- [ ] 3.3 Onboarding do recebedor: prestador conecta/cria a subconta (CPF + chave Pix) no perfil antes do primeiro recebimento
+- [ ] 3.4 Liberação com split na confirmação/48h; devoluções Pix (totais/parciais) nas disputas e cancelamentos — ledger continua a fonte de verdade, provedor executa
+- [ ] 3.5 Saque real: withdraw passa a mover o saldo da subconta do prestador para a conta bancária dele
+- [ ] 3.6 KYC / verificação de identidade (o que o provedor exigir das subcontas + selo no perfil)
+- [ ] 3.7 "Plugar" produção quando houver CNPJ: contratar provedor (decisão final MP × Pagar.me), credenciais de produção, revisar taxas vigentes, ativar o adapter
+- [ ] 3.8 (pós-lançamento Pix) Cartões de crédito/débito + cobrança real da multa do prestador sem saldo (D-027); carteiras digitais conforme o provedor
 
 ## Fase 4 — Crescimento
 - [ ] Prioridade de usuário como recurso premium (expansão do D-034 — ideia do David)
