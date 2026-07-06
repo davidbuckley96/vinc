@@ -37,7 +37,7 @@
 - [x] 2.8 Busca por região (D-029, docs/02 §2.3): barra de região na busca + modal (GPS via expo-location com fallback manual no mapa, raio 5–100 km padrão 30), região salva no aparelho, corte por caixa no servidor + círculo/ordenação por proximidade no cliente, "≈ 3 km" no cartão (do pino aproximado); verificado e2e (Recife × São Paulo) e unitário (47 testes)
 
 ## Fase 3 — Pagamentos reais (desenho fechado em D-035: Pix-only, modelo A subcontas/split, taxa 10%, sandbox até o CNPJ)
-- [ ] 3.1 Porta `PaymentProvider` no backend: as Edge Functions passam a falar com uma interface (hold/release/refund/payout); implementação `simulated` = comportamento atual, trocável por configuração
+- [x] 3.1 Porta `PaymentProvider` no backend (`_shared/payment-provider.ts`): todas as 6 functions que movem dinheiro chamam a porta (chargePoster/releaseToWorker/refundPoster/transferCompensation/payoutWithdrawal); `simulated` (padrão) = comportamento atual, seleção por env `PAYMENT_PROVIDER`; smoke e2e verde após o redeploy
 - [ ] 3.2 Adapter sandbox (Mercado Pago): cobrança Pix por QR dinâmico na criação da vaga + webhook de confirmação (vaga só publica com pagamento confirmado)
 - [ ] 3.3 Onboarding do recebedor: prestador conecta/cria a subconta (CPF + chave Pix) no perfil antes do primeiro recebimento
 - [ ] 3.4 Liberação com split na confirmação/48h; devoluções Pix (totais/parciais) nas disputas e cancelamentos — ledger continua a fonte de verdade, provedor executa
