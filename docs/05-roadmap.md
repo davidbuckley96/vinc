@@ -22,7 +22,7 @@
 - [x] Taxa de serviço na criação da vaga (D-013) — IMPLEMENTADO: pagamento antecipado via create-gig (taxa 10%-exemplo + escrow do líquido), taxa explícita na criação, prévia e busca com o líquido, reembolso do líquido na exclusão (delete-gig), tudo verificado e2e; e reembolso na expiração (job pg_cron a cada 5 min, D-022)
 - [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
 - [x] Localização por mapa (D-023, rodada 7 opção A): picker em tela cheia com pino fixo + busca (Nominatim), modal de mapa ao ver a vaga, lat/lng validados e persistidos (verificado e2e); MapLibre + OpenFreeMap (trocar tiles p/ MapTiler no pré-lançamento)
-- [~] Mensagens entre as partes dentro do app (docs/02 §9) — BACKEND pronto e verificado e2e (gig_messages: só participantes do serviço vinculado, remetente não falsificável, bloqueio corta envio nos dois sentidos, realtime habilitado); FALTA a UI (rodada 9 aguardando escolha)
+- [x] Mensagens entre as partes dentro do app (D-025, docs/02 §9, rodada 9 opção B) — backend verificado e2e (participantes do serviço vinculado, sem falsificar remetente, bloqueio corta nos dois sentidos, imutáveis, realtime) + UI: bolhas com respostas prontas de um toque, botão Conversar com contador de novas (marcas de leitura verificadas e2e)
 - [ ] Web e mobile funcionando com paridade
 
 ## Fase 2 — Confiança
@@ -128,8 +128,9 @@ revisados antes de abrir o app ao público:
   job pg_cron a cada 5 min (verificado e2e: expira aberta e pendente no
   início do horário, reembolsa o líquido uma única vez, poupa vagas
   futuras); busca e apply-gig recusam vagas já iniciadas.
-- **Faltam na Fase 1**: punição de
-  reputação do prestador que cancela (dúvida #5); localização por mapa
-  (docs/02 §2.1, rodada de design + provedor, dúvida #15); mensagens no
-  app (chat simples, respeitando bloqueios); filtro de busca por horário;
-  revisão final de paridade web/mobile.
+- **Chat (D-025) no ar**: gig_messages + gig_message_reads (migrations
+  0013–0014), realtime habilitado; tela de conversa com respostas prontas,
+  botão Conversar com contador de novas.
+- **Faltam na Fase 1**: punição de reputação do prestador que cancela
+  (dúvida #5); filtro de busca por horário; revisão final de paridade
+  web/mobile.

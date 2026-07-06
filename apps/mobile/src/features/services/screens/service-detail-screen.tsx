@@ -25,6 +25,7 @@ import { LocationModal } from '@/components/location-map';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { CandidateList } from '@/features/gigs/components/candidate-list';
 import { useCancelGig, useDeleteGig } from '@/features/gigs/hooks';
+import { useUnreadCount } from '@/features/messages/hooks';
 import { useHasReviewed } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -132,6 +133,13 @@ export function ServiceDetailScreen() {
   const reviewed = useHasReviewed(id);
   const deletion = useDeleteGig();
   const cancellation = useCancelGig();
+  const chatReady =
+    service.data != null &&
+    service.data.counterpartId != null &&
+    ['accepted', 'in_progress', 'awaiting_confirmation', 'completed'].includes(
+      service.data.status,
+    );
+  const unread = useUnreadCount(id, chatReady);
   const [error, setError] = useState<string | null>(null);
   const [deleteArmed, setDeleteArmed] = useState(false);
   const [deletedNote, setDeletedNote] = useState<string | null>(null);
@@ -239,6 +247,25 @@ export function ServiceDetailScreen() {
                 {card.body}
               </Text>
             </View>
+
+            {chatReady && (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push(`/chat/${data.id}`)}
+                style={[styles.chat, { borderColor: theme.primary }]}>
+                <Ionicons name="chatbubble-ellipses-outline" size={17} color={theme.primary} />
+                <Text style={[styles.chatLabel, { color: theme.primary }]}>
+                  Conversar com {data.counterpartName ?? 'a outra pessoa'}
+                </Text>
+                {(unread.data ?? 0) > 0 && (
+                  <View style={[styles.badge, { backgroundColor: theme.danger }]}>
+                    <Text style={[styles.badgeLabel, { color: theme.onPrimary }]}>
+                      {unread.data}
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
+            )}
 
             <View style={[styles.kv, { borderBottomColor: theme.line }]}>
               <Text style={[styles.kvLabel, { color: theme.textSecondary }]}>Quando</Text>
@@ -552,6 +579,32 @@ const styles = StyleSheet.create({
   },
   cancelBlock: {
     marginTop: Spacing.two,
+  },
+  chat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.one + 2,
+    borderWidth: 1.5,
+    borderRadius: Radius.large - 2,
+    paddingVertical: 12,
+    marginBottom: Spacing.two,
+  },
+  chatLabel: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  badge: {
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 5,
+  },
+  badgeLabel: {
+    fontSize: 11,
+    fontWeight: '800',
   },
   fineWarning: {
     fontSize: 13,

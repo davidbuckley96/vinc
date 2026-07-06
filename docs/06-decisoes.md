@@ -320,3 +320,19 @@ D-012 (um candidato por vez travava a vaga). Regras:
 - Técnica: tabela `gig_candidacies` substitui `gig_refusals` e o status
   `pending_approval` (que vira legado); RLS não dá SELECT ao anunciante —
   a lista vem anonimizada da função `get-candidates`.
+
+## D-025 — Chat: rodada 9 opção B (conversa clássica + respostas prontas)
+**Data:** 2026-07-06 · **Decidido por:** David
+
+Da rodada 9 (`docs/design/rodada-09-chat.html`), David escolheu a **Opção
+B**: tela dedicada de conversa com bolhas (estilo WhatsApp, mensagens
+próprias em roxo à direita) e uma fileira de **respostas prontas de um
+toque** acima do teclado ("Estou chegando", "Cheguei", "Pode me ligar?",
+"Vou me atrasar um pouco", "Tudo certo por aqui 👍") — quem escreve com
+dificuldade resolve a coordenação do dia do serviço com um dedo.
+Complementos implementados: entrega em tempo real (Realtime + polling de
+reserva), botão "Conversar com {nome}" na tela do serviço com **contador
+de mensagens novas** (marcas de leitura por usuário, RLS própria), e as
+regras de D-024/§8 no banco: conversa só entre anunciante e o prestador
+ESCOLHIDO, remetente não falsificável, bloqueio corta o envio nos dois
+sentidos, mensagens imutáveis.

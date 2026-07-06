@@ -236,7 +236,7 @@ reembolso. Ver `07-duvidas-abertas.md`.
   a recusa de candidatura (§3) afeta apenas uma vaga específica.
 - Desbloqueio: quem bloqueou pode desfazer.
 
-## 9. Mensagens entre as partes (Fase 1 — backend pronto, UI na rodada 9)
+## 9. Mensagens entre as partes (implementado — D-025, rodada 9 opção B)
 
 - **Uma conversa por serviço**, entre o anunciante e o prestador
   **escolhido** — nunca durante a fase anônima de candidatura (D-024).
@@ -247,6 +247,9 @@ reembolso. Ver `07-duvidas-abertas.md`.
 - Mensagens **imutáveis** (sem editar/apagar — proteção em disputas, §6) e
   entregues **em tempo real**; só os dois participantes conseguem ler
   (RLS; verificado e2e, incluindo falsificação de remetente).
+- UI (opção B): bolhas clássicas + **respostas prontas de um toque** acima
+  do teclado; botão "Conversar" na tela do serviço com **contador de
+  mensagens novas** (marca de leitura por usuário).
 
 ## 10. Home / Calendário (tela principal)
 
