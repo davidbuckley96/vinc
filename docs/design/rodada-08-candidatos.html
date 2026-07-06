@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 8: Escolha de candidatos</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --roxo-med:#6D4FAE; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --verde:#059669; --star:#F59E0B; --vermelho:#DC2626; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:860px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .head{background:var(--roxo);color:#fff;padding:26px 16px 14px;border-radius:0 0 22px 22px}
+  .head .t{font-size:16px;font-weight:800}
+  .body{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:9px;overflow:hidden}
+  .banner{background:var(--lilas);border-radius:13px;padding:10px 12px;text-align:center}
+  .banner b{font-size:13.5px;color:var(--roxo-deep)}
+  .banner span{display:block;font-size:11px;color:var(--roxo-med);margin-top:2px}
+  .cand{border:1.5px solid var(--line);border-radius:15px;padding:11px 12px}
+  .cand .top{display:flex;align-items:center;gap:9px}
+  .anonav{width:38px;height:38px;border-radius:50%;background:var(--lilas);display:flex;align-items:center;justify-content:center;font-size:17px}
+  .cand .nm{font-size:14.5px;font-weight:800}
+  .cand .meta{font-size:11.5px;color:var(--ink2)}
+  .cand .meta .st{color:var(--star);font-weight:700}
+  .chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+  .chip{background:#F4F1FA;border-radius:99px;padding:3px 9px;font-size:10.5px;font-weight:600;color:var(--roxo-med)}
+  .acts{display:flex;gap:7px;margin-top:9px}
+  .b1{flex:1.4;background:var(--roxo);color:#fff;border-radius:11px;padding:9px 0;text-align:center;font-size:12.5px;font-weight:800}
+  .b2{flex:1;border:1.5px solid var(--line);color:var(--ink2);border-radius:11px;padding:9px 0;text-align:center;font-size:12.5px;font-weight:700}
+  .foot{font-size:10.5px;color:var(--ink2);text-align:center;line-height:1.5;padding:0 6px}
+  .rowitem{display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--line);padding:10px 2px}
+  .rowitem .nm{font-size:13.5px;font-weight:800}
+  .rowitem .meta{font-size:11px;color:var(--ink2)}
+  .rowitem .chev{margin-left:auto;color:var(--ink2);font-size:15px}
+  .rowitem.open{background:#FAF8FE;border-radius:12px;border:1.5px solid var(--roxo);padding:10px}
+  .bigcard{border:1.5px solid var(--line);border-radius:18px;padding:18px 14px;text-align:center;box-shadow:0 6px 18px rgba(17,20,24,.06)}
+  .bigav{width:64px;height:64px;border-radius:50%;background:var(--lilas);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 8px}
+  .bigcard .nm{font-size:18px;font-weight:800}
+  .bignote{font-size:26px;font-weight:800;color:var(--ink);margin:6px 0 0}
+  .bignote small{font-size:12px;color:var(--ink2);font-weight:600}
+  .counter{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink2);font-weight:700}
+  .counter .nav{font-size:18px;color:var(--roxo)}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 8 de design: escolher o prestador</h1>
+  <p class="sub">Com D-024, a vaga junta candidatos e o anunciante escolhe. Regra fixa em todas as opções: candidato <b>anonimizado</b> — só primeiro nome, nota como prestador, nº de avaliações, serviços prestados e os elogios mais frequentes. Sem foto, sem sobrenome, sem link de perfil. O que muda é a forma de comparar e agir.</p>
+
+  <div class="row">
+
+    <!-- A -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Babá para 2 crianças</div></div>
+        <div class="body">
+          <div class="banner"><b>3 candidatos querem fazer o serviço</b><span>compare e escolha — a vaga continua aberta enquanto isso</span></div>
+          <div class="cand">
+            <div class="top">
+              <div class="anonav">🧑‍🔧</div>
+              <div><div class="nm">Beto</div><div class="meta"><span class="st">★ 4,9</span> (61 avaliações) · 64 serviços</div></div>
+            </div>
+            <div class="chips"><span class="chip">Pontual</span><span class="chip">Caprichou no serviço</span><span class="chip">Educado e gentil</span></div>
+            <div class="acts"><div class="b1">Escolher Beto</div><div class="b2">Recusar</div></div>
+          </div>
+          <div class="cand">
+            <div class="top">
+              <div class="anonav">🧑‍🔧</div>
+              <div><div class="nm">Carla</div><div class="meta"><span class="st">★ 4,7</span> (23 avaliações) · 25 serviços</div></div>
+            </div>
+            <div class="chips"><span class="chip">Boa comunicação</span><span class="chip">Pontual</span></div>
+            <div class="acts"><div class="b1">Escolher Carla</div><div class="b2">Recusar</div></div>
+          </div>
+          <div class="cand">
+            <div class="top">
+              <div class="anonav">🧑‍🔧</div>
+              <div><div class="nm">Denise</div><div class="meta">sem avaliações ainda · nova no Vinc</div></div>
+            </div>
+            <div class="acts"><div class="b1">Escolher Denise</div><div class="b2">Recusar</div></div>
+          </div>
+          <div class="foot">Por segurança e igualdade, foto e nome completo aparecem só depois da escolha.</div>
+        </div>
+      </div>
+      <h3>Opção A — Cartões comparáveis · recomendada</h3>
+      <span class="tag">tudo visível, decisão na mesma tela</span>
+      <p>Todos os candidatos empilhados com as mesmas informações na mesma ordem — comparação direta, sem toques extras. Escolher e recusar em cada cartão. Novato aparece como "nova no Vinc" (sem nota), o que dá chance a quem está começando.</p>
+    </div>
+
+    <!-- B -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Babá para 2 crianças</div></div>
+        <div class="body">
+          <div class="banner"><b>3 candidatos</b><span>toque para ver os detalhes</span></div>
+          <div class="rowitem"><div class="anonav">🧑‍🔧</div><div><div class="nm">Beto</div><div class="meta">★ 4,9 · 64 serviços</div></div><div class="chev">›</div></div>
+          <div class="rowitem open">
+            <div style="width:100%">
+              <div style="display:flex;align-items:center;gap:9px"><div class="anonav">🧑‍🔧</div><div><div class="nm">Carla</div><div class="meta">★ 4,7 (23 avaliações) · 25 serviços</div></div></div>
+              <div class="chips"><span class="chip">Boa comunicação</span><span class="chip">Pontual</span></div>
+              <div class="acts"><div class="b1">Escolher Carla</div><div class="b2">Recusar</div></div>
+            </div>
+          </div>
+          <div class="rowitem"><div class="anonav">🧑‍🔧</div><div><div class="nm">Denise</div><div class="meta">nova no Vinc</div></div><div class="chev">›</div></div>
+          <div style="flex:1"></div>
+          <div class="foot">Foto e nome completo aparecem só depois da escolha.</div>
+        </div>
+      </div>
+      <h3>Opção B — Lista compacta expansível</h3>
+      <span class="tag">muitos candidatos por tela</span>
+      <p>Linhas enxutas (nome + nota + serviços); tocar abre os elogios e os botões. Escala melhor quando houver 10+ candidatos, mas exige um toque a mais para agir e esconde os elogios na comparação.</p>
+    </div>
+
+    <!-- C -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Babá para 2 crianças</div></div>
+        <div class="body">
+          <div class="counter"><span class="nav">‹</span><span>candidato 1 de 3</span><span class="nav">›</span></div>
+          <div class="bigcard">
+            <div class="bigav">🧑‍🔧</div>
+            <div class="nm">Beto</div>
+            <div class="bignote">★ 4,9 <small>· 61 avaliações</small></div>
+            <div class="meta" style="font-size:12px;color:var(--ink2);margin-top:2px">64 serviços prestados</div>
+            <div class="chips" style="justify-content:center;margin-top:10px"><span class="chip">Pontual</span><span class="chip">Caprichou no serviço</span><span class="chip">Educado e gentil</span></div>
+          </div>
+          <div class="acts"><div class="b1" style="padding:12px 0">Escolher Beto</div><div class="b2" style="padding:12px 0">Recusar</div></div>
+          <div style="flex:1"></div>
+          <div class="foot">Foto e nome completo aparecem só depois da escolha.</div>
+        </div>
+      </div>
+      <h3>Opção C — Um por vez, cartão grande</h3>
+      <span class="tag">foco total em cada candidato</span>
+      <p>Um candidato por tela, informações grandes, navegação ‹ ›. Bonito e legível, mas dificulta exatamente o que motivou a mudança: comparar os candidatos lado a lado.</p>
+    </div>
+
+  </div>
+</body>
+</html>
