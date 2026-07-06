@@ -14,6 +14,7 @@ export const GIG_STATUSES = [
   "accepted",
   "in_progress",
   "awaiting_confirmation",
+  "disputed",
   "completed",
   "cancelled_by_poster",
   "cancelled_by_worker",
@@ -31,7 +32,11 @@ const TRANSITIONS: Record<GigStatus, readonly GigStatus[]> = {
   pending_approval: ["accepted", "open", "cancelled_by_poster", "expired"],
   accepted: ["in_progress", "cancelled_by_poster", "cancelled_by_worker"],
   in_progress: ["awaiting_confirmation", "cancelled_by_poster", "cancelled_by_worker"],
-  awaiting_confirmation: ["completed"],
+  // Instead of confirming, the poster may DISPUTE (docs/02 §6 — D-028):
+  // the escrow freezes (the 48h auto-release only touches
+  // awaiting_confirmation) until the platform resolves it.
+  awaiting_confirmation: ["completed", "disputed"],
+  disputed: ["completed"],
   completed: [],
   cancelled_by_poster: [],
   cancelled_by_worker: [],
@@ -47,6 +52,7 @@ export const ACTIVE_WORKER_STATUSES: readonly GigStatus[] = [
   "accepted",
   "in_progress",
   "awaiting_confirmation",
+  "disputed",
 ];
 
 /**

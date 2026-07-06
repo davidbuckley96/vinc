@@ -14,6 +14,8 @@ export interface LedgerEntry {
 /** A service payment still inside the 7-day hold (docs/02 §5.2). */
 export interface ProcessingEntry extends LedgerEntry {
   releasesAt: string;
+  /** Frozen by an open refund dispute — no release date applies (§6). */
+  frozen: boolean;
 }
 
 export interface Wallet {
@@ -35,12 +37,20 @@ export interface Wallet {
  * the "since last withdrawal" reading (withdrawals zero the balance).
  */
 export async function fetchWallet(client: SupabaseClient, userId: string): Promise<Wallet> {
-  const { data, error } = await client
-    .from("ledger_entries")
-    .select("id, type, amount_cents, gig_id, created_at, gig:gig_id (title)")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+  const [{ data, error }, disputesResult] = await Promise.all([
+    client
+      .from("ledger_entries")
+      .select("id, type, amount_cents, gig_id, created_at, gig:gig_id (title)")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false }),
+    // Open refund disputes freeze the payment (docs/02 §6); RLS already
+    // scopes this to gigs the user participates in.
+    client.from("disputes").select("gig_id").eq("status", "open"),
+  ]);
   if (error) throw new Error(error.message);
+  const frozenGigIds = new Set(
+    ((disputesResult.data ?? []) as Array<{ gig_id: string }>).map((row) => row.gig_id),
+  );
 
   const entries: LedgerEntry[] = (
     data as unknown as Array<{
@@ -60,17 +70,23 @@ export async function fetchWallet(client: SupabaseClient, userId: string): Promi
     createdAt: row.created_at,
   }));
 
-  return buildWallet(entries, new Date());
+  return buildWallet(entries, new Date(), frozenGigIds);
 }
 
 /** Pure assembly, shared with demo mode so both derive identically. */
-export function buildWallet(entries: LedgerEntry[], now: Date): Wallet {
-  const { availableCents, processingCents } = deriveWalletBalances(entries, now);
+export function buildWallet(
+  entries: LedgerEntry[],
+  now: Date,
+  frozenGigIds?: ReadonlySet<string>,
+): Wallet {
+  const { availableCents, processingCents } = deriveWalletBalances(entries, now, frozenGigIds);
   const lastWithdrawal = entries.find((entry) => entry.type === "withdrawal");
 
+  const frozen = (entry: LedgerEntry) =>
+    Boolean(frozenGigIds && entry.gigId && frozenGigIds.has(entry.gigId));
   const processingEntries: ProcessingEntry[] = entries
-    .filter((entry) => isProcessing(entry, now))
-    .map((entry) => ({ ...entry, releasesAt: releasesAt(entry.createdAt) }));
+    .filter((entry) => isProcessing(entry, now, frozenGigIds))
+    .map((entry) => ({ ...entry, releasesAt: releasesAt(entry.createdAt), frozen: frozen(entry) }));
 
   // A credit joins the available list when it becomes money the user can
   // touch: service payments only AFTER the hold ends (they were not part
@@ -83,7 +99,7 @@ export function buildWallet(entries: LedgerEntry[], now: Date): Wallet {
   const availableEntries = entries.filter(
     (entry) =>
       entry.amountCents > 0 &&
-      !isProcessing(entry, now) &&
+      !isProcessing(entry, now, frozenGigIds) &&
       (withdrawnAt === null || effectiveAt(entry) > withdrawnAt),
   );
 

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 10: Contestação e pedido de reembolso</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --roxo-med:#6D4FAE; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --danger:#DC2626; --danger-soft:#FEF2F2; --warn:#B45309; --warn-soft:#FFFBEB; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:880px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .head{background:var(--roxo);color:#fff;padding:26px 14px 12px;border-radius:0 0 22px 22px}
+  .head .t{font-size:15.5px;font-weight:800}
+  .head .st{font-size:11px;opacity:.85;margin-top:1px}
+  .body{flex:1;padding:12px;display:flex;flex-direction:column;gap:9px;overflow:hidden}
+  .statusc{background:var(--lilas);border-radius:14px;padding:12px;text-align:center}
+  .statusc .ic{font-size:20px}
+  .statusc b{display:block;font-size:13.5px;color:var(--roxo-deep);margin:3px 0 2px}
+  .statusc span{font-size:11px;color:var(--roxo-med);line-height:1.45;display:block}
+  .cta{background:var(--roxo);color:#fff;border-radius:12px;padding:12px;text-align:center;font-size:13.5px;font-weight:800}
+  .ghost{color:var(--danger);text-align:center;font-size:12px;font-weight:700;padding:6px}
+  .label{font-size:10.5px;font-weight:800;color:var(--ink2);letter-spacing:.4px}
+  .textarea{border:1.5px solid var(--line);border-radius:12px;padding:10px;font-size:12.5px;color:var(--ink);line-height:1.5;min-height:96px}
+  .textarea.ph{color:#9aa1ab}
+  .count{font-size:10px;color:var(--ink2);text-align:right;margin-top:-4px}
+  .photos{display:flex;gap:7px}
+  .ph-add{width:52px;height:52px;border:1.5px dashed var(--roxo);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--roxo);font-size:19px;background:var(--lilas)}
+  .ph-thumb{width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#d8cef1,#b9a8e3);position:relative}
+  .ph-thumb::after{content:"×";position:absolute;top:-6px;right:-6px;width:16px;height:16px;background:#1c1f24;color:#fff;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center}
+  .send{background:var(--danger);color:#fff;border-radius:12px;padding:12px;text-align:center;font-size:13.5px;font-weight:800}
+  .note{font-size:10.5px;color:var(--ink2);text-align:center;line-height:1.5;padding:0 6px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1.5px solid var(--line);border-radius:99px;padding:7px 11px;font-size:11.5px;font-weight:700;color:var(--ink2)}
+  .chip.on{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+  .steps{display:flex;gap:5px;justify-content:center;margin-top:2px}
+  .dot{width:22px;height:4px;border-radius:99px;background:var(--line)}
+  .dot.on{background:var(--roxo)}
+  .howc{border:1.5px solid var(--line);border-radius:14px;padding:11px;display:flex;flex-direction:column;gap:8px}
+  .how{display:flex;gap:8px;align-items:flex-start;font-size:11.5px;color:var(--ink2);line-height:1.45}
+  .how .n{width:18px;height:18px;border-radius:50%;background:var(--lilas);color:var(--roxo-deep);font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .how b{color:var(--ink)}
+  .warnc{background:var(--warn-soft);border-radius:12px;padding:9px 11px;font-size:11px;color:var(--warn);line-height:1.5}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 10 de design: contestação e pedido de reembolso</h1>
+  <p class="sub">Backend pronto (D-031). O anunciante conta o que deu errado (relato obrigatório, 20–2000 caracteres) e anexa até 5 fotos; o pagamento congela e o caso vai para análise da plataforma. O MESMO formulário serve para os dois momentos: em vez de confirmar a conclusão, ou como pedido de reembolso nos 7 dias após a liberação. Nas três opções, a entrada é um link discreto "Algo deu errado?" abaixo do botão principal — contestar nunca compete visualmente com confirmar. Escolha a cara do formulário.</p>
+
+  <div class="row">
+
+    <!-- A -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">‹ Contestar conclusão</div><div class="st">Faxina apartamento 60m² · R$ 120,00</div></div>
+        <div class="body">
+          <div class="label">O QUE ACONTECEU?</div>
+          <div class="textarea">Metade dos cômodos ficou sem limpar e o banheiro nem foi tocado. Mandei fotos de como ficou.</div>
+          <div class="count">97/2000</div>
+          <div class="label">FOTOS (OPCIONAL, ATÉ 5)</div>
+          <div class="photos"><div class="ph-thumb"></div><div class="ph-thumb"></div><div class="ph-add">＋</div></div>
+          <div style="flex:1"></div>
+          <div class="warnc">O pagamento de R$ 120,00 fica congelado até a análise. Você será avisado da decisão.</div>
+          <div class="send">Enviar contestação</div>
+        </div>
+      </div>
+      <h3>Opção A — Tela única direta</h3>
+      <span class="tag">menos passos, mais simples</span>
+      <p>Uma tela só: relato, fotos e enviar. O aviso do congelamento fica colado no botão. É o caminho mais curto — bom para quem está irritado e quer resolver logo, sem navegação extra.</p>
+    </div>
+
+    <!-- B -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">‹ Contestar conclusão</div><div class="st">Passo 1 de 2 — o que aconteceu?</div></div>
+        <div class="body">
+          <div class="steps"><div class="dot on"></div><div class="dot"></div></div>
+          <div class="label">QUAL FOI O PROBLEMA?</div>
+          <div class="chips">
+            <div class="chip on">Serviço incompleto</div>
+            <div class="chip">Não compareceu</div>
+            <div class="chip">Ficou malfeito</div>
+            <div class="chip">Causou dano</div>
+            <div class="chip">Outro</div>
+          </div>
+          <div class="label">CONTE COM SUAS PALAVRAS</div>
+          <div class="textarea">Serviço incompleto: metade dos cômodos ficou sem limpar e o banheiro nem foi tocado.</div>
+          <div class="count">86/2000</div>
+          <div style="flex:1"></div>
+          <div class="cta">Continuar</div>
+          <div class="note">No próximo passo: fotos (opcional) e revisão antes de enviar.</div>
+        </div>
+      </div>
+      <h3>Opção B — Dois passos com motivos prontos</h3>
+      <span class="tag">chips guiam quem trava na escrita</span>
+      <p>Passo 1: escolhe o tipo do problema num chip (que já inicia o relato) e completa com as próprias palavras. Passo 2: fotos + revisão com o resumo do que acontece depois. Os chips padronizam os casos para a análise e ajudam quem tem dificuldade de escrever.</p>
+    </div>
+
+    <!-- C -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">‹ Contestar conclusão</div><div class="st">Faxina apartamento 60m² · R$ 120,00</div></div>
+        <div class="body">
+          <div class="howc">
+            <div class="how"><div class="n">1</div><div><b>O pagamento congela</b> — os R$ 120,00 não vão para o prestador ainda.</div></div>
+            <div class="how"><div class="n">2</div><div><b>A plataforma analisa</b> seu relato, as fotos, a conversa e o check-in.</div></div>
+            <div class="how"><div class="n">3</div><div><b>Você recebe a decisão</b>: reembolso total, parcial ou liberação.</div></div>
+          </div>
+          <div class="label">O QUE ACONTECEU?</div>
+          <div class="textarea ph">Conte o que deu errado, com detalhes…</div>
+          <div class="label">FOTOS (OPCIONAL, ATÉ 5)</div>
+          <div class="photos"><div class="ph-add">＋</div></div>
+          <div style="flex:1"></div>
+          <div class="send">Enviar contestação</div>
+        </div>
+      </div>
+      <h3>Opção C — Tela única com "como funciona"</h3>
+      <span class="tag">transparência primeiro</span>
+      <p>Igual à A, mas com um cartão 1-2-3 no topo explicando o processo ANTES de a pessoa escrever. Gerencia a expectativa (não é reembolso automático) e reduz contestação impulsiva — ao custo de empurrar o formulário para baixo.</p>
+    </div>
+
+  </div>
+</body>
+</html>

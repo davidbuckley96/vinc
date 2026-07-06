@@ -422,3 +422,35 @@ Como o item 4 do D-028 foi implementado (bloco 2.3):
    formulário de criação/edição continua com o pino exato (só o
    anunciante o vê) e o cartão de pré-visualização mostra a região, como
    os candidatos verão. Verificado e2e (8 checks) em 2026-07-06.
+
+## D-031 — Disputas: uma por vaga, evidência imutável, chat pausado, congelamento derivado
+**Data:** 2026-07-06 · **Decidido por:** Claude (implementação dos itens 1–3 e 6 do D-028)
+
+Como o backend de disputas (bloco 2.4) foi implementado:
+
+1. **Uma disputa por vaga, para sempre** (constraint no banco) — espelha o
+   princípio do reembolso único (D-020) e impede reabertura infinita.
+2. **Dois momentos, um só fluxo**: em `awaiting_confirmation` a
+   contestação move a vaga para o status `disputed` (o job de 48h só
+   libera `awaiting_confirmation`, então o escrow congela sozinho); em
+   `completed` dentro dos 7 dias (D-016) vira pedido de reembolso e o
+   congelamento é **derivado**: disputa aberta → o pagamento daquela vaga
+   aparece "em análise pela plataforma" na carteira e fica fora do saque,
+   mesmo passados os 7 dias. Se a auto-liberação vencer a corrida por
+   segundos, a contestação vira pedido de reembolso automaticamente.
+3. **Relato obrigatório de 20–2000 caracteres** + até 5 fotos num bucket
+   privado (`dispute-photos`): cada um envia só na própria pasta, as
+   partes e o admin leem, e **ninguém apaga** (sem policy de delete) —
+   evidência anexada é imutável, como o chat.
+4. **Chat pausado durante a disputa**: com a vaga em `disputed` ninguém
+   envia mensagem (a policy de envio não inclui o status); o histórico
+   segue legível para os dois e para a análise. Evita pressão/assédio com
+   o caso aberto — a comunicação passa a ser com a plataforma.
+5. **Resolução atômica e limitada**: `resolve-dispute` exige
+   `profiles.is_admin` (flag manual até o painel 2.5), trava a disputa
+   (`open → resolved`, só a primeira decisão move dinheiro) e aplica:
+   pré-liberação → reembolso X ao anunciante + `escrow_release` de
+   líquido−X ao prestador (reentra nos 7 dias de processamento);
+   pós-liberação → uma operação por pessoa (D-020): prestador −X,
+   anunciante +X. X entre 0 (improcedente) e o valor do serviço — a taxa
+   nunca é reembolsada (D-028). Verificado e2e (15 checks) em 2026-07-06.

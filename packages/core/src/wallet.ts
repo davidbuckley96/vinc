@@ -22,6 +22,8 @@ export interface WalletLedgerLike {
   type: string;
   amountCents: number;
   createdAt: string;
+  /** Needed to freeze payments under an open refund dispute (docs/02 §6). */
+  gigId?: string | null;
 }
 
 /** When a service payment becomes withdrawable (ISO). */
@@ -29,9 +31,19 @@ export function releasesAt(createdAt: string): string {
   return new Date(new Date(createdAt).getTime() + HOLD_MS).toISOString();
 }
 
-/** True while a service payment is still inside the 7-day hold. */
-export function isProcessing(entry: WalletLedgerLike, now: Date): boolean {
-  return entry.type === "escrow_release" && now.getTime() < new Date(releasesAt(entry.createdAt)).getTime();
+/**
+ * True while a service payment is still inside the 7-day hold — or frozen
+ * by an open refund dispute (docs/02 §6 — D-028): a disputed payment
+ * never becomes withdrawable, however old, until the dispute resolves.
+ */
+export function isProcessing(
+  entry: WalletLedgerLike,
+  now: Date,
+  frozenGigIds?: ReadonlySet<string>,
+): boolean {
+  if (entry.type !== "escrow_release") return false;
+  if (frozenGigIds && entry.gigId && frozenGigIds.has(entry.gigId)) return true;
+  return now.getTime() < new Date(releasesAt(entry.createdAt)).getTime();
 }
 
 export interface WalletBalances {
@@ -44,11 +56,12 @@ export interface WalletBalances {
 export function deriveWalletBalances(
   entries: readonly WalletLedgerLike[],
   now: Date,
+  frozenGigIds?: ReadonlySet<string>,
 ): WalletBalances {
   let availableCents = 0;
   let processingCents = 0;
   for (const entry of entries) {
-    if (isProcessing(entry, now)) processingCents += entry.amountCents;
+    if (isProcessing(entry, now, frozenGigIds)) processingCents += entry.amountCents;
     else availableCents += entry.amountCents;
   }
   return { availableCents, processingCents };

@@ -94,6 +94,18 @@ function statusCard(service: ServiceDetail): StatusCard {
             body: `O serviço foi realizado corretamente? Ao confirmar, ${price} é liberado para ${other}. Sem resposta nem contestação, libera sozinho em 48h.`,
             actionLabel: 'Confirmar conclusão',
           };
+    case 'disputed':
+      return worker
+        ? {
+            icon: 'shield-half',
+            title: 'Serviço em análise',
+            body: `${other} contestou a conclusão. O pagamento de ${price} fica congelado enquanto a plataforma analisa o caso. Você será avisado da decisão.`,
+          }
+        : {
+            icon: 'shield-half',
+            title: 'Contestação em análise',
+            body: 'Recebemos o seu relato. O pagamento está congelado enquanto a plataforma analisa o caso. Você será avisado da decisão.',
+          };
     case 'completed':
       return worker
         ? {

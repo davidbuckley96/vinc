@@ -43,19 +43,30 @@ Deno.serve(async (request) => {
   if (userError || !userData.user) return respond("unauthorized", 401);
   const userId = userData.user.id;
 
-  const { data: rows, error } = await admin
-    .from("ledger_entries")
-    .select("type, amount_cents, created_at")
-    .eq("user_id", userId);
+  const [{ data: rows, error }, { data: openDisputes }] = await Promise.all([
+    admin
+      .from("ledger_entries")
+      .select("type, amount_cents, created_at, gig_id")
+      .eq("user_id", userId),
+    // Payments under an open refund dispute are frozen (docs/02 §6).
+    admin
+      .from("disputes")
+      .select("gig_id, gig:gig_id!inner(worker_id)")
+      .eq("status", "open")
+      .eq("gig.worker_id", userId),
+  ]);
   if (error) return respond("invalid_request", 400);
 
+  const frozenGigIds = new Set((openDisputes ?? []).map((row) => row.gig_id as string));
   const { availableCents } = deriveWalletBalances(
     (rows ?? []).map((row) => ({
       type: row.type,
       amountCents: row.amount_cents,
       createdAt: row.created_at,
+      gigId: row.gig_id,
     })),
     new Date(),
+    frozenGigIds,
   );
   if (availableCents <= 0) return respond("nothing_to_withdraw", 409);
 

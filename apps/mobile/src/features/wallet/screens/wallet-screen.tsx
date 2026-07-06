@@ -191,7 +191,7 @@ export function WalletScreen() {
                           {entry.gigTitle ?? 'Movimentação'}
                         </Text>
                         <Text style={[styles.entryMeta, { color: theme.warning }]}>
-                          {releaseLabel(entry.releasesAt)}
+                          {entry.frozen ? 'em análise pela plataforma' : releaseLabel(entry.releasesAt)}
                         </Text>
                       </View>
                       <Text style={[styles.entryValue, { color: theme.warning }]}>

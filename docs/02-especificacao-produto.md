@@ -218,7 +218,7 @@ saque fixo embaixo e extrato na tela "Histórico". Regras:
 - O **extrato completo** (todos os pagamentos e recebimentos) sai da tela
   principal e fica atrás de um botão **"Ver histórico"**.
 
-## 6. Denúncias, disputas e reembolsos (desenhado — D-028; implementação na Fase 2)
+## 6. Denúncias, disputas e reembolsos (D-028; backend implementado — D-031; UI na rodada 10)
 
 - **Quem analisa:** o David, num **painel admin simples** (web). Cada caso
   exibe: relato do anunciante, fotos, a conversa do chat (imutável), o
@@ -242,6 +242,14 @@ saque fixo embaixo e extrato na tela "Histórico". Regras:
 - Má-fé reincidente (denúncias improcedentes repetidas, dos dois lados):
   avaliada no painel; pode levar a suspensão. ⚠️ regras exatas a calibrar
   com o uso.
+- **Implementação (D-031):** uma disputa por vaga (espelha o reembolso
+  único — D-020); status `disputed` congela o escrow pré-liberação (o job
+  de 48h não o toca); pós-liberação o congelamento é derivado (disputa
+  aberta → pagamento fica "em análise" na carteira e fora do saque);
+  fotos em bucket privado e **imutáveis** (evidência não pode ser
+  apagada); durante a disputa o chat **não envia** (histórico segue
+  legível — é parte da análise); resolução atômica (só a primeira decisão
+  move dinheiro) via `resolve-dispute`, restrita a `profiles.is_admin`.
 
 ## 7. Avaliações
 
