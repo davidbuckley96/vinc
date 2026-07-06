@@ -28,7 +28,7 @@
 ## Fase 2 — Confiança (desenho fechado em D-028; ordem de execução abaixo)
 - [x] 2.1 Auto-liberação em 48h — `awaiting_since` + job pg_cron a cada 15 min (verificado e2e: não libera antes das 48h, libera com escrow_release depois)
 - [x] 2.2 Check-in por código — gerado na escolha, legível só pelo anunciante (tabela própria + RLS, verificado e2e), prestador digita para iniciar (código errado recusado); vagas antigas sem código iniciam livre
-- [ ] 2.3 Endereço/pino aproximados antes da escolha; completos para o escolhido (D-028)
+- [x] 2.3 Endereço/pino aproximados antes da escolha; completos para o escolhido (D-028/D-030) — exato em `gig_addresses` (RLS: anunciante + designado), `gigs` só com região + pino deslocado 250–600 m fixado na criação, círculo no mapa; verificado e2e (8 checks)
 - [ ] 2.4 Disputas e reembolsos (D-028): contestar em vez de confirmar (congela) + pedido de reembolso nos 7 dias (congela o contestado); relato + até 5 fotos; resolução total/parcial via função (ledger)
 - [ ] 2.5 Painel admin do David (rota /admin no web, papel admin): fila de disputas com relato, fotos, chat, check-in e histórico; decisão com um clique
 - [ ] 2.6 Notificações: central in-app primeiro (candidato novo, escolhido, serviço iniciado/concluído, pagamento liberado, disputa); push real requer build de desenvolvimento (EAS) — junto com a Fase 4/lojas
@@ -86,14 +86,20 @@ revisados antes de abrir o app ao público:
 
 ## Estado atual
 
-**Última atualização:** 2026-07-06 — **Fase 1 (MVP com pagamentos simulados) FUNCIONALMENTE COMPLETA**
+**Última atualização:** 2026-07-06 — **Fase 1 completa; Fase 2 em andamento (2.1, 2.2 e 2.3 no ar)**
 
 - **Backend real (Supabase) operacional e verificado e2e**: projeto
-  `gexzpkbqodoyoxudzklb`, migrations 0001–0010 aplicadas, Edge Functions
+  `gexzpkbqodoyoxudzklb`, migrations 0001–0017 aplicadas, Edge Functions
   ATIVAS: `create-gig`, `update-gig`, `delete-gig`, `apply-gig`,
   `get-candidates`, `decide-candidacy`, `cancel-gig`, `gig-lifecycle`,
-  `withdraw`; job pg_cron `expire-due-gigs` (5 min). Migrations 0001–0012. Google OAuth configurado. Credenciais
-  públicas em `apps/mobile/.env.example`.
+  `withdraw`; jobs pg_cron `expire-due-gigs` (5 min) e
+  `auto-release-confirmations` (15 min). Google OAuth configurado.
+  Credenciais públicas em `apps/mobile/.env.example`.
+- **Fase 2 no ar**: auto-liberação em 48h (2.1), check-in por código
+  (2.2) e endereço aproximado antes da escolha (2.3 — D-030:
+  `gig_addresses` com RLS, região + pino deslocado 250–600 m, círculo no
+  mapa). Próximos: 2.4 disputas, 2.5 painel admin (rodadas de design),
+  2.6 notificações, 2.7 prioridade a lesados, 2.8 busca por região.
 - **Fluxos completos funcionando com dados reais**: cadastro/login (e-mail e
   Google) → publicar vaga → buscar por categoria → detalhe → aceite atômico
   (escrow retido) → iniciar → concluir → confirmação do anunciante (escrow

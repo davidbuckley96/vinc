@@ -398,3 +398,27 @@ aproximada ("≈ 3 km"), calculada do **pino aproximado** (o endereço exato
 segue protegido — D-028). A localização do usuário serve só para filtrar:
 nunca é exibida a terceiros. Entra como bloco 2.8 da Fase 2, junto do 2.3
 (endereço aproximado), que mexe nas mesmas colunas.
+
+## D-030 — Endereço aproximado: garantia por RLS, deslocamento fixo de 250–600 m, círculo no mapa
+**Data:** 2026-07-06 · **Decidido por:** Claude (implementação do item 4 do D-028)
+
+Como o item 4 do D-028 foi implementado (bloco 2.3):
+
+1. **Garantia no banco, não na interface** (mesmo princípio do código de
+   check-in): o endereço exato sai da tabela pública `gigs` e vai para
+   `gig_addresses` (migration 0017), legível por RLS apenas pelo
+   anunciante e pelo prestador designado. `gigs` guarda só o rótulo da
+   região (`area`) e o pino aproximado (`approx_lat`/`approx_lng`).
+2. **Deslocamento aleatório de 250–600 m, calculado UMA vez na criação**
+   e gravado — recalcular a cada leitura permitiria recuperar o ponto
+   real tirando a média de várias leituras.
+3. **Rótulo da região derivado do endereço** no formato do geocodificador
+   ("Rua X, 120 — Bairro, Cidade" → parte após o "—"); sem essa parte,
+   cai num rótulo genérico para nunca vazar o nome da rua.
+4. **No mapa, círculo translúcido em vez de pino** (padrão Airbnb): pino
+   comunicaria ponto exato. Nota fixa: "Local aproximado — o endereço
+   exato aparece quando você é escolhido."
+5. A edição da vaga atualiza o exato e recalcula o aproximado; o
+   formulário de criação/edição continua com o pino exato (só o
+   anunciante o vê) e o cartão de pré-visualização mostra a região, como
+   os candidatos verão. Verificado e2e (8 checks) em 2026-07-06.

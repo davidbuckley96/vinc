@@ -127,29 +127,33 @@ export function GigDetailScreen() {
                 📅 {WEEKDAYS[start.getDay()]}, {start.getDate()} · {start.getHours()}h às{' '}
                 {end.getHours()}h
               </Text>
-              {gig.data.lat !== null && gig.data.lng !== null ? (
+              {gig.data.approxLat !== null && gig.data.approxLng !== null ? (
                 <>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="Ver o local no mapa"
+                    accessibilityLabel="Ver a região no mapa"
                     onPress={() => setMapOpen(true)}>
                     <Text style={[styles.infoLine, styles.infoLink, { color: theme.primarySoftText }]}>
-                      📍 {gig.data.address} ›
+                      📍 {gig.data.area} ›
                     </Text>
                   </Pressable>
                   <LocationModal
                     visible={mapOpen}
-                    lat={gig.data.lat}
-                    lng={gig.data.lng}
-                    address={gig.data.address}
+                    lat={gig.data.approxLat}
+                    lng={gig.data.approxLng}
+                    address={gig.data.area}
+                    approximate
                     onClose={() => setMapOpen(false)}
                   />
                 </>
               ) : (
                 <Text style={[styles.infoLine, { color: theme.primarySoftText }]}>
-                  📍 {gig.data.address}
+                  📍 {gig.data.area}
                 </Text>
               )}
+              <Text style={[styles.infoNote, { color: theme.primarySoftMeta }]}>
+                O endereço exato aparece quando você é escolhido.
+              </Text>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Ver perfil de ${gig.data.posterName}`}
@@ -299,6 +303,10 @@ const styles = StyleSheet.create({
   },
   infoLink: {
     textDecorationLine: 'underline',
+  },
+  infoNote: {
+    fontSize: 12,
+    lineHeight: 16,
   },
   posterLink: {
     textDecorationLine: 'underline',

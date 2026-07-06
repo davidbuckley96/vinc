@@ -10,6 +10,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 import { validateGigDraft, type GigDraft } from "../../../packages/core/src/gig-draft.ts";
+import { approximateLocation, deriveAreaLabel } from "../../../packages/core/src/location.ts";
 import { computeGigPricing } from "../../../packages/core/src/pricing.ts";
 
 type ResultCode = "created" | "unauthorized" | "invalid_draft" | "invalid_request";
@@ -57,6 +58,13 @@ Deno.serve(async (request) => {
   // draft.priceCents is what the WORKER receives; the fee goes on top.
   const pricing = computeGigPricing(draft.priceCents);
 
+  // Candidates see only the area + fuzzed pin (D-028); the exact address
+  // goes to gig_addresses, readable by the poster and the chosen worker.
+  const address = draft.address.trim();
+  const approx = draft.lat != null && draft.lng != null
+    ? approximateLocation(draft.lat, draft.lng)
+    : null;
+
   const { data: gig, error: insertError } = await admin
     .from("gigs")
     .insert({
@@ -68,14 +76,21 @@ Deno.serve(async (request) => {
       ends_at: draft.endsAt,
       price_cents: pricing.netCents,
       fee_cents: pricing.feeCents,
-      address: draft.address.trim(),
-      lat: draft.lat ?? null,
-      lng: draft.lng ?? null,
+      area: deriveAreaLabel(address),
+      approx_lat: approx?.lat ?? null,
+      approx_lng: approx?.lng ?? null,
       status: "open",
     })
     .select("id")
     .single();
   if (insertError || !gig) return respond("invalid_request", 400);
+
+  await admin.from("gig_addresses").insert({
+    gig_id: gig.id,
+    address,
+    lat: draft.lat ?? null,
+    lng: draft.lng ?? null,
+  });
 
   // Upfront payment (total = net + fee): non-refundable fee + escrowed
   // worker amount (docs/02 §5.1 — D-014).

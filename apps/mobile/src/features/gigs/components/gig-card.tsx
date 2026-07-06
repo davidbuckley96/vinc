@@ -41,7 +41,7 @@ export function GigCard({ gig, categoryName, highlighted, onPress }: Props) {
             {gig.title}
           </Text>
           <Text style={[styles.meta, { color: theme.textSecondary }]} numberOfLines={1}>
-            {[categoryName, formatWhen(gig.startsAt, gig.endsAt), gig.address]
+            {[categoryName, formatWhen(gig.startsAt, gig.endsAt), gig.area]
               .filter(Boolean)
               .join(' · ')}
           </Text>

@@ -4,7 +4,7 @@
  * exercised without a backend.
  */
 
-import type { Candidate, Category, OpenGig } from '@vinc/api';
+import type { Candidate, Category, GigDetail } from '@vinc/api';
 
 export const DEMO_CATEGORIES: Category[] = [
   { id: 'demo-domesticos', name: 'Serviços domésticos', icon: 'home' },
@@ -22,7 +22,7 @@ function inDays(days: number, hour: number): string {
   return date.toISOString();
 }
 
-export const DEMO_GIGS: OpenGig[] = [
+export const DEMO_GIGS: GigDetail[] = [
   {
     id: 'demo-gig-1',
     title: 'Faxina apartamento 60m²',
@@ -30,9 +30,12 @@ export const DEMO_GIGS: OpenGig[] = [
     startsAt: inDays(1, 14),
     endsAt: inDays(1, 17),
     priceCents: 12000,
-    address: 'Boa Vista',
-    lat: -8.0632,
-    lng: -34.8711,
+    area: 'Boa Vista, Recife',
+    approxLat: -8.0605,
+    approxLng: -34.8742,
+    exactAddress: null,
+    exactLat: null,
+    exactLng: null,
     categoryId: 'demo-domesticos',
     posterId: 'demo-carlos',
     posterName: 'Carlos Lima',
@@ -44,9 +47,12 @@ export const DEMO_GIGS: OpenGig[] = [
     startsAt: inDays(1, 15),
     endsAt: inDays(1, 22),
     priceCents: 16000,
-    address: 'Centro',
-    lat: -8.0578,
-    lng: -34.8829,
+    area: 'Centro, Recife',
+    approxLat: -8.0551,
+    approxLng: -34.8858,
+    exactAddress: null,
+    exactLat: null,
+    exactLng: null,
     categoryId: 'demo-criancas',
     posterId: 'demo-ana',
     posterName: 'Ana Souza',
@@ -58,9 +64,12 @@ export const DEMO_GIGS: OpenGig[] = [
     startsAt: inDays(2, 19),
     endsAt: inDays(3, 7),
     priceCents: 28000,
-    address: 'Centro',
-    lat: -8.0525,
-    lng: -34.877,
+    area: 'Centro, Recife',
+    approxLat: -8.0497,
+    approxLng: -34.8801,
+    exactAddress: null,
+    exactLat: null,
+    exactLng: null,
     categoryId: 'demo-saude',
     posterId: 'demo-marta',
     posterName: 'Marta Reis',
@@ -72,9 +81,12 @@ export const DEMO_GIGS: OpenGig[] = [
     startsAt: inDays(3, 18),
     endsAt: inDays(3, 23),
     priceCents: 20000,
-    address: 'Jardim América',
-    lat: -8.0417,
-    lng: -34.9026,
+    area: 'Jardim América, Recife',
+    approxLat: -8.0445,
+    approxLng: -34.8998,
+    exactAddress: null,
+    exactLat: null,
+    exactLng: null,
     categoryId: 'demo-eventos',
     posterId: 'demo-paulo',
     posterName: 'Paulo Dias',
@@ -88,9 +100,12 @@ export const DEMO_GIGS: OpenGig[] = [
     startsAt: inDays(0, 18),
     endsAt: inDays(0, 19),
     priceCents: 5000,
-    address: 'Praça da Matriz',
-    lat: -8.0498,
-    lng: -34.8987,
+    area: 'Madalena, Recife',
+    approxLat: -8.0471,
+    approxLng: -34.9014,
+    exactAddress: 'Praça da Matriz, 10 — Madalena, Recife',
+    exactLat: -8.0498,
+    exactLng: -34.8987,
     categoryId: 'demo-outros',
     posterId: 'demo-user',
     posterName: 'Maria da Silva',

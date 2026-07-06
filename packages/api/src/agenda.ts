@@ -37,8 +37,13 @@ export interface ServiceDetail {
   startsAt: string;
   endsAt: string;
   priceCents: number;
-  address: string;
-  /** Map pin (docs/02 §2.1, D-023); null on gigs created before the map. */
+  /** Area label everyone may see, e.g. "Boa Vista, Recife" (D-028). */
+  area: string;
+  /** Fuzzed pin; null on gigs created before the map. */
+  approxLat: number | null;
+  approxLng: number | null;
+  /** Exact location — null unless poster or chosen worker (RLS, D-028). */
+  address: string | null;
   lat: number | null;
   lng: number | null;
   counterpartId: string | null;
@@ -52,16 +57,26 @@ export async function fetchServiceDetail(
   gigId: string,
   userId: string,
 ): Promise<ServiceDetail | null> {
-  const { data, error } = await client
-    .from("gigs")
-    .select(
-      "id, title, description, status, starts_at, ends_at, price_cents, address, lat, lng, poster_id, worker_id, poster:poster_id (name), worker:worker_id (name)",
-    )
-    .eq("id", gigId)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data) return null;
-  const row = data as unknown as AgendaRow & { description: string; address: string; lat: number | null; lng: number | null };
+  const [gigResult, addressResult] = await Promise.all([
+    client
+      .from("gigs")
+      .select(
+        "id, title, description, status, starts_at, ends_at, price_cents, area, approx_lat, approx_lng, poster_id, worker_id, poster:poster_id (name), worker:worker_id (name)",
+      )
+      .eq("id", gigId)
+      .maybeSingle(),
+    // RLS returns a row only to the poster / chosen worker (D-028).
+    client.from("gig_addresses").select("address, lat, lng").eq("gig_id", gigId).maybeSingle(),
+  ]);
+  if (gigResult.error) throw new Error(gigResult.error.message);
+  if (!gigResult.data) return null;
+  const row = gigResult.data as unknown as AgendaRow & {
+    description: string;
+    area: string;
+    approx_lat: number | null;
+    approx_lng: number | null;
+  };
+  const exact = addressResult.data as { address: string; lat: number | null; lng: number | null } | null;
   const role = row.poster_id === userId ? "poster" : "worker";
 
   // RLS only returns the code to the poster; workers get null.
@@ -83,9 +98,12 @@ export async function fetchServiceDetail(
     startsAt: row.starts_at,
     endsAt: row.ends_at,
     priceCents: row.price_cents,
-    address: row.address,
-    lat: row.lat,
-    lng: row.lng,
+    area: row.area,
+    approxLat: row.approx_lat,
+    approxLng: row.approx_lng,
+    address: exact?.address ?? null,
+    lat: exact?.lat ?? null,
+    lng: exact?.lng ?? null,
     counterpartId: role === "poster" ? row.worker_id : row.poster_id,
     counterpartName: role === "poster" ? (row.worker?.name ?? null) : (row.poster?.name ?? null),
     checkinCode,

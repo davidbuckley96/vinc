@@ -37,14 +37,26 @@ Campos essenciais:
   endereços inexistentes/ambíguos). A pessoa escolhe no **mapa**, estilo
   Uber/iFood: arrastando o pino OU digitando na caixa de busca dentro do
   próprio mapa (geocodificação).
-- **Na visualização da vaga** (antes e depois do aceite), o endereço é
-  clicável e abre um **modal com o mapa** mostrando o pino do local, com um
-  botão de fechar.
+- **Na visualização da vaga**, o local é clicável e abre um **modal com o
+  mapa**, com um botão de fechar. O que aparece depende de quem olha
+  (D-028, implementado no bloco 2.3):
+  - **Antes da escolha** (busca e detalhe da vaga aberta): só o rótulo da
+    região ("Boa Vista, Recife") e um **círculo aproximado** no mapa — o
+    pino público é deslocado aleatoriamente 250–600 m **uma única vez na
+    criação** (recalcular a cada acesso permitiria descobrir o ponto real
+    por média). Aviso fixo: "O endereço exato aparece quando você é
+    escolhido."
+  - **Depois da escolha**: o prestador escolhido e o anunciante veem o
+    endereço completo e o pino exato.
+  - **Garantia no banco, não na interface**: o endereço exato fica na
+    tabela `gig_addresses` (migration 0017), legível por RLS apenas pelo
+    anunciante e pelo prestador designado; `gigs` guarda só `area`,
+    `approx_lat` e `approx_lng`. O rótulo da região é derivado do formato
+    do geocodificador ("Rua X, 120 — Bairro, Cidade" → parte após o "—").
 - Implementação (rodada 7, opção A — D-023): mapa em tela cheia com pino
   fixo no centro (o mapa move por baixo, estilo Uber), busca no topo,
   endereço lido na hora (Nominatim) e botão "Confirmar este local".
-  Colunas `lat`/`lng` em `gigs` (migration 0011), validadas no domínio e
-  nas functions. Vagas antigas sem pino mostram o endereço como texto.
+  Vagas antigas sem pino mostram o local como texto.
 - Provedor: MapLibre GL (web: nativo; app: WebView no MVP) + tiles
   OpenFreeMap (sem chave; trocar por MapTiler com chave própria no
   pré-lançamento) + Nominatim para busca/leitura de endereço.

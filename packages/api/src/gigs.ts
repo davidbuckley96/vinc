@@ -16,12 +16,21 @@ export interface OpenGig {
   startsAt: string;
   endsAt: string;
   priceCents: number;
-  address: string;
-  /** Map pin (docs/02 §2.1, D-023); null on gigs created before the map. */
-  lat: number | null;
-  lng: number | null;
+  /** Area label everyone may see, e.g. "Boa Vista, Recife" (D-028). */
+  area: string;
+  /** Fuzzed pin (250–600 m off); null on gigs created before the map. */
+  approxLat: number | null;
+  approxLng: number | null;
   categoryId: string;
   posterName: string;
+}
+
+/** OpenGig + the exact location when the caller may see it (D-028). */
+export interface GigDetail extends OpenGig {
+  /** Null unless the caller is the poster or the chosen worker (RLS). */
+  exactAddress: string | null;
+  exactLat: number | null;
+  exactLng: number | null;
 }
 
 interface GigRow {
@@ -32,9 +41,9 @@ interface GigRow {
   starts_at: string;
   ends_at: string;
   price_cents: number;
-  address: string;
-  lat: number | null;
-  lng: number | null;
+  area: string;
+  approx_lat: number | null;
+  approx_lng: number | null;
   category_id: string;
   poster: { name: string } | null;
 }
@@ -64,7 +73,7 @@ export async function fetchOpenGigs(
 ): Promise<OpenGig[]> {
   let query = client
     .from("visible_open_gigs")
-    .select("id, title, description, starts_at, ends_at, price_cents, address, lat, lng, category_id, poster_id, poster_name")
+    .select("id, title, description, starts_at, ends_at, price_cents, area, approx_lat, approx_lng, category_id, poster_id, poster_name")
     .order("starts_at")
     .limit(50);
   if (filter.categoryId) query = query.eq("category_id", filter.categoryId);
@@ -82,9 +91,9 @@ export async function fetchOpenGigs(
     startsAt: row.starts_at,
     endsAt: row.ends_at,
     priceCents: row.price_cents,
-    address: row.address,
-    lat: row.lat,
-    lng: row.lng,
+    area: row.area,
+    approxLat: row.approx_lat,
+    approxLng: row.approx_lng,
     categoryId: row.category_id,
     posterName: row.poster_name,
   }));
@@ -93,17 +102,22 @@ export async function fetchOpenGigs(
 export async function fetchGigById(
   client: SupabaseClient,
   gigId: string,
-): Promise<OpenGig | null> {
-  const { data, error } = await client
-    .from("gigs")
-    .select(
-      "id, title, description, starts_at, ends_at, price_cents, address, lat, lng, category_id, poster_id, poster:poster_id (name)",
-    )
-    .eq("id", gigId)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data) return null;
-  const row = data as unknown as GigRow;
+): Promise<GigDetail | null> {
+  const [gigResult, addressResult] = await Promise.all([
+    client
+      .from("gigs")
+      .select(
+        "id, title, description, starts_at, ends_at, price_cents, area, approx_lat, approx_lng, category_id, poster_id, poster:poster_id (name)",
+      )
+      .eq("id", gigId)
+      .maybeSingle(),
+    // RLS returns a row only to the poster / chosen worker (D-028).
+    client.from("gig_addresses").select("address, lat, lng").eq("gig_id", gigId).maybeSingle(),
+  ]);
+  if (gigResult.error) throw new Error(gigResult.error.message);
+  if (!gigResult.data) return null;
+  const row = gigResult.data as unknown as GigRow;
+  const exact = addressResult.data as { address: string; lat: number | null; lng: number | null } | null;
   return {
     id: row.id,
     title: row.title,
@@ -112,11 +126,14 @@ export async function fetchGigById(
     startsAt: row.starts_at,
     endsAt: row.ends_at,
     priceCents: row.price_cents,
-    address: row.address,
-    lat: row.lat,
-    lng: row.lng,
+    area: row.area,
+    approxLat: row.approx_lat,
+    approxLng: row.approx_lng,
     categoryId: row.category_id,
     posterName: row.poster?.name ?? "Anunciante",
+    exactAddress: exact?.address ?? null,
+    exactLat: exact?.lat ?? null,
+    exactLng: exact?.lng ?? null,
   };
 }
 

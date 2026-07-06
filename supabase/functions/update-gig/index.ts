@@ -11,6 +11,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 import { posterCanEdit, type GigStatus } from "../../../packages/core/src/gig.ts";
 import { validateGigDraft, type GigDraft } from "../../../packages/core/src/gig-draft.ts";
+import { approximateLocation, deriveAreaLabel } from "../../../packages/core/src/location.ts";
 
 type ResultCode =
   | "updated"
@@ -75,6 +76,12 @@ Deno.serve(async (request) => {
   const errors = validateGigDraft({ ...draft, priceCents: gig.price_cents }, new Date());
   if (errors.length > 0) return respond("invalid_draft", 400, { errors });
 
+  // Public side keeps only the area + a fresh fuzzed pin (D-028).
+  const address = draft.address.trim();
+  const approx = draft.lat != null && draft.lng != null
+    ? approximateLocation(draft.lat, draft.lng)
+    : null;
+
   const { data: updated } = await admin
     .from("gigs")
     .update({
@@ -83,14 +90,21 @@ Deno.serve(async (request) => {
       description: draft.description.trim(),
       starts_at: draft.startsAt,
       ends_at: draft.endsAt,
-      address: draft.address.trim(),
-      lat: draft.lat ?? null,
-      lng: draft.lng ?? null,
+      area: deriveAreaLabel(address),
+      approx_lat: approx?.lat ?? null,
+      approx_lng: approx?.lng ?? null,
     })
     .eq("id", gig.id)
     .eq("status", "open")
     .select("id");
   if (!updated || updated.length === 0) return respond("state_changed", 409);
+
+  await admin.from("gig_addresses").upsert({
+    gig_id: gig.id,
+    address,
+    lat: draft.lat ?? null,
+    lng: draft.lng ?? null,
+  });
 
   return respond("updated", 200);
 });

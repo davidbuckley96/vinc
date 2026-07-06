@@ -318,32 +318,44 @@ export function ServiceDetailScreen() {
                 </Text>
               </Pressable>
             )}
-            {data.lat !== null && data.lng !== null ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Ver o local no mapa"
-                onPress={() => setMapOpen(true)}
-                style={[styles.kv, { borderBottomColor: theme.line }]}>
-                <Text style={[styles.kvLabel, { color: theme.textSecondary }]}>Onde</Text>
-                <Text style={[styles.kvValue, styles.kvLink, { color: theme.primary }]}>
-                  {data.address} ›
-                </Text>
-              </Pressable>
-            ) : (
-              <View style={[styles.kv, { borderBottomColor: theme.line }]}>
-                <Text style={[styles.kvLabel, { color: theme.textSecondary }]}>Onde</Text>
-                <Text style={[styles.kvValue, { color: theme.text }]}>{data.address}</Text>
-              </View>
-            )}
-            {data.lat !== null && data.lng !== null && (
-              <LocationModal
-                visible={mapOpen}
-                lat={data.lat}
-                lng={data.lng}
-                address={data.address}
-                onClose={() => setMapOpen(false)}
-              />
-            )}
+            {/* Exact address when RLS allows (poster / chosen worker);
+                otherwise the approximate area (D-028). */}
+            {(() => {
+              const exact = data.address !== null;
+              const label = exact ? data.address! : data.area;
+              const pinLat = exact ? data.lat : data.approxLat;
+              const pinLng = exact ? data.lng : data.approxLng;
+              if (pinLat === null || pinLng === null) {
+                return (
+                  <View style={[styles.kv, { borderBottomColor: theme.line }]}>
+                    <Text style={[styles.kvLabel, { color: theme.textSecondary }]}>Onde</Text>
+                    <Text style={[styles.kvValue, { color: theme.text }]}>{label}</Text>
+                  </View>
+                );
+              }
+              return (
+                <>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={exact ? 'Ver o local no mapa' : 'Ver a região no mapa'}
+                    onPress={() => setMapOpen(true)}
+                    style={[styles.kv, { borderBottomColor: theme.line }]}>
+                    <Text style={[styles.kvLabel, { color: theme.textSecondary }]}>Onde</Text>
+                    <Text style={[styles.kvValue, styles.kvLink, { color: theme.primary }]}>
+                      {label} ›
+                    </Text>
+                  </Pressable>
+                  <LocationModal
+                    visible={mapOpen}
+                    lat={pinLat}
+                    lng={pinLng}
+                    address={label}
+                    approximate={!exact}
+                    onClose={() => setMapOpen(false)}
+                  />
+                </>
+              );
+            })()}
             {data.description ? (
               <Text style={[styles.description, { color: theme.textSecondary }]}>
                 {data.description}

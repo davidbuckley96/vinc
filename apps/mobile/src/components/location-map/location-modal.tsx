@@ -11,6 +11,11 @@ interface LocationModalProps {
   lat: number;
   lng: number;
   address: string;
+  /**
+   * Approximate mode (D-028): a translucent circle instead of a pin —
+   * the point shown is already fuzzed, and a pin would read as exact.
+   */
+  approximate?: boolean;
   onClose: () => void;
 }
 
@@ -18,7 +23,7 @@ interface LocationModalProps {
  * Viewing modal (docs/02 §2.1): tapping a gig's address opens the map
  * with the pin and a close button — same in every screen.
  */
-export function LocationModal({ visible, lat, lng, address, onClose }: LocationModalProps) {
+export function LocationModal({ visible, lat, lng, address, approximate, onClose }: LocationModalProps) {
   const theme = useTheme();
 
   return (
@@ -28,14 +33,23 @@ export function LocationModal({ visible, lat, lng, address, onClose }: LocationM
           style={[styles.card, { backgroundColor: theme.background }]}
           onPress={(event) => event.stopPropagation()}>
           <View style={styles.mapWrap}>
-            <LocationMap lat={lat} lng={lng} zoom={15} style={StyleSheet.absoluteFill} />
+            <LocationMap
+              lat={lat}
+              lng={lng}
+              zoom={approximate ? 14 : 15}
+              style={StyleSheet.absoluteFill}
+            />
             <View pointerEvents="none" style={styles.pinWrap}>
-              <Ionicons
-                name="location-sharp"
-                size={40}
-                color={theme.primary}
-                style={styles.pin}
-              />
+              {approximate ? (
+                <View style={[styles.circle, { borderColor: theme.primary }]} />
+              ) : (
+                <Ionicons
+                  name="location-sharp"
+                  size={40}
+                  color={theme.primary}
+                  style={styles.pin}
+                />
+              )}
             </View>
             <Pressable
               accessibilityRole="button"
@@ -47,6 +61,11 @@ export function LocationModal({ visible, lat, lng, address, onClose }: LocationM
           </View>
           <View style={styles.foot}>
             <Text style={[styles.address, { color: theme.text }]}>{address}</Text>
+            {approximate && (
+              <Text style={[styles.approxNote, { color: theme.textSecondary }]}>
+                Local aproximado — o endereço exato aparece quando você é escolhido.
+              </Text>
+            )}
           </View>
         </Pressable>
       </Pressable>
@@ -86,6 +105,15 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
+  // ~140 px at zoom 14 ≈ 1.3 km wide — comfortably covers the 250–600 m
+  // fuzz applied to the pin (D-028).
+  circle: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    borderWidth: 2,
+    backgroundColor: 'rgba(124, 58, 237, 0.16)',
+  },
   close: {
     position: 'absolute',
     top: Spacing.two,
@@ -107,5 +135,10 @@ const styles = StyleSheet.create({
   address: {
     fontSize: 13.5,
     fontWeight: '700',
+  },
+  approxNote: {
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 4,
   },
 });

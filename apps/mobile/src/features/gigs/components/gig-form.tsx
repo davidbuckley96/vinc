@@ -12,6 +12,7 @@ import {
 import type { OpenGig } from '@vinc/api';
 import {
   computeGigPricing,
+  deriveAreaLabel,
   formatBRL,
   validateGigDraft,
   type GigDraft,
@@ -155,9 +156,10 @@ export function GigForm({
     startsAt: draft.startsAt,
     endsAt: draft.endsAt,
     priceCents,
-    address: location?.address ?? 'Local',
-    lat: hasPin ? location.lat : null,
-    lng: hasPin ? location.lng : null,
+    // Candidates only see the area (D-028) — preview what THEY will see.
+    area: location ? deriveAreaLabel(location.address) : 'Local',
+    approxLat: hasPin ? location.lat : null,
+    approxLng: hasPin ? location.lng : null,
     categoryId,
     posterName: userName ?? 'Você',
   };

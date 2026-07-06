@@ -53,6 +53,7 @@ export function EditGigScreen() {
     }
   };
 
+  // The form edits the EXACT location — the poster always reads it (RLS).
   const initial: GigDraft | null = gig.data
     ? {
         categoryId: gig.data.categoryId,
@@ -61,7 +62,9 @@ export function EditGigScreen() {
         startsAt: gig.data.startsAt,
         endsAt: gig.data.endsAt,
         priceCents: gig.data.priceCents,
-        address: gig.data.address,
+        address: gig.data.exactAddress ?? gig.data.area,
+        lat: gig.data.exactLat,
+        lng: gig.data.exactLng,
       }
     : null;
 
