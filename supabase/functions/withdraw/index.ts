@@ -11,6 +11,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 import { deriveWalletBalances } from "../../../packages/core/src/wallet.ts";
+import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 type ResultCode = "withdrawn" | "nothing_to_withdraw" | "unauthorized" | "invalid_request";
 
@@ -79,6 +80,10 @@ Deno.serve(async (request) => {
     gig_id: null,
     type: "withdrawal",
     amount_cents: -availableCents,
+  });
+  await getPaymentProvider().payoutWithdrawal({
+    userId,
+    amountCents: availableCents,
   });
 
   return respond("withdrawn", 200, { withdrawnCents: availableCents });

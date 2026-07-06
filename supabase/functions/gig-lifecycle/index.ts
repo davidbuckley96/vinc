@@ -21,6 +21,7 @@ import {
   allowedLifecycleAction,
   type GigStatus,
 } from "../../../packages/core/src/gig.ts";
+import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 type Action = "start" | "complete" | "confirm";
 
@@ -171,13 +172,18 @@ Deno.serve(async (request) => {
   if (lateEvidence) return respond("done", 200, { status: gig.status });
 
   if (action === "confirm") {
-    // Poster confirmed: release the escrowed amount to the worker.
-    // Platform fee is an open question (docs/07 #2) — zero for now.
+    // Poster confirmed: release the escrowed amount to the worker (the
+    // 10% fee — D-035 — was charged on top at creation).
     await admin.from("ledger_entries").insert({
       user_id: gig.worker_id,
       gig_id: gig.id,
       type: "escrow_release",
       amount_cents: gig.price_cents,
+    });
+    await getPaymentProvider().releaseToWorker({
+      workerId: gig.worker_id,
+      gigId: gig.id,
+      amountCents: gig.price_cents,
     });
   }
 

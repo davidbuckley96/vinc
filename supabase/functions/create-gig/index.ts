@@ -12,6 +12,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { validateGigDraft, type GigDraft } from "../../../packages/core/src/gig-draft.ts";
 import { approximateLocation, deriveAreaLabel } from "../../../packages/core/src/location.ts";
 import { computeGigPricing } from "../../../packages/core/src/pricing.ts";
+import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 type ResultCode = "created" | "unauthorized" | "invalid_draft" | "invalid_request";
 
@@ -93,11 +94,20 @@ Deno.serve(async (request) => {
   });
 
   // Upfront payment (total = net + fee): non-refundable fee + escrowed
-  // worker amount (docs/02 §5.1 — D-014).
+  // worker amount (docs/02 §5.1 — D-014). The ledger records the
+  // decision; the provider executes the external charge (D-035 — in
+  // gateway mode, 3.2 turns this into a Pix charge + webhook and the gig
+  // only publishes once paid).
   await admin.from("ledger_entries").insert([
     { user_id: posterId, gig_id: gig.id, type: "fee", amount_cents: -pricing.feeCents },
     { user_id: posterId, gig_id: gig.id, type: "escrow_hold", amount_cents: -pricing.netCents },
   ]);
+  await getPaymentProvider().chargePoster({
+    posterId,
+    gigId: gig.id,
+    netCents: pricing.netCents,
+    feeCents: pricing.feeCents,
+  });
 
   return respond("created", 200, { gigId: gig.id });
 });

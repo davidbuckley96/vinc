@@ -23,6 +23,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 import { posterCancellationIncursFine, type GigStatus } from "../../../packages/core/src/gig.ts";
 import { computeCancellationFine } from "../../../packages/core/src/pricing.ts";
+import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 type ResultCode =
   | "cancelled"
@@ -114,6 +115,19 @@ Deno.serve(async (request) => {
       });
     }
     await admin.from("ledger_entries").insert(entries);
+    const provider = getPaymentProvider();
+    if (fine.posterRefundCents > 0) {
+      await provider.refundPoster({
+        posterId: userId,
+        gigId: gig.id,
+        amountCents: fine.posterRefundCents,
+      });
+    }
+    await provider.transferCompensation({
+      userId: gig.worker_id,
+      gigId: gig.id,
+      amountCents: fine.workerShareCents,
+    });
     return respond("cancelled", 200, {
       role,
       fineCents: fine.fineCents,
@@ -130,5 +144,18 @@ Deno.serve(async (request) => {
     { user_id: gig.poster_id, gig_id: gig.id, type: "fine", amount_cents: fine.workerShareCents },
     { user_id: userId, gig_id: gig.id, type: "fine", amount_cents: -fine.fineCents },
   ]);
+  // The worker's own fine (negative entry) has no external movement yet:
+  // charging their card when the balance doesn't cover it is block 3.8.
+  const provider = getPaymentProvider();
+  await provider.refundPoster({
+    posterId: gig.poster_id,
+    gigId: gig.id,
+    amountCents: gig.price_cents,
+  });
+  await provider.transferCompensation({
+    userId: gig.poster_id,
+    gigId: gig.id,
+    amountCents: fine.workerShareCents,
+  });
   return respond("cancelled", 200, { role, fineCents: fine.fineCents });
 });

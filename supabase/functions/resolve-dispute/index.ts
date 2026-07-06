@@ -19,6 +19,8 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+import { getPaymentProvider } from "../_shared/payment-provider.ts";
+
 type ResultCode =
   | "resolved"
   | "invalid_refund"
@@ -126,6 +128,21 @@ Deno.serve(async (request) => {
     );
   }
   if (entries.length > 0) await admin.from("ledger_entries").insert(entries);
+
+  // External execution (D-035): under model A the payment is still held
+  // while a dispute is open (the 7-day window defers the real release),
+  // so BOTH kinds resolve as refund + remainder release at the provider.
+  const provider = getPaymentProvider();
+  if (refund > 0) {
+    await provider.refundPoster({ posterId: gig.poster_id, gigId: gig.id, amountCents: refund });
+  }
+  if (dispute.kind === "pre_release" && gig.price_cents - refund > 0) {
+    await provider.releaseToWorker({
+      workerId: gig.worker_id,
+      gigId: gig.id,
+      amountCents: gig.price_cents - refund,
+    });
+  }
 
   if (dispute.kind === "pre_release") {
     await admin

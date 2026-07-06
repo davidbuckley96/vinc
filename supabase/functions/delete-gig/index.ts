@@ -10,6 +10,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 import { posterCanDelete, type GigStatus } from "../../../packages/core/src/gig.ts";
+import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 type ResultCode =
   | "deleted"
@@ -83,6 +84,11 @@ Deno.serve(async (request) => {
     gig_id: gig.id,
     type: "refund",
     amount_cents: gig.price_cents,
+  });
+  await getPaymentProvider().refundPoster({
+    posterId: userId,
+    gigId: gig.id,
+    amountCents: gig.price_cents,
   });
 
   return respond("deleted", 200);
