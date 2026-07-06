@@ -491,3 +491,20 @@ finalizar.** Decisão do David: **3 camadas**:
 Nota registrada: "um trabalho de cada vez" já era garantido — a escolha
 re-verifica a agenda do candidato e recusa conflito de horário (D-024).
 Verificado e2e (7 checks) em 2026-07-06.
+
+## D-033 — Painel admin de disputas: rodada 11, opção A (fila + caso lado a lado)
+**Data:** 2026-07-06 · **Decidido por:** David (rodada 11 de design)
+
+O painel (`/admin`, web) usa o layout **estilo caixa de e-mail**: fila à
+esquerda (abertas primeiro, mais antigas no topo; resolvidas recentes
+abaixo), caso à direita com **acusação × defesa em colunas espelhadas** —
+relato e fotos do anunciante de um lado, provas de conclusão do prestador
+do outro, ambos com o **horário de envio** em destaque (D-032: a
+cronologia é o argumento). Contexto no topo (check-in, reputação das duas
+partes), conversa completa expansível, decisão fixa embaixo: **Reembolso
+total · valor livre + Reembolso parcial · Improcedente — liberar**, com
+confirmação em dois cliques (dinheiro nunca se move num clique acidental).
+Acesso: `profiles.is_admin` (conta do David marcada) — e o RLS garante no
+banco que não-admins não leem nada, mesmo alcançando a rota. Admin também
+lê o chat e o estado do check-in (migration 0020) — leitura apenas: a
+plataforma não participa da conversa.
