@@ -34,7 +34,7 @@
 - [x] 2.5 Painel admin do David (D-033, rodada 11 opção A): rota /admin com fila + caso lado a lado, acusação × defesa com horários de envio, conversa e check-in, decisão total/parcial/improcedente com confirmação; acesso por profiles.is_admin (conta do David marcada), leituras de admin garantidas por RLS (migration 0020), verificado e2e (6 checks)
 - [ ] 2.6 Notificações: central in-app primeiro (candidato novo, escolhido, serviço iniciado/concluído, pagamento liberado, disputa); push real requer build de desenvolvimento (EAS) — junto com a Fase 4/lojas
 - [ ] 2.7 Prioridade para lesados por cancelamento (desenhar mecanismo — ex.: destaque na busca por N dias)
-- [ ] 2.8 Busca por região (D-029): GPS + ajuste manual no mapa, raio ajustável padrão ~30 km, ordenação por proximidade com distância no cartão (do pino aproximado); localização do usuário nunca exibida
+- [x] 2.8 Busca por região (D-029, docs/02 §2.3): barra de região na busca + modal (GPS via expo-location com fallback manual no mapa, raio 5–100 km padrão 30), região salva no aparelho, corte por caixa no servidor + círculo/ordenação por proximidade no cliente, "≈ 3 km" no cartão (do pino aproximado); verificado e2e (Recife × São Paulo) e unitário (47 testes)
 
 ## Fase 3 — Pagamentos reais
 - [ ] Gateway brasileiro (Mercado Pago/Pagar.me — a decidir, dúvida #13) com split; meios de pagamento: Pix + cartões no lançamento, carteiras digitais conforme o gateway (D-016, dúvida #17)
@@ -96,11 +96,12 @@ revisados antes de abrir o app ao público:
   `withdraw`; jobs pg_cron `expire-due-gigs` (5 min) e
   `auto-release-confirmations` (15 min). Google OAuth configurado.
   Credenciais públicas em `apps/mobile/.env.example`.
-- **Fase 2 no ar**: auto-liberação em 48h (2.1), check-in por código
-  (2.2) e endereço aproximado antes da escolha (2.3 — D-030:
-  `gig_addresses` com RLS, região + pino deslocado 250–600 m, círculo no
-  mapa). Próximos: 2.4 disputas, 2.5 painel admin (rodadas de design),
-  2.6 notificações, 2.7 prioridade a lesados, 2.8 busca por região.
+- **Fase 2 quase completa**: 2.1 auto-liberação 48h, 2.2 check-in por
+  código, 2.3 endereço aproximado (D-030), 2.4 disputas + provas de
+  conclusão (D-031/D-032), 2.5 painel admin (D-033) e 2.8 busca por
+  região (D-029) no ar e verificados e2e. Faltam: 2.6 central de
+  notificações in-app e 2.7 prioridade para lesados (desenhar com o
+  David).
 - **Fluxos completos funcionando com dados reais**: cadastro/login (e-mail e
   Google) → publicar vaga → buscar por categoria → detalhe → aceite atômico
   (escrow retido) → iniciar → concluir → confirmação do anunciante (escrow

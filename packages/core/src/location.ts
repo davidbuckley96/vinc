@@ -26,6 +26,47 @@ export function deriveAreaLabel(address: string): string {
   return area || GENERIC_AREA_LABEL;
 }
 
+export interface LatLng {
+  lat: number;
+  lng: number;
+}
+
+/** Haversine distance in meters — good enough at city scale (D-029). */
+export function distanceMeters(a: LatLng, b: LatLng): number {
+  const EARTH_RADIUS = 6_371_000;
+  const rad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = rad(b.lat - a.lat);
+  const dLng = rad(b.lng - a.lng);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * EARTH_RADIUS * Math.asin(Math.sqrt(h));
+}
+
+/**
+ * Bounding box for a radius search (D-029): a cheap server-side filter
+ * (two range conditions the database can index); the exact circle is
+ * refined client-side with distanceMeters.
+ */
+export function boundingBox(center: LatLng, radiusKm: number) {
+  const dLat = (radiusKm * 1000) / METERS_PER_DEGREE_LAT;
+  const metersPerDegreeLng = METERS_PER_DEGREE_LAT * Math.cos((center.lat * Math.PI) / 180);
+  const dLng = (radiusKm * 1000) / Math.max(metersPerDegreeLng, 1);
+  return {
+    minLat: center.lat - dLat,
+    maxLat: center.lat + dLat,
+    minLng: center.lng - dLng,
+    maxLng: center.lng + dLng,
+  };
+}
+
+/** "≈ 800 m" / "≈ 3 km" — shown on gig cards (D-029). */
+export function formatDistanceLabel(meters: number): string {
+  const roundedMeters = Math.max(100, Math.round(meters / 100) * 100);
+  if (roundedMeters < 1000) return `≈ ${roundedMeters} m`;
+  return `≈ ${Math.max(1, Math.round(meters / 1000))} km`;
+}
+
 /**
  * Offsets the exact pin by a random 250–600 m in a random direction.
  * Computed ONCE at creation and stored — recomputing per request would

@@ -99,6 +99,25 @@ iniciadas e a candidatura a elas é recusada.
   `delete-gig`); a política de UPDATE direto do cliente foi removida
   (migration 0007) para o valor não ser alterável fora do fluxo.
 
+### 2.3 Busca por região (D-029 — implementado)
+
+- As vagas **não aparecem para o país todo**: a busca é limitada à região
+  do usuário — centro + **raio ajustável (padrão 30 km**, opções 5–100).
+- O centro é sugerido pela **localização do aparelho** e pode ser
+  **ajustado manualmente no mapa** (GPS negado → modo manual; nunca é um
+  beco sem saída). A região fica **salva no aparelho** e serve SÓ para
+  filtrar — nunca é exibida a terceiros.
+- Dentro do raio, as vagas vêm **ordenadas por proximidade** e o cartão
+  mostra a distância aproximada ("≈ 3 km"), calculada do **pino
+  aproximado** (o exato segue protegido — D-030).
+- Sem região definida, a busca mostra tudo (com a barra "Definir minha
+  região" em destaque). Lista vazia no raio → atalho "Aumentar o raio ou
+  mudar o local".
+- Técnica: corte por **caixa no servidor** (duas faixas indexáveis sobre
+  `approx_lat`/`approx_lng` na view) + círculo exato e ordenação por
+  haversine no cliente (função pura compartilhada com o modo demo).
+  Vagas antigas sem pino ficam de fora quando há região ativa.
+
 ## 3. Candidatura e escolha do prestador (D-024, substitui o modelo D-012)
 
 - O prestador **se candidata** a uma vaga ABERTA com poucos cliques. A vaga

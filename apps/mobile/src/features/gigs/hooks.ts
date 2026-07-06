@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   applyGig,
+  applyRegion,
   cancelGig,
   createGig,
   decideCandidacy,
@@ -19,6 +20,7 @@ import {
   type DecideCandidacyResult,
   type DeleteGigResult,
   type MyCandidacyStatus,
+  type RegionFilter,
   type TimeSlotFilter,
   type UpdateGigResult,
 } from '@vinc/api';
@@ -38,17 +40,26 @@ export function useCategories() {
   });
 }
 
-export function useOpenGigs(categoryId?: string, slot?: TimeSlotFilter) {
+export function useOpenGigs(categoryId?: string, slot?: TimeSlotFilter, region?: RegionFilter) {
   return useQuery({
-    queryKey: ['gigs', 'open', categoryId ?? 'all', slot?.startsAt ?? '-', slot?.endsAt ?? '-'],
+    queryKey: [
+      'gigs',
+      'open',
+      categoryId ?? 'all',
+      slot?.startsAt ?? '-',
+      slot?.endsAt ?? '-',
+      region ? `${region.lat.toFixed(4)},${region.lng.toFixed(4)},${region.radiusKm}` : '-',
+    ],
     queryFn: () => {
-      if (supabase) return fetchOpenGigs(supabase, { categoryId, slot });
+      if (supabase) return fetchOpenGigs(supabase, { categoryId, slot, region });
       let gigs = categoryId
         ? DEMO_GIGS.filter((gig) => gig.categoryId === categoryId)
         : DEMO_GIGS;
       if (slot) {
         gigs = gigs.filter((gig) => gig.startsAt < slot.endsAt && gig.endsAt > slot.startsAt);
       }
+      // Same region rule as the backend path (D-029).
+      if (region) gigs = applyRegion(gigs, region);
       return Promise.resolve(gigs);
     },
   });

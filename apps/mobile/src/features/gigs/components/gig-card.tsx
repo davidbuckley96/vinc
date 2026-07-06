@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { OpenGig } from '@vinc/api';
-import { formatBRL } from '@vinc/core';
+import { formatBRL, formatDistanceLabel } from '@vinc/core';
 
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -41,7 +41,12 @@ export function GigCard({ gig, categoryName, highlighted, onPress }: Props) {
             {gig.title}
           </Text>
           <Text style={[styles.meta, { color: theme.textSecondary }]} numberOfLines={1}>
-            {[categoryName, formatWhen(gig.startsAt, gig.endsAt), gig.area]
+            {[
+              gig.distanceMeters != null ? formatDistanceLabel(gig.distanceMeters) : null,
+              categoryName,
+              formatWhen(gig.startsAt, gig.endsAt),
+              gig.area,
+            ]
               .filter(Boolean)
               .join(' · ')}
           </Text>

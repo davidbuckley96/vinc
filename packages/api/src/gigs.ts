@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { GigDraft } from "@vinc/core";
+import { boundingBox, distanceMeters, type GigDraft } from "@vinc/core";
 
 export interface Category {
   id: string;
@@ -23,6 +23,9 @@ export interface OpenGig {
   approxLng: number | null;
   categoryId: string;
   posterName: string;
+  /** Distance from the caller's region center (D-029); set by the
+   * region filter, from the APPROXIMATE pin. */
+  distanceMeters?: number | null;
 }
 
 /** OpenGig + the exact location when the caller may see it (D-028). */
@@ -67,9 +70,33 @@ export interface TimeSlotFilter {
   endsAt: string;
 }
 
+/** Region-scoped search (D-029): center + radius, nearest first. */
+export interface RegionFilter {
+  lat: number;
+  lng: number;
+  radiusKm: number;
+}
+
+/**
+ * Applies the region to a gig list CLIENT-SIDE: exact circle + distance
+ * (from the approximate pin — the exact one stays protected, D-030) +
+ * nearest-first ordering. Shared with demo mode. Gigs without a pin
+ * can't be placed and are dropped when a region is active.
+ */
+export function applyRegion<T extends OpenGig>(gigs: T[], region: RegionFilter): T[] {
+  const center = { lat: region.lat, lng: region.lng };
+  return gigs
+    .flatMap((gig) => {
+      if (gig.approxLat === null || gig.approxLng === null) return [];
+      const distance = distanceMeters(center, { lat: gig.approxLat, lng: gig.approxLng });
+      return distance <= region.radiusKm * 1000 ? [{ ...gig, distanceMeters: distance }] : [];
+    })
+    .sort((a, b) => a.distanceMeters - b.distanceMeters);
+}
+
 export async function fetchOpenGigs(
   client: SupabaseClient,
-  filter: { categoryId?: string; slot?: TimeSlotFilter } = {},
+  filter: { categoryId?: string; slot?: TimeSlotFilter; region?: RegionFilter } = {},
 ): Promise<OpenGig[]> {
   let query = client
     .from("visible_open_gigs")
@@ -80,10 +107,20 @@ export async function fetchOpenGigs(
   if (filter.slot) {
     query = query.lt("starts_at", filter.slot.endsAt).gt("ends_at", filter.slot.startsAt);
   }
+  if (filter.region) {
+    // Cheap server-side cut (indexable ranges); the exact circle and the
+    // nearest-first ordering are refined below.
+    const box = boundingBox(filter.region, filter.region.radiusKm);
+    query = query
+      .gte("approx_lat", box.minLat)
+      .lte("approx_lat", box.maxLat)
+      .gte("approx_lng", box.minLng)
+      .lte("approx_lng", box.maxLng);
+  }
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);
-  return (data as unknown as (Omit<GigRow, "poster"> & { poster_name: string })[]).map((row) => ({
+  const gigs = (data as unknown as (Omit<GigRow, "poster"> & { poster_name: string })[]).map((row) => ({
     id: row.id,
     title: row.title,
     posterId: row.poster_id,
@@ -97,6 +134,7 @@ export async function fetchOpenGigs(
     categoryId: row.category_id,
     posterName: row.poster_name,
   }));
+  return filter.region ? applyRegion(gigs, filter.region) : gigs;
 }
 
 export async function fetchGigById(

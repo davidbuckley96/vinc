@@ -17,7 +17,9 @@ import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 import { GigCard } from '../components/gig-card';
+import { RegionModal } from '../components/region-modal';
 import { useCategories, useOpenGigs } from '../hooks';
+import { useRegion } from '../region';
 
 const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const HOURS = Array.from({ length: 18 }, (_, i) => 6 + i); // 6h–23h
@@ -81,7 +83,16 @@ export function SearchScreen() {
     return { startsAt: startsAt.toISOString(), endsAt: endsAt.toISOString() };
   }, [dayIndex, hour, days]);
 
-  const gigs = useOpenGigs(category?.id, slot);
+  // Region-scoped search (D-029): persisted; nearest gigs first.
+  const { region, setRegion, loaded: regionLoaded } = useRegion();
+  const [regionOpen, setRegionOpen] = useState(false);
+  const gigs = useOpenGigs(
+    category?.id,
+    slot,
+    regionLoaded && region
+      ? { lat: region.lat, lng: region.lng, radiusKm: region.radiusKm }
+      : undefined,
+  );
 
   const categoryName = (id: string) =>
     categories.data?.find((item) => item.id === id)?.name;
@@ -113,6 +124,27 @@ export function SearchScreen() {
         </View>
 
         <View style={styles.filters}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Mudar a região da busca"
+            onPress={() => setRegionOpen(true)}
+            style={[styles.regionBar, { backgroundColor: theme.primarySoft }]}>
+            <Ionicons name="location" size={15} color={theme.primarySoftText} />
+            <Text
+              style={[styles.regionLabel, { color: theme.primarySoftText }]}
+              numberOfLines={1}>
+              {region
+                ? `${region.label} · até ${region.radiusKm} km`
+                : 'Definir minha região'}
+            </Text>
+            <Ionicons name="chevron-forward" size={15} color={theme.primarySoftMeta} />
+          </Pressable>
+          <RegionModal
+            visible={regionOpen}
+            region={region}
+            onChange={setRegion}
+            onClose={() => setRegionOpen(false)}
+          />
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.chipRow}>
               <Pressable
@@ -245,12 +277,26 @@ export function SearchScreen() {
               Não foi possível carregar as vagas. Verifique sua conexão.
             </Text>
           )}
-          {gigs.data?.length === 0 && (
-            <Text style={[styles.feedback, { color: theme.textSecondary }]}>
-              Nenhuma vaga aberta{category ? ' nesta categoria' : ''}
-              {dayIndex !== null ? ' nesse horário' : ''}. Volte mais tarde!
-            </Text>
-          )}
+          {gigs.data?.length === 0 &&
+            (region ? (
+              <View style={styles.emptyRegion}>
+                <Text style={[styles.feedback, { color: theme.textSecondary }]}>
+                  Nenhuma vaga aberta até {region.radiusKm} km de {region.label}
+                  {category ? ' nesta categoria' : ''}
+                  {dayIndex !== null ? ' nesse horário' : ''}.
+                </Text>
+                <Pressable accessibilityRole="button" onPress={() => setRegionOpen(true)}>
+                  <Text style={[styles.emptyRegionLink, { color: theme.primary }]}>
+                    Aumentar o raio ou mudar o local ›
+                  </Text>
+                </Pressable>
+              </View>
+            ) : (
+              <Text style={[styles.feedback, { color: theme.textSecondary }]}>
+                Nenhuma vaga aberta{category ? ' nesta categoria' : ''}
+                {dayIndex !== null ? ' nesse horário' : ''}. Volte mais tarde!
+              </Text>
+            ))}
           {gigs.data?.map((gig) => (
             <GigCard
               key={gig.id}
@@ -283,6 +329,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.two,
     gap: Spacing.one + 2,
+  },
+  regionBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: Radius.medium,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.one + 3,
+  },
+  regionLabel: {
+    flex: 1,
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  emptyRegion: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  emptyRegionLink: {
+    fontSize: 13,
+    fontWeight: '800',
   },
   chipRow: {
     flexDirection: 'row',
