@@ -1,3 +1,4 @@
+export * from "./admin";
 export * from "./agenda";
 export * from "./blocks";
 export * from "./client";

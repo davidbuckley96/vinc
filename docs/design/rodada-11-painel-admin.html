@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 11: Painel admin de disputas</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --roxo-med:#6D4FAE; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --danger:#DC2626; --danger-soft:#FEF2F2; --ok:#059669; --ok-soft:#ECFDF5; --warn:#B45309; --warn-soft:#FFFBEB; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:900px;line-height:1.5}
+  .option{max-width:980px;margin:0 auto 40px}
+  .option h3{font-size:15px;margin:14px 2px 4px}
+  .option>p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px 10px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .frame{border-radius:14px;overflow:hidden;box-shadow:0 8px 28px rgba(17,20,24,.12);border:1px solid var(--line);background:#fff}
+  .top{background:var(--roxo);color:#fff;padding:10px 16px;font-size:13px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+  .top .who{font-size:11px;font-weight:600;opacity:.85}
+  .split{display:flex;min-height:430px}
+  .queue{width:270px;border-right:1px solid var(--line);background:#FAFAFC}
+  .qh{font-size:10.5px;font-weight:800;color:var(--ink2);letter-spacing:.5px;padding:12px 14px 6px}
+  .qi{padding:10px 14px;border-bottom:1px solid var(--line);cursor:default}
+  .qi.on{background:#fff;border-left:3px solid var(--roxo)}
+  .qi .t{font-size:12.5px;font-weight:700}
+  .qi .m{font-size:11px;color:var(--ink2);margin-top:2px}
+  .pill{display:inline-block;font-size:9.5px;font-weight:800;border-radius:99px;padding:1px 7px;margin-right:4px}
+  .pill.open{background:var(--warn-soft);color:var(--warn)}
+  .pill.frozen{background:var(--lilas);color:var(--roxo)}
+  .pill.done{background:var(--ok-soft);color:var(--ok)}
+  .case{flex:1;padding:16px;display:flex;flex-direction:column;gap:10px}
+  .case .hd{display:flex;justify-content:space-between;align-items:flex-start}
+  .case .hd .t{font-size:15px;font-weight:800}
+  .case .hd .m{font-size:11.5px;color:var(--ink2);margin-top:2px}
+  .money{font-size:15px;font-weight:800;color:var(--roxo)}
+  .cols{display:flex;gap:10px}
+  .box{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:10px}
+  .box .bh{font-size:10px;font-weight:800;letter-spacing:.4px;color:var(--ink2);margin-bottom:5px}
+  .box .bt{font-size:12px;line-height:1.5}
+  .box .hh{font-size:10px;color:var(--ink2);margin-top:5px}
+  .box.accuse{border-color:#F3D0D0;background:var(--danger-soft)}
+  .box.defend{border-color:#CFE8DD;background:var(--ok-soft)}
+  .ph-row{display:flex;gap:5px;margin-top:6px}
+  .ph{width:38px;height:38px;border-radius:7px;background:linear-gradient(135deg,#d8cef1,#b9a8e3)}
+  .meta-row{display:flex;gap:10px;font-size:11px;color:var(--ink2)}
+  .meta-row b{color:var(--ink)}
+  .chatbox{border:1.5px solid var(--line);border-radius:12px;padding:10px;font-size:11.5px;color:var(--ink2)}
+  .decide{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;display:flex;gap:8px;align-items:center}
+  .btn{border-radius:10px;padding:9px 14px;font-size:12px;font-weight:800}
+  .btn.total{background:var(--danger);color:#fff}
+  .btn.parcial{border:1.5px solid var(--danger);color:var(--danger)}
+  .btn.improc{border:1.5px solid var(--ok);color:var(--ok)}
+  .amount{border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--ink2);width:110px}
+  /* option B: timeline */
+  .tl{padding:16px;display:flex;flex-direction:column;gap:0}
+  .ev{display:flex;gap:12px}
+  .ev .rail{width:20px;display:flex;flex-direction:column;align-items:center}
+  .ev .dot{width:10px;height:10px;border-radius:50%;background:var(--roxo);margin-top:4px}
+  .ev .bar{flex:1;width:2px;background:var(--line)}
+  .ev .card{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:9px 11px;margin-bottom:10px}
+  .ev .when{font-size:10px;color:var(--ink2);font-weight:700}
+  .ev .what{font-size:12px;margin-top:2px;line-height:1.45}
+  /* option C: table */
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{font-size:10px;letter-spacing:.4px;color:var(--ink2);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+  td{padding:10px 12px;border-bottom:1px solid var(--line)}
+  tr.exp td{background:#FAFAFC}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 11 de design: seu painel de disputas (/admin, web)</h1>
+  <p class="sub">Só você acessa (conta marcada como admin no banco). Cada caso reúne: relato e fotos do anunciante, provas de conclusão do prestador (com horário de envio — D-032), a conversa, o check-in e o histórico das partes. Decisão: reembolso total, parcial (valor livre até o teto do serviço) ou improcedente — a taxa nunca entra. As três opções mostram o MESMO conteúdo; muda como você navega e decide.</p>
+
+  <!-- A -->
+  <div class="option">
+    <div class="frame">
+      <div class="top"><span>Vinc · Painel de disputas</span><span class="who">David · sair</span></div>
+      <div class="split">
+        <div class="queue">
+          <div class="qh">ABERTAS (2)</div>
+          <div class="qi on"><span class="pill open">PRÉ-LIBERAÇÃO</span><div class="t">Faxina apartamento 60m²</div><div class="m">Ana × Beto · R$ 120 · há 3h</div></div>
+          <div class="qi"><span class="pill frozen">REEMBOLSO</span><div class="t">Garçom para festa</div><div class="m">Paulo × Carla · R$ 200 · há 1d</div></div>
+          <div class="qh">RESOLVIDAS</div>
+          <div class="qi"><span class="pill done">PARCIAL R$ 40</span><div class="t">Babá — 2 crianças</div><div class="m">ontem</div></div>
+        </div>
+        <div class="case">
+          <div class="hd">
+            <div><div class="t">Faxina apartamento 60m²</div><div class="m">ter, 7 · 14h–17h · contestada em vez de confirmar (pagamento congelado)</div></div>
+            <div class="money">R$ 120,00</div>
+          </div>
+          <div class="meta-row"><span>✅ <b>Check-in feito</b> (código digitado)</span><span>Ana: ⭐ 4,8 · 12 serviços</span><span>Beto: ⭐ 4,9 · 64 serviços · 1ª disputa</span></div>
+          <div class="cols">
+            <div class="box accuse"><div class="bh">RELATO DA ANA (ANUNCIANTE) · hoje 17:42</div><div class="bt">"Metade dos cômodos ficou sem limpar e o banheiro nem foi tocado."</div><div class="ph-row"><div class="ph"></div><div class="ph"></div></div><div class="hh">fotos enviadas na abertura da contestação</div></div>
+            <div class="box defend"><div class="bh">PROVA DO BETO (PRESTADOR) · hoje 16:58, na conclusão</div><div class="bt">"Limpei todos os cômodos e deixei o lixo na lixeira."</div><div class="ph-row"><div class="ph"></div><div class="ph"></div><div class="ph"></div></div><div class="hh">fotos enviadas AO CONCLUIR — antes da contestação</div></div>
+          </div>
+          <div class="chatbox">💬 Conversa (12 mensagens) — "Cheguei" 14:02 · "A chave está com o porteiro" 14:03 · <u>abrir tudo</u></div>
+          <div class="decide">
+            <button class="btn total">Reembolso total</button>
+            <input class="amount" value="R$ 40,00">
+            <button class="btn parcial">Reembolso parcial</button>
+            <button class="btn improc">Improcedente — liberar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h3>Opção A — Fila + caso lado a lado (estilo e-mail)</h3>
+    <span class="tag">acusação × defesa frente a frente</span>
+    <p>Fila à esquerda (abertas primeiro, mais antigas no topo), caso à direita com o relato do anunciante e a prova do prestador em colunas espelhadas — os horários de envio dizem quem registrou o quê e quando. Decisão fixa no rodapé. Feito para resolver vários casos em sequência sem trocar de página.</p>
+  </div>
+
+  <!-- B -->
+  <div class="option">
+    <div class="frame">
+      <div class="top"><span>Vinc · Painel de disputas — Faxina apartamento 60m² · R$ 120,00</span><span class="who">‹ voltar à fila</span></div>
+      <div class="tl">
+        <div class="ev"><div class="rail"><div class="dot"></div><div class="bar"></div></div><div class="card"><div class="when">TER 14:02 — CHECK-IN</div><div class="what">Beto digitou o código de início na chegada ✅</div></div></div>
+        <div class="ev"><div class="rail"><div class="dot"></div><div class="bar"></div></div><div class="card"><div class="when">14:02–16:40 — CONVERSA (12 MENSAGENS)</div><div class="what">"Cheguei" · "A chave está com o porteiro" · "Terminando por aqui 👍" · <u>abrir tudo</u></div></div></div>
+        <div class="ev"><div class="rail"><div class="dot" style="background:var(--ok)"></div><div class="bar"></div></div><div class="card" style="border-color:#CFE8DD;background:var(--ok-soft)"><div class="when">16:58 — BETO CONCLUIU COM PROVAS</div><div class="what">"Limpei todos os cômodos e deixei o lixo na lixeira." + 3 fotos</div><div class="ph-row"><div class="ph"></div><div class="ph"></div><div class="ph"></div></div></div></div>
+        <div class="ev"><div class="rail"><div class="dot" style="background:var(--danger)"></div></div><div class="card" style="border-color:#F3D0D0;background:var(--danger-soft)"><div class="when">17:42 — ANA CONTESTOU (44 MIN DEPOIS)</div><div class="what">"Metade dos cômodos ficou sem limpar e o banheiro nem foi tocado." + 2 fotos</div><div class="ph-row"><div class="ph"></div><div class="ph"></div></div></div></div>
+        <div class="decide" style="padding:12px 0 4px">
+          <button class="btn total">Reembolso total</button>
+          <input class="amount" value="R$ 40,00">
+          <button class="btn parcial">Reembolso parcial</button>
+          <button class="btn improc">Improcedente — liberar</button>
+        </div>
+      </div>
+    </div>
+    <h3>Opção B — Linha do tempo do caso</h3>
+    <span class="tag">a cronologia É o argumento</span>
+    <p>Fila em página própria; o caso abre como uma linha do tempo: check-in → conversa → conclusão com provas → contestação. A ordem dos fatos (quem registrou o quê, quando) fica evidente sem você cruzar horários de cabeça — ideal quando a questão é "a prova veio antes ou depois?". Um caso por vez, mais rolagem.</p>
+  </div>
+
+  <!-- C -->
+  <div class="option">
+    <div class="frame">
+      <div class="top"><span>Vinc · Painel de disputas</span><span class="who">David · sair</span></div>
+      <table>
+        <tr><th>SERVIÇO</th><th>PARTES</th><th>TIPO</th><th>VALOR</th><th>ABERTA HÁ</th><th>DECISÃO</th></tr>
+        <tr class="exp"><td><b>Faxina apartamento 60m²</b></td><td>Ana × Beto</td><td><span class="pill open">PRÉ-LIBERAÇÃO</span></td><td><b>R$ 120</b></td><td>3h</td><td><u>fechar ▲</u></td></tr>
+        <tr class="exp"><td colspan="6">
+          <div class="cols" style="margin:4px 0 8px">
+            <div class="box accuse"><div class="bh">RELATO DA ANA · 17:42</div><div class="bt">"Metade dos cômodos ficou sem limpar…"</div><div class="ph-row"><div class="ph"></div><div class="ph"></div></div></div>
+            <div class="box defend"><div class="bh">PROVA DO BETO · 16:58 (na conclusão)</div><div class="bt">"Limpei todos os cômodos…"</div><div class="ph-row"><div class="ph"></div><div class="ph"></div><div class="ph"></div></div></div>
+            <div class="box"><div class="bh">CONTEXTO</div><div class="bt">✅ check-in feito · 💬 12 mensagens (<u>abrir</u>) · Ana ⭐ 4,8 · Beto ⭐ 4,9, 1ª disputa</div></div>
+          </div>
+          <div class="decide" style="border:0;padding:0"><button class="btn total">Total</button><input class="amount" value="R$ 40,00"><button class="btn parcial">Parcial</button><button class="btn improc">Improcedente</button></div>
+        </td></tr>
+        <tr><td><b>Garçom para festa</b></td><td>Paulo × Carla</td><td><span class="pill frozen">REEMBOLSO</span></td><td><b>R$ 200</b></td><td>1d</td><td><u>abrir ▼</u></td></tr>
+        <tr><td style="color:var(--ink2)">Babá — 2 crianças</td><td style="color:var(--ink2)">Marta × Denise</td><td><span class="pill done">PARCIAL R$ 40</span></td><td style="color:var(--ink2)">R$ 160</td><td style="color:var(--ink2)">ontem</td><td style="color:var(--ink2)">resolvida</td></tr>
+      </table>
+    </div>
+    <h3>Opção C — Tabela com caso expansível</h3>
+    <span class="tag">visão geral máxima</span>
+    <p>Tudo numa tabela densa; clicar numa linha expande o caso ali mesmo, com decisão inline. Melhor visão do conjunto (quantas, de quanto, há quanto tempo) — mas cada caso tem menos espaço e a conversa abre em janela separada.</p>
+  </div>
+
+</body>
+</html>
