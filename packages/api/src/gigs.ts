@@ -241,6 +241,7 @@ export type LifecycleAction = "start" | "complete" | "confirm";
 
 export type LifecycleResult =
   | "done"
+  | "wrong_code"
   | "unauthorized"
   | "not_found"
   | "forbidden"
@@ -249,14 +250,18 @@ export type LifecycleResult =
   | "invalid_request"
   | "network_error";
 
-/** Calls the gig-lifecycle Edge Function (start/complete/confirm). */
+/**
+ * Calls the gig-lifecycle Edge Function (start/complete/confirm).
+ * start requires the poster's 4-digit check-in code (D-028).
+ */
 export async function gigLifecycle(
   client: SupabaseClient,
   gigId: string,
   action: LifecycleAction,
+  code?: string,
 ): Promise<LifecycleResult> {
   const { data, error } = await client.functions.invoke("gig-lifecycle", {
-    body: { gigId, action },
+    body: { gigId, action, code },
   });
   if (error) {
     try {

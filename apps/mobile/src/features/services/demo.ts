@@ -89,6 +89,7 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     title: 'Fotógrafo para evento (minha vaga)',
     description: 'Cobertura de 3 horas de um evento corporativo.',
     status: 'accepted',
+    checkinCode: '4821',
     role: 'poster',
     startsAt: inDays(4, 9),
     endsAt: inDays(4, 12),

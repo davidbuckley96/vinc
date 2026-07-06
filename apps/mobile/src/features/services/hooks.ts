@@ -30,9 +30,12 @@ export function useServiceDetail(gigId: string) {
 export function useLifecycleAction(gigId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (action: LifecycleAction): Promise<LifecycleResult> => {
+    mutationFn: async (input: {
+      action: LifecycleAction;
+      code?: string;
+    }): Promise<LifecycleResult> => {
       if (!supabase) return 'done'; // demo mode: pretend success
-      return gigLifecycle(supabase, gigId, action);
+      return gigLifecycle(supabase, gigId, input.action, input.code);
     },
     onSuccess: (result) => {
       if (result === 'done') {

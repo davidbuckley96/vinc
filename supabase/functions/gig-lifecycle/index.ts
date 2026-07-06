@@ -19,6 +19,7 @@ type Action = "start" | "complete" | "confirm";
 
 type ResultCode =
   | "done"
+  | "wrong_code"
   | "unauthorized"
   | "not_found"
   | "forbidden"
@@ -52,9 +53,9 @@ Deno.serve(async (request) => {
   const jwt = (request.headers.get("Authorization") ?? "").replace("Bearer ", "");
   if (!jwt) return respond("unauthorized", 401);
 
-  let gigId: unknown, action: unknown;
+  let gigId: unknown, action: unknown, code: unknown;
   try {
-    ({ gigId, action } = await request.json());
+    ({ gigId, action, code } = await request.json());
   } catch {
     return respond("invalid_request", 400);
   }
@@ -86,10 +87,27 @@ Deno.serve(async (request) => {
     return respond("invalid_action", 409, { status: gig.status });
   }
 
+  if (action === "start") {
+    // Check-in by code (D-028): the worker types the 4 digits shown on
+    // the poster's screen. Gigs from before the feature have no code row
+    // and start freely.
+    const { data: checkin } = await admin
+      .from("gig_checkin_codes")
+      .select("code")
+      .eq("gig_id", gig.id)
+      .maybeSingle();
+    if (checkin && checkin.code !== String(code ?? "").trim()) {
+      return respond("wrong_code", 403);
+    }
+  }
+
   // Atomic transition: only succeeds if the status hasn't changed meanwhile.
+  // Completing stamps awaiting_since — the 48h auto-release clock (D-028).
+  const patch: Record<string, unknown> = { status: NEXT_STATUS[action as Action] };
+  if (action === "complete") patch.awaiting_since = new Date().toISOString();
   const { data: updated } = await admin
     .from("gigs")
-    .update({ status: NEXT_STATUS[action as Action] })
+    .update(patch)
     .eq("id", gig.id)
     .eq("status", gig.status)
     .select("id");

@@ -132,6 +132,10 @@ Deno.serve(async (request) => {
     .from("gig_candidacies")
     .update({ status: "chosen" })
     .eq("id", candidacy.id);
+  // Check-in code (D-028): shown to the poster, typed by the worker on
+  // arrival to start the service — proof of presence for disputes.
+  const code = String(Math.floor(1000 + Math.random() * 9000));
+  await admin.from("gig_checkin_codes").upsert({ gig_id: gig.id, code });
   await admin
     .from("gig_candidacies")
     .update({ status: "not_chosen" })

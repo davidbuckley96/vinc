@@ -384,3 +384,17 @@ roadmap). Verificado e2e.
    serviço — prova de presença que alimenta as disputas.
 6. **Pedido de reembolso**: relato em texto obrigatório + até 5 fotos
    opcionais; análise considera também o chat e o histórico.
+
+## D-029 — Busca por região: GPS + ajuste manual, raio de ~30 km, mais próximas primeiro
+**Data:** 2026-07-06 · **Decidido por:** David
+
+As vagas **não aparecem para o país todo**: quem vive no RJ não vê vaga de
+SP. Regras: (1) o app sugere a região pela **localização do aparelho** e a
+pessoa pode **ajustar manualmente no mapa** quando quiser (fica salva;
+negar o GPS cai no modo manual); (2) alcance por **raio ajustável, padrão
+~30 km** (cobre cidade + região metropolitana; ajustável ~5–100 km); (3)
+dentro do raio, ordena por **proximidade** e o cartão mostra a distância
+aproximada ("≈ 3 km"), calculada do **pino aproximado** (o endereço exato
+segue protegido — D-028). A localização do usuário serve só para filtrar:
+nunca é exibida a terceiros. Entra como bloco 2.8 da Fase 2, junto do 2.3
+(endereço aproximado), que mexe nas mesmas colunas.

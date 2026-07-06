@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -59,7 +60,7 @@ function statusCard(service: ServiceDetail): StatusCard {
         ? {
             icon: 'checkmark-circle',
             title: 'Serviço aceito!',
-            body: 'Quando chegar no local, toque em iniciar.',
+            body: 'Quando chegar no local, peça o código de 4 dígitos ao anunciante e toque em iniciar.',
             actionLabel: 'Iniciar serviço',
           }
         : {
@@ -85,12 +86,12 @@ function statusCard(service: ServiceDetail): StatusCard {
         ? {
             icon: 'hourglass',
             title: 'Aguardando confirmação',
-            body: `${other} confirma a conclusão e ${price} cai na sua carteira.`,
+            body: `${other} confirma a conclusão e ${price} cai na sua carteira. Sem resposta, libera sozinho em 48h.`,
           }
         : {
             icon: 'help-circle',
             title: 'Confirme a conclusão',
-            body: `O serviço foi realizado corretamente? Ao confirmar, ${price} é liberado para ${other}.`,
+            body: `O serviço foi realizado corretamente? Ao confirmar, ${price} é liberado para ${other}. Sem resposta nem contestação, libera sozinho em 48h.`,
             actionLabel: 'Confirmar conclusão',
           };
     case 'completed':
@@ -115,6 +116,7 @@ function statusCard(service: ServiceDetail): StatusCard {
 }
 
 const RESULT_MESSAGES: Record<string, string> = {
+  wrong_code: 'Código errado. Peça ao anunciante o código de 4 dígitos que aparece na tela dele.',
   state_changed: 'O status mudou agora mesmo. Atualize e tente de novo.',
   invalid_action: 'Essa ação não está mais disponível.',
   forbidden: 'Você não participa deste serviço.',
@@ -147,6 +149,9 @@ export function ServiceDetailScreen() {
   const [cancelArmed, setCancelArmed] = useState(false);
   const [cancelledNote, setCancelledNote] = useState<string | null>(null);
   const [mapOpen, setMapOpen] = useState(false);
+  // Check-in by code (D-028): tapping "Iniciar serviço" reveals the input.
+  const [startArmed, setStartArmed] = useState(false);
+  const [startCode, setStartCode] = useState('');
 
   const cancelWithFine = async () => {
     if (!service.data) return;
@@ -203,8 +208,19 @@ export function ServiceDetailScreen() {
       service.data.role,
     );
     if (!action) return;
-    const result = await lifecycle.mutateAsync(action);
-    if (result !== 'done') {
+    if (action === 'start' && !startArmed) {
+      setStartArmed(true);
+      return;
+    }
+    if (action === 'start' && startCode.trim().length < 4) {
+      setError('Digite o código de 4 dígitos que o anunciante te mostrar.');
+      return;
+    }
+    const result = await lifecycle.mutateAsync({ action, code: startCode.trim() || undefined });
+    if (result === 'done') {
+      setStartArmed(false);
+      setStartCode('');
+    } else {
       setError(RESULT_MESSAGES[result] ?? RESULT_MESSAGES.invalid_request!);
     }
   };
@@ -428,6 +444,36 @@ export function ServiceDetailScreen() {
               <CandidateList gigId={data.id} enabled />
             )}
 
+            {data.role === 'poster' && data.status === 'accepted' && data.checkinCode && (
+              <View style={[styles.codeBox, { backgroundColor: theme.primarySoft }]}>
+                <Text style={[styles.codeLabel, { color: theme.primarySoftMeta }]}>
+                  CÓDIGO DE INÍCIO
+                </Text>
+                <Text style={[styles.codeValue, { color: theme.primarySoftText }]}>
+                  {data.checkinCode}
+                </Text>
+                <Text style={[styles.codeHint, { color: theme.primarySoftMeta }]}>
+                  Mostre este código ao prestador quando ele chegar — é assim que o serviço
+                  começa.
+                </Text>
+              </View>
+            )}
+
+            {startArmed && data.role === 'worker' && data.status === 'accepted' && (
+              <TextInput
+                style={[
+                  styles.codeInput,
+                  { borderColor: theme.line, color: theme.text, backgroundColor: theme.background },
+                ]}
+                placeholder="Código de 4 dígitos"
+                placeholderTextColor={theme.textSecondary}
+                keyboardType="numeric"
+                maxLength={4}
+                value={startCode}
+                onChangeText={setStartCode}
+              />
+            )}
+
             {card.actionLabel && (
               <Pressable
                 accessibilityRole="button"
@@ -441,7 +487,9 @@ export function ServiceDetailScreen() {
                   <ActivityIndicator color={theme.onPrimary} />
                 ) : (
                   <Text style={[styles.actionLabel, { color: theme.onPrimary }]}>
-                    {card.actionLabel}
+                    {startArmed && card.actionLabel === 'Iniciar serviço'
+                      ? 'Confirmar código e iniciar'
+                      : card.actionLabel}
                   </Text>
                 )}
               </Pressable>
@@ -580,6 +628,39 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   cancelBlock: {
+    marginTop: Spacing.two,
+  },
+  codeBox: {
+    borderRadius: Radius.large - 2,
+    padding: Spacing.three,
+    alignItems: 'center',
+    gap: 2,
+    marginTop: Spacing.two,
+  },
+  codeLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  codeValue: {
+    fontSize: 40,
+    fontWeight: '800',
+    letterSpacing: 10,
+  },
+  codeHint: {
+    fontSize: 11.5,
+    textAlign: 'center',
+    lineHeight: 16.5,
+  },
+  codeInput: {
+    borderWidth: 1.5,
+    borderRadius: Radius.medium,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: 12,
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: 6,
+    textAlign: 'center',
     marginTop: Spacing.two,
   },
   chat: {

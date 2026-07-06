@@ -26,13 +26,14 @@
 - [x] Web e mobile funcionando com paridade — varredura das 12 telas em viewport desktop (1280px): layout centralizado via MaxContentWidth, sem quebras; mapa web nativo (MapLibre) e app via WebView; teclado tratado no chat (KeyboardAvoidingView)
 
 ## Fase 2 — Confiança (desenho fechado em D-028; ordem de execução abaixo)
-- [ ] 2.1 Auto-liberação em 48h (job pg_cron sobre awaiting_confirmation — D-028)
-- [ ] 2.2 Check-in por código de 4 dígitos (gera na escolha, anunciante exibe, prestador digita para iniciar — D-028)
+- [x] 2.1 Auto-liberação em 48h — `awaiting_since` + job pg_cron a cada 15 min (verificado e2e: não libera antes das 48h, libera com escrow_release depois)
+- [x] 2.2 Check-in por código — gerado na escolha, legível só pelo anunciante (tabela própria + RLS, verificado e2e), prestador digita para iniciar (código errado recusado); vagas antigas sem código iniciam livre
 - [ ] 2.3 Endereço/pino aproximados antes da escolha; completos para o escolhido (D-028)
 - [ ] 2.4 Disputas e reembolsos (D-028): contestar em vez de confirmar (congela) + pedido de reembolso nos 7 dias (congela o contestado); relato + até 5 fotos; resolução total/parcial via função (ledger)
 - [ ] 2.5 Painel admin do David (rota /admin no web, papel admin): fila de disputas com relato, fotos, chat, check-in e histórico; decisão com um clique
 - [ ] 2.6 Notificações: central in-app primeiro (candidato novo, escolhido, serviço iniciado/concluído, pagamento liberado, disputa); push real requer build de desenvolvimento (EAS) — junto com a Fase 4/lojas
 - [ ] 2.7 Prioridade para lesados por cancelamento (desenhar mecanismo — ex.: destaque na busca por N dias)
+- [ ] 2.8 Busca por região (D-029): GPS + ajuste manual no mapa, raio ajustável padrão ~30 km, ordenação por proximidade com distância no cartão (do pino aproximado); localização do usuário nunca exibida
 
 ## Fase 3 — Pagamentos reais
 - [ ] Gateway brasileiro (Mercado Pago/Pagar.me — a decidir, dúvida #13) com split; meios de pagamento: Pix + cartões no lançamento, carteiras digitais conforme o gateway (D-016, dúvida #17)

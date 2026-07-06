@@ -43,6 +43,8 @@ export interface ServiceDetail {
   lng: number | null;
   counterpartId: string | null;
   counterpartName: string | null;
+  /** Check-in code (D-028) — only the POSTER receives it (RLS). */
+  checkinCode?: string | null;
 }
 
 export async function fetchServiceDetail(
@@ -61,6 +63,17 @@ export async function fetchServiceDetail(
   if (!data) return null;
   const row = data as unknown as AgendaRow & { description: string; address: string; lat: number | null; lng: number | null };
   const role = row.poster_id === userId ? "poster" : "worker";
+
+  // RLS only returns the code to the poster; workers get null.
+  let checkinCode: string | null = null;
+  if (role === "poster" && row.status === "accepted") {
+    const { data: codeRow } = await client
+      .from("gig_checkin_codes")
+      .select("code")
+      .eq("gig_id", gigId)
+      .maybeSingle();
+    checkinCode = codeRow?.code ?? null;
+  }
   return {
     id: row.id,
     title: row.title,
@@ -75,6 +88,7 @@ export async function fetchServiceDetail(
     lng: row.lng,
     counterpartId: role === "poster" ? row.worker_id : row.poster_id,
     counterpartName: role === "poster" ? (row.worker?.name ?? null) : (row.poster?.name ?? null),
+    checkinCode,
   };
 }
 
