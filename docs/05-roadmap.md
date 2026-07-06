@@ -22,7 +22,7 @@
 - [x] Taxa de serviço na criação da vaga (D-013) — IMPLEMENTADO: pagamento antecipado via create-gig (taxa 10%-exemplo + escrow do líquido), taxa explícita na criação, prévia e busca com o líquido, reembolso do líquido na exclusão (delete-gig), tudo verificado e2e; e reembolso na expiração (job pg_cron a cada 5 min, D-022)
 - [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
 - [x] Localização por mapa (D-023, rodada 7 opção A): picker em tela cheia com pino fixo + busca (Nominatim), modal de mapa ao ver a vaga, lat/lng validados e persistidos (verificado e2e); MapLibre + OpenFreeMap (trocar tiles p/ MapTiler no pré-lançamento)
-- [ ] Mensagens entre as partes dentro do app (chat simples; respeita bloqueios)
+- [~] Mensagens entre as partes dentro do app (docs/02 §9) — BACKEND pronto e verificado e2e (gig_messages: só participantes do serviço vinculado, remetente não falsificável, bloqueio corta envio nos dois sentidos, realtime habilitado); FALTA a UI (rodada 9 aguardando escolha)
 - [ ] Web e mobile funcionando com paridade
 
 ## Fase 2 — Confiança

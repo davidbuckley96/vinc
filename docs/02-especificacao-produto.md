@@ -236,7 +236,19 @@ reembolso. Ver `07-duvidas-abertas.md`.
   a recusa de candidatura (§3) afeta apenas uma vaga específica.
 - Desbloqueio: quem bloqueou pode desfazer.
 
-## 9. Home / Calendário (tela principal)
+## 9. Mensagens entre as partes (Fase 1 — backend pronto, UI na rodada 9)
+
+- **Uma conversa por serviço**, entre o anunciante e o prestador
+  **escolhido** — nunca durante a fase anônima de candidatura (D-024).
+- Disponível do momento da escolha até depois da conclusão (combinar
+  chegada, avisar atraso, resolver pendências).
+- **Bloqueio corta o envio nos dois sentidos** (§8); mensagens antigas
+  continuam legíveis (registro).
+- Mensagens **imutáveis** (sem editar/apagar — proteção em disputas, §6) e
+  entregues **em tempo real**; só os dois participantes conseguem ler
+  (RLS; verificado e2e, incluindo falsificação de remetente).
+
+## 10. Home / Calendário (tela principal)
 
 - Calendário com visões **diária (dividida por hora), semanal e mensal**.
 - O usuário seleciona um horário e escolhe entre:
@@ -246,7 +258,7 @@ reembolso. Ver `07-duvidas-abertas.md`.
   e vagas anunciadas (como anunciante).
 - Fluxo central do produto: "tenho o dia X livre → preencho com um bico".
 
-## 10. Requisitos não-funcionais
+## 11. Requisitos não-funcionais
 
 - **Plataformas:** Android, iOS e web (desktop e mobile) com um só código.
 - **Acessibilidade/simplicidade:** usável por pessoas de baixa escolaridade;
@@ -256,7 +268,7 @@ reembolso. Ver `07-duvidas-abertas.md`.
 - **Segurança:** RLS no banco, regras financeiras somente no backend (nunca
   confiar no cliente), ledger auditável.
 
-## 11. Escopo do MVP (Fase 1 do roadmap)
+## 12. Escopo do MVP (Fase 1 do roadmap)
 
 **Dentro:** auth + perfil, calendário home (3 visões), criar/editar/excluir
 vaga, listar/buscar vagas por horário e categoria, aceite atômico com checagem

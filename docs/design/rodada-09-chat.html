@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 9: Mensagens</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --roxo-med:#6D4FAE; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:860px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .head{background:var(--roxo);color:#fff;padding:26px 14px 12px;border-radius:0 0 22px 22px}
+  .head .t{font-size:15.5px;font-weight:800}
+  .head .st{font-size:11px;opacity:.85;margin-top:1px}
+  .body{flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+  .day{font-size:10px;font-weight:800;color:var(--ink2);text-align:center;letter-spacing:.5px;margin:2px 0}
+  .msg{max-width:78%;border-radius:15px;padding:8px 11px;font-size:12.5px;line-height:1.45}
+  .them{align-self:flex-start;background:#F4F1FA;color:var(--ink);border-bottom-left-radius:5px}
+  .me{align-self:flex-end;background:var(--roxo);color:#fff;border-bottom-right-radius:5px}
+  .msg .hh{display:block;font-size:9.5px;opacity:.65;text-align:right;margin-top:2px}
+  .inputbar{display:flex;gap:7px;padding:10px 12px;border-top:1px solid var(--line);align-items:center}
+  .input{flex:1;border:1.5px solid var(--line);border-radius:99px;padding:9px 13px;font-size:12.5px;color:#9aa1ab}
+  .send{width:36px;height:36px;border-radius:50%;background:var(--roxo);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px}
+  .quick{display:flex;gap:6px;padding:8px 12px 0;flex-wrap:nowrap;overflow:hidden}
+  .qchip{border:1.5px solid var(--roxo);color:var(--roxo-deep);border-radius:99px;padding:6px 11px;font-size:11.5px;font-weight:700;white-space:nowrap;background:var(--lilas)}
+  .svcbar{display:flex;justify-content:space-between;align-items:center;background:var(--lilas);border-radius:12px;padding:8px 11px;font-size:11px;color:var(--roxo-med)}
+  .svcbar b{color:var(--roxo-deep);font-size:11.5px}
+  .kv{display:flex;justify-content:space-between;font-size:12.5px;padding:8px 2px;border-bottom:1px solid var(--line)}
+  .statusc{background:var(--lilas);border-radius:14px;padding:12px;text-align:center}
+  .statusc b{font-size:14px;color:var(--roxo-deep)}
+  .inline{border:1.5px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:7px}
+  .inline .hdr{font-size:10.5px;font-weight:800;color:var(--ink2);letter-spacing:.4px}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 9 de design: mensagens entre as partes</h1>
+  <p class="sub">Chat por serviço, entre anunciante e o prestador ESCOLHIDO (nunca na fase anônima de candidatura — D-024). Bloqueio corta o envio nos dois sentidos (§8). Backend pronto: mensagens em tempo real, imutáveis, só os dois participantes leem. Escolha a cara da conversa.</p>
+
+  <div class="row">
+
+    <!-- A -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">‹ João Pedro</div><div class="st">Fotógrafo para evento · ter, 7 · 9h</div></div>
+        <div class="body">
+          <div class="day">HOJE</div>
+          <div class="msg them">Oi! Qual o melhor lugar para estacionar aí?<span class="hh">14:02</span></div>
+          <div class="msg me">Tem vaga na rua de trás, do lado do mercado.<span class="hh">14:05</span></div>
+          <div class="msg them">Perfeito. Levo os equipamentos pela entrada principal?<span class="hh">14:06</span></div>
+          <div class="msg me">Sim! Te espero na recepção 👍<span class="hh">14:07</span></div>
+          <div style="flex:1"></div>
+        </div>
+        <div class="inputbar"><div class="input">Escreva uma mensagem…</div><div class="send">➤</div></div>
+      </div>
+      <h3>Opção A — Conversa clássica</h3>
+      <span class="tag">padrão WhatsApp, zero aprendizado</span>
+      <p>Tela dedicada com bolhas (deles à esquerda, suas em roxo à direita), horário em cada mensagem e o serviço no cabeçalho. É a interface de conversa que qualquer brasileiro já usa todos os dias.</p>
+    </div>
+
+    <!-- B -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">‹ João Pedro</div><div class="st">Fotógrafo para evento · ter, 7 · 9h</div></div>
+        <div class="body">
+          <div class="day">HOJE</div>
+          <div class="msg them">Oi! Qual o melhor lugar para estacionar aí?<span class="hh">14:02</span></div>
+          <div class="msg me">Tem vaga na rua de trás, do lado do mercado.<span class="hh">14:05</span></div>
+          <div class="msg me">Estou chegando 🚗<span class="hh">14:38</span></div>
+          <div style="flex:1"></div>
+        </div>
+        <div class="quick"><div class="qchip">Estou chegando</div><div class="qchip">Cheguei</div><div class="qchip">Pode me ligar?</div><div class="qchip">Vou me atra…</div></div>
+        <div class="inputbar"><div class="input">Escreva uma mensagem…</div><div class="send">➤</div></div>
+      </div>
+      <h3>Opção B — Conversa + respostas prontas · recomendada</h3>
+      <span class="tag">um toque para as frases do dia a dia</span>
+      <p>Igual à A, mas com uma fileira de <b>frases prontas</b> acima do teclado ("Estou chegando", "Cheguei", "Pode me ligar?", "Vou me atrasar 10 min"). Quem tem dificuldade de escrever resolve 80% da comunicação com um toque — alinhado ao princípio de simplicidade do produto.</p>
+    </div>
+
+    <!-- C -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">‹ Fotógrafo para evento</div></div>
+        <div class="body">
+          <div class="statusc"><b>João Pedro vai fazer o serviço</b></div>
+          <div class="kv"><span>Quando</span><b>ter, 7 · 9h às 12h</b></div>
+          <div class="kv"><span>Valor</span><b style="color:var(--roxo)">R$ 240,00</b></div>
+          <div class="inline">
+            <div class="hdr">MENSAGENS</div>
+            <div class="msg them" style="max-width:92%">Oi! Qual o melhor lugar para estacionar aí?<span class="hh">14:02</span></div>
+            <div class="msg me" style="max-width:92%">Tem vaga na rua de trás.<span class="hh">14:05</span></div>
+            <div class="inputbar" style="border:none;padding:2px 0 0"><div class="input">Escreva…</div><div class="send">➤</div></div>
+          </div>
+          <div style="flex:1"></div>
+        </div>
+      </div>
+      <h3>Opção C — Chat dentro da tela do serviço</h3>
+      <span class="tag">sem tela nova</span>
+      <p>As mensagens viram uma seção da própria tela do serviço — tudo num lugar só, sem navegação extra. Porém a conversa fica espremida entre as informações, e conversas longas ficam ruins de acompanhar.</p>
+    </div>
+
+  </div>
+</body>
+</html>
