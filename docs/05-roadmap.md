@@ -14,7 +14,7 @@
 - [x] Calendário home (visões dia/semana/mês; horário livre → buscar/anunciar) — ligado à agenda real do usuário
 - [x] CRUD de vagas — criação com prévia (D-007); editar (vaga aberta, valor imutável) e excluir (reembolso do líquido, taxa fica) via Edge Functions (D-017, docs/02 §2.2), verificado e2e
 - [~] Busca/listagem de vagas — categorias primeiro + vagas recentes (D-007); falta filtro por horário
-- [x] Candidatura com aprovação do anunciante (modelo Uber, docs/02 §3, D-012) — trava atômica de 1 candidato; recusa sem multa reabre a vaga e bloqueia o candidato só para ela; escrow retido na aprovação; verificado e2e (14 checagens)
+- [~] Candidatura com ESCOLHA entre múltiplos candidatos anonimizados (D-024, docs/02 §3; substituiu o modelo Uber de D-012) — BACKEND no ar e verificado e2e (11 checagens: vaga segue na busca, anonimato garantido por RLS+função, recusa permanente por vaga, escolha atômica com re-checagem de agenda, candidatura não trava agenda); FALTA a UI (lista de candidatos — rodada 8 de design)
 - [x] Bloqueio entre usuários (docs/02 §8) — botão no perfil público; vagas ocultas nas duas direções e candidatura impedida (verificado e2e); corte de mensagens entra junto com o chat
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
 - [x] Carteira simulada (ledger imutável + tela dois cartões, D-008) com multa do anunciante (cancel-gig, D-018: 25% piso R$ 10, 80% ao prestador lesado), verificado e2e — reformulação da tela vem com D-015

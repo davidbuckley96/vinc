@@ -47,8 +47,11 @@ describe("gig state machine", () => {
     expect(canTransition("awaiting_confirmation", "completed")).toBe(true);
   });
 
+  it("allows choosing a candidate straight from open (D-024)", () => {
+    expect(canTransition("open", "accepted")).toBe(true);
+  });
+
   it("rejects invalid transitions", () => {
-    expect(canTransition("open", "accepted")).toBe(false);
     expect(canTransition("open", "completed")).toBe(false);
     expect(canTransition("completed", "open")).toBe(false);
     expect(canTransition("in_progress", "completed")).toBe(false);

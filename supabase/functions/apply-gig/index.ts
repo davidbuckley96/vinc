@@ -1,22 +1,19 @@
 // Edge Function: apply-gig
-// Worker applies to an open gig (docs/02 §3, Uber-like — D-012). Guarantees:
-//   - only authenticated users, never the poster themselves
-//   - refused candidates can never re-apply to this gig
-//   - blocked pairs (either direction) can't apply
-//   - schedule-conflict check incl. the worker's own pending candidacies
-//   - atomic lock: UPDATE ... WHERE status='open' — one candidate at a time;
-//     while pending, the gig is out of listings and nobody else can apply
-// No money moves here: escrow is held at APPROVAL (respond-candidacy).
+// A worker applies to an OPEN gig (docs/02 §3, D-024): the gig stays open
+// and keeps collecting candidates; the poster later chooses one. A pending
+// candidacy does NOT block the worker's schedule — only being chosen does
+// (decide-candidacy re-checks the conflict).
 //
 // Deploy: Management API multipart (see docs/05 roadmap).
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-import { SCHEDULE_BLOCKING_STATUSES } from "../../../packages/core/src/gig.ts";
+import { ACTIVE_WORKER_STATUSES } from "../../../packages/core/src/gig.ts";
 import { hasScheduleConflict } from "../../../packages/core/src/schedule.ts";
 
 type ResultCode =
   | "applied"
+  | "already_applied"
   | "unauthorized"
   | "not_found"
   | "own_gig"
@@ -71,17 +68,20 @@ Deno.serve(async (request) => {
   if (!gig) return respond("not_found", 404);
   if (gig.poster_id === workerId) return respond("own_gig", 409);
   if (gig.status !== "open") return respond("not_available", 409);
-  // Already started: the expiration job (D-022) will collect it — the
-  // search hides it, but a stale deep link could still land here.
+  // Already started: the expiration job (D-022) will collect it.
   if (new Date(gig.starts_at) <= new Date()) return respond("not_available", 409);
 
-  const { data: refusal } = await admin
-    .from("gig_refusals")
-    .select("gig_id")
+  const { data: existing } = await admin
+    .from("gig_candidacies")
+    .select("status")
     .eq("gig_id", gigId)
     .eq("worker_id", workerId)
     .maybeSingle();
-  if (refusal) return respond("refused_before", 403);
+  if (existing) {
+    return existing.status === "refused"
+      ? respond("refused_before", 403)
+      : respond("already_applied", 409);
+  }
 
   const { data: blocks } = await admin
     .from("user_blocks")
@@ -93,28 +93,24 @@ Deno.serve(async (request) => {
     .limit(1);
   if (blocks && blocks.length > 0) return respond("blocked", 403);
 
+  // Real commitments still conflict; other pending candidacies don't.
   const { data: commitments } = await admin
     .from("gigs")
     .select("starts_at, ends_at")
     .eq("worker_id", workerId)
-    .in("status", [...SCHEDULE_BLOCKING_STATUSES]);
-  const candidate = { startsAt: gig.starts_at, endsAt: gig.ends_at };
+    .in("status", [...ACTIVE_WORKER_STATUSES]);
+  const range = { startsAt: gig.starts_at, endsAt: gig.ends_at };
   const committed = (commitments ?? []).map((row) => ({
     startsAt: row.starts_at,
     endsAt: row.ends_at,
   }));
-  if (hasScheduleConflict(candidate, committed)) {
-    return respond("schedule_conflict", 409);
-  }
+  if (hasScheduleConflict(range, committed)) return respond("schedule_conflict", 409);
 
-  // Atomic lock: only succeeds while the gig is still open.
-  const { data: locked } = await admin
-    .from("gigs")
-    .update({ status: "pending_approval", worker_id: workerId })
-    .eq("id", gigId)
-    .eq("status", "open")
-    .select("id");
-  if (!locked || locked.length === 0) return respond("not_available", 409);
+  // The unique (gig_id, worker_id) constraint settles races.
+  const { error: insertError } = await admin
+    .from("gig_candidacies")
+    .insert({ gig_id: gig.id, worker_id: workerId });
+  if (insertError) return respond("already_applied", 409);
 
   return respond("applied", 200);
 });

@@ -292,3 +292,31 @@ no app via WebView no MVP — sem módulo nativo, funciona no Expo Go),
 chave própria no pré-lançamento) e **Nominatim/OpenStreetMap** para busca
 e leitura de endereço (gratuito, sem chave). Mapa isolado em componente
 próprio para troca barata de provedor (docs/03).
+
+## D-024 — Escolha entre múltiplos candidatos, anonimizados até a escolha
+**Data:** 2026-07-06 · **Decidido por:** David (substitui D-012; fecha a dúvida #19)
+
+A vaga **continua aberta e visível juntando candidatos**; o anunciante
+**escolhe um** entre eles (ou recusa individualmente). Muda o paradigma de
+D-012 (um candidato por vez travava a vaga). Regras:
+
+- **Anonimato até a escolha (LGPD/antidiscriminação):** o anunciante NÃO vê
+  foto, nome completo, idade nem qualquer dado que ligue o candidato a uma
+  pessoa específica. Vê apenas o relevante para o serviço: **primeiro
+  nome, nota como prestador, nº de avaliações, total de serviços
+  prestados e os elogios pré-prontos mais frequentes** (ex.: "Pontual",
+  "Caprichou no serviço"). Gênero entra quando o perfil coletar esse dado
+  (edição de perfil ainda não existe). Sem página de perfil clicável e sem
+  ID real exposto: os dados fluem por função de servidor que devolve só o
+  id da candidatura (aleatório, por vaga) — impossível montar URL do
+  perfil real. Após a escolha, o vínculo existe e o perfil completo passa
+  a ser visível como hoje.
+- **Candidatura não trava mais a agenda** do prestador (ele pode se
+  candidatar a várias vagas); só a ESCOLHA trava. A escolha re-checa o
+  conflito de agenda e auto-recusa candidato que ficou ocupado.
+- **Recusa individual** segue permanente por vaga e sem multa; os demais
+  candidatos de uma vaga que escolheu alguém ficam "não escolhidos" (podem
+  se candidatar a outras vagas normalmente).
+- Técnica: tabela `gig_candidacies` substitui `gig_refusals` e o status
+  `pending_approval` (que vira legado); RLS não dá SELECT ao anunciante —
+  a lista vem anonimizada da função `get-candidates`.

@@ -87,30 +87,31 @@ iniciadas e a candidatura a elas é recusada.
   `delete-gig`); a política de UPDATE direto do cliente foi removida
   (migration 0007) para o valor não ser alterável fora do fluxo.
 
-## 3. Candidatura e aprovação (modelo Uber — definido pelo David em 2026-07-03)
+## 3. Candidatura e escolha do prestador (D-024, substitui o modelo D-012)
 
-- O prestador **se candidata** a uma vaga ABERTA com poucos cliques. A
-  candidatura deve ser **atômica** no backend: no momento em que existe um
-  candidato, **a vaga deixa de aparecer na busca para todos** e ninguém
-  mais pode se candidatar (confirmado pelo David em 2026-07-03); se o
-  anunciante recusar, ela volta a aparecer.
-- O **anunciante recebe uma notificação** para **aceitar ou recusar** o
-  candidato (no MVP, aviso dentro do app — agenda e tela do serviço; push
-  real na Fase 2). Ele **não escolhe entre vários candidatos**: como no Uber
-  (o passageiro não escolhe o motorista), é um candidato por vez, sim ou não.
-- **Recusa (sem multa):** a vaga volta a ficar ABERTA para os demais, e o
-  candidato recusado **nunca mais vê nem pode se candidatar a ESTA vaga**.
-  A recusa vale só para o serviço em questão: o mesmo trabalhador pode se
-  candidatar normalmente a outras vagas (novas ou abertas) do mesmo
-  anunciante — salvo bloqueio entre usuários (ver §8).
-- **Aprovação:** vira o vínculo (ACEITA). O pagamento já foi feito na
-  criação da vaga (ver §5.1 — D-013): o líquido segue retido em escrow até a
-  conclusão. O backend re-checa o conflito de agenda do candidato na
-  aprovação (ele pode ter aceitado outro serviço enquanto esperava);
-  havendo conflito, a candidatura é recusada automaticamente.
-- **Conflito de agenda:** o backend impede candidatura a vagas que conflitem
-  com os compromissos do prestador (serviços aceitos/em andamento e
-  candidaturas pendentes dele).
+- O prestador **se candidata** a uma vaga ABERTA com poucos cliques. A vaga
+  **continua aberta e visível na busca**, juntando candidatos, até o
+  anunciante escolher alguém (ou a vaga expirar no horário de início).
+- **Candidatar-se NÃO trava a agenda** do prestador: ele pode se candidatar
+  a várias vagas, inclusive de horários conflitantes — só a ESCOLHA ocupa o
+  horário. A escolha re-checa o conflito de agenda do candidato e
+  auto-recusa quem ficou ocupado enquanto esperava.
+- **O anunciante escolhe UM candidato** na tela da vaga, vendo apenas dados
+  **anonimizados** (LGPD/antidiscriminação — D-024): primeiro nome, nota
+  como prestador, nº de avaliações, total de serviços prestados e os
+  elogios pré-prontos mais frequentes. Sem foto, sem nome completo, sem
+  idade, sem link para o perfil real (o id que trafega é o da candidatura,
+  aleatório e por vaga). Após a escolha, o perfil completo fica visível
+  como em qualquer serviço vinculado.
+- **Recusa individual (sem multa):** o candidato recusado **nunca mais vê
+  nem pode se candidatar a ESTA vaga**; pode se candidatar normalmente a
+  outras vagas do mesmo anunciante — salvo bloqueio (§8). Os demais
+  candidatos de uma vaga que escolheu alguém ficam apenas "não escolhidos",
+  sem punição.
+- **Escolha:** vira o vínculo (ACEITA). O pagamento já foi feito na criação
+  da vaga (§5.1 — D-013): o líquido segue retido em escrow até a conclusão.
+- Notificações de candidatura/escolha: aviso dentro do app no MVP; push na
+  Fase 2.
 
 ### Punições pós-aprovação
 - **Anunciante** cancela após aprovar (serviço aceito ou em andamento) →

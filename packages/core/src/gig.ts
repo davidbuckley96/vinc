@@ -23,11 +23,11 @@ export const GIG_STATUSES = [
 export type GigStatus = (typeof GIG_STATUSES)[number];
 
 const TRANSITIONS: Record<GigStatus, readonly GigStatus[]> = {
-  // deletion by the poster (net refund, fee kept — docs/02 §5.1) is
-  // modelled as open/pending_approval → cancelled_by_poster, without fine
-  open: ["pending_approval", "cancelled_by_poster", "expired"],
-  // approval -> accepted; refusal -> back to open (docs/02 §3); expired
-  // when the start time passes with nobody approved (D-022)
+  // The gig stays OPEN collecting candidates (D-024); choosing one moves
+  // it straight to accepted. Deletion (net refund, fee kept) and
+  // expiration also leave from open. pending_approval is LEGACY (D-012's
+  // one-at-a-time flow) — kept only so old rows remain valid.
+  open: ["accepted", "pending_approval", "cancelled_by_poster", "expired"],
   pending_approval: ["accepted", "open", "cancelled_by_poster", "expired"],
   accepted: ["in_progress", "cancelled_by_poster", "cancelled_by_worker"],
   in_progress: ["awaiting_confirmation", "cancelled_by_poster", "cancelled_by_worker"],
@@ -50,11 +50,11 @@ export const ACTIVE_WORKER_STATUSES: readonly GigStatus[] = [
 ];
 
 /**
- * Statuses that occupy the worker's schedule for conflict checks: a pending
- * candidacy also blocks the slot (docs/02 §3), even though no escrow exists.
+ * Statuses that occupy the worker's schedule for conflict checks. Since
+ * D-024, PENDING CANDIDACIES DO NOT BLOCK — a worker may apply to many
+ * gigs; only being chosen occupies the slot (the choice re-checks).
  */
 export const SCHEDULE_BLOCKING_STATUSES: readonly GigStatus[] = [
-  "pending_approval",
   ...ACTIVE_WORKER_STATUSES,
 ];
 
