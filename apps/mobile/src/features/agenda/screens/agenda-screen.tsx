@@ -1,10 +1,12 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
+import { useUnreadNotifications } from '@/features/notifications/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
 import { DateStrip } from '../components/date-strip';
@@ -28,6 +30,7 @@ export function AgendaScreen() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
 
   const agenda = useMyAgenda();
+  const unread = useUnreadNotifications();
   const commitments = agenda.data ?? [];
   const dayCommitments = commitments.filter((c) => isSameDay(c.startsAt, selectedDate));
 
@@ -50,10 +53,27 @@ export function AgendaScreen() {
                   {formatLongDate(selectedDate)}
                 </Text>
               </View>
-              <View style={[styles.avatar, { backgroundColor: theme.background }]}>
-                <Text style={[styles.avatarLabel, { color: theme.primary }]}>
-                  {(userName ?? 'V').trim().charAt(0).toUpperCase()}
-                </Text>
+              <View style={styles.headerActions}>
+                {/* Notification bell (round 12, option A — block 2.6). */}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Abrir notificações"
+                  onPress={() => router.push('/notifications')}
+                  style={styles.bell}>
+                  <Ionicons name="notifications-outline" size={19} color={theme.onPrimary} />
+                  {(unread.data ?? 0) > 0 && (
+                    <View style={[styles.bellBadge, { backgroundColor: theme.danger }]}>
+                      <Text style={[styles.bellBadgeLabel, { color: theme.onPrimary }]}>
+                        {unread.data! > 9 ? '9+' : unread.data}
+                      </Text>
+                    </View>
+                  )}
+                </Pressable>
+                <View style={[styles.avatar, { backgroundColor: theme.background }]}>
+                  <Text style={[styles.avatarLabel, { color: theme.primary }]}>
+                    {(userName ?? 'V').trim().charAt(0).toUpperCase()}
+                  </Text>
+                </View>
               </View>
             </View>
             <ViewSwitcher value={view} onChange={setView} />
@@ -123,6 +143,34 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 12,
     marginTop: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  bell: {
+    width: 34,
+    height: 34,
+    borderRadius: Radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bellBadge: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bellBadgeLabel: {
+    fontSize: 9.5,
+    fontWeight: '800',
   },
   avatar: {
     width: 38,

@@ -32,7 +32,7 @@
 - [x] 2.4 Disputas e reembolsos (D-028/D-031) — backend no ar e verificado e2e (15 checks): status `disputed`, tabelas disputes/dispute_photos + bucket privado, open-dispute (contestar em vez de confirmar + pedido de reembolso nos 7 dias), congelamento na carteira/saque ("em análise"), resolve-dispute (admin, total/parcial, atômico). UI rodada 10 **opção B** (David, 2026-07-06): dois passos com chips de motivo + relato, fotos e revisão; entrada por link discreto "Algo deu errado?"; chat pausado durante a disputa
 - [x] 2.4b Provas de conclusão do prestador + 3 camadas anti-punição (D-032, verificado e2e 7 checks): tela "Finalizar serviço" com fotos+relato opcionais (bucket imutável, horário do servidor é a prova), conclusão tardia só anexa provas, anunciante confirma direto do em-andamento (2 toques), job 12h pós-fim move para aguardando confirmação (pagamento nunca fica preso)
 - [x] 2.5 Painel admin do David (D-033, rodada 11 opção A): rota /admin com fila + caso lado a lado, acusação × defesa com horários de envio, conversa e check-in, decisão total/parcial/improcedente com confirmação; acesso por profiles.is_admin (conta do David marcada), leituras de admin garantidas por RLS (migration 0020), verificado e2e (6 checks)
-- [ ] 2.6 Notificações: central in-app primeiro (candidato novo, escolhido, serviço iniciado/concluído, pagamento liberado, disputa); push real requer build de desenvolvimento (EAS) — junto com a Fase 4/lojas
+- [x] 2.6 Central de notificações in-app (rodada 12 opção A, David 2026-07-06): tabela `notifications` preenchida por TRIGGERS no banco (candidaturas, status da vaga, liberações — inclui os jobs — e disputas; verificado e2e, 8 checks), RLS só-leitura + marcar lida, sino com contador no cabeçalho da agenda, lista agrupada por dia (não lidas em lilás), toque abre o serviço; push real requer build EAS — Fase 4/lojas
 - [ ] 2.7 Prioridade para lesados por cancelamento (desenhar mecanismo — ex.: destaque na busca por N dias)
 - [x] 2.8 Busca por região (D-029, docs/02 §2.3): barra de região na busca + modal (GPS via expo-location com fallback manual no mapa, raio 5–100 km padrão 30), região salva no aparelho, corte por caixa no servidor + círculo/ordenação por proximidade no cliente, "≈ 3 km" no cartão (do pino aproximado); verificado e2e (Recife × São Paulo) e unitário (47 testes)
 
@@ -99,9 +99,9 @@ revisados antes de abrir o app ao público:
 - **Fase 2 quase completa**: 2.1 auto-liberação 48h, 2.2 check-in por
   código, 2.3 endereço aproximado (D-030), 2.4 disputas + provas de
   conclusão (D-031/D-032), 2.5 painel admin (D-033) e 2.8 busca por
-  região (D-029) no ar e verificados e2e. Faltam: 2.6 central de
-  notificações in-app e 2.7 prioridade para lesados (desenhar com o
-  David).
+  região (D-029) no ar e verificados e2e. 2.6 central de notificações também no ar
+  (triggers no banco + sino na agenda). Falta apenas: 2.7 prioridade
+  para lesados (mecanismo a desenhar com o David).
 - **Fluxos completos funcionando com dados reais**: cadastro/login (e-mail e
   Google) → publicar vaga → buscar por categoria → detalhe → aceite atômico
   (escrow retido) → iniciar → concluir → confirmação do anunciante (escrow
