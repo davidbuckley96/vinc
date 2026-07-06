@@ -41,6 +41,19 @@
     Relaciona-se com a dúvida #4 (auto-liberação da confirmação) e com o
     processo de disputas (dúvida #6).
 
+19. 🔴 **Escolha entre múltiplos candidatos** (levantada pelo David em
+    2026-07-06, substituiria D-012): em vez de um candidato por vez travar
+    a vaga, a vaga continuaria aberta juntando candidatos e o anunciante
+    escolheria um entre eles (comparando reputação). Avaliação do Claude:
+    em UX tende a ser melhor para ESTE produto (confiança é o núcleo;
+    modelo GetNinjas), com mitigação dos efeitos colaterais: candidatura
+    pendente deixaria de travar a agenda do prestador, a aprovação
+    re-checa conflito (já existe), e prazo/expiração limpam candidaturas
+    velhas. Sem barreira legal específica para a escolha em si (atenção
+    geral: discriminação na seleção → termos de uso; ver item de revisão
+    jurídica no checklist de pré-lançamento). Aguardando decisão do David
+    para redesenhar o fluxo de candidatura.
+
 ## Design
 
 11. ~~🔴 **Direção visual**~~ ✅ Respondida em 2026-07-02: Opção C, roxo

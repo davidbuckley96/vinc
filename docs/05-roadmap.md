@@ -65,7 +65,16 @@ revisados antes de abrir o app ao público:
    publicar) para permitir logins de qualquer conta Google.
 5. Migrar e-mails transacionais para um provedor SMTP próprio (o SMTP
    embutido do Supabase é só para desenvolvimento e tem limites baixos).
-6. **Tiles do mapa**: o MVP usa OpenFreeMap (público, sem chave, sem SLA).
+6. **Revisão jurídica** antes do lançamento (recomendação do Claude,
+   2026-07-06 — não é aconselhamento jurídico): (a) termos de uso claros
+   sobre o papel de intermediação, a multa de cancelamento (cláusula penal)
+   e a taxa; (b) cláusula antidiscriminação na escolha/recusa de
+   candidatos; (c) manter o desenho que evita vínculo empregatício (sem
+   exclusividade, sem subordinação, prestador escolhe quando/onde
+   trabalha); (d) na Fase 3, custódia de dinheiro real via gateway
+   licenciado (split), nunca em conta própria; (e) LGPD: política de
+   privacidade (dados pessoais + localização).
+7. **Tiles do mapa**: o MVP usa OpenFreeMap (público, sem chave, sem SLA).
    Antes do lançamento, criar conta MapTiler (plano gratuito) e trocar
    `MAP_STYLE_URL` em `apps/mobile/src/components/location-map/config.ts`;
    revisar também o volume de geocodificação no Nominatim (política de uso
