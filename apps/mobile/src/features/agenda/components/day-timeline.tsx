@@ -53,18 +53,48 @@ export function DayTimeline({ commitments, onSearchSlot, onPostSlot, onOpenCommi
                 onPress={() => onOpenCommitment(commitment)}
                 style={[
                   styles.busy,
-                  { backgroundColor: theme.primarySoft, borderLeftColor: theme.primary },
+                  commitment.kind === 'candidacy'
+                    ? {
+                        backgroundColor: theme.background,
+                        borderLeftColor: theme.dashedBorder,
+                        borderWidth: 1.5,
+                        borderColor: theme.dashedBorder,
+                        borderStyle: 'dashed',
+                      }
+                    : { backgroundColor: theme.primarySoft, borderLeftColor: theme.primary },
                 ]}>
-                <Text style={[styles.busyTitle, { color: theme.primarySoftText }]}>
+                <Text
+                  style={[
+                    styles.busyTitle,
+                    {
+                      color:
+                        commitment.kind === 'candidacy'
+                          ? theme.textSecondary
+                          : theme.primarySoftText,
+                    },
+                  ]}>
                   {commitment.title}
                 </Text>
-                <Text style={[styles.busyMeta, { color: theme.primarySoftMeta }]}>
+                <Text
+                  style={[
+                    styles.busyMeta,
+                    {
+                      color:
+                        commitment.kind === 'candidacy'
+                          ? theme.textSecondary
+                          : theme.primarySoftMeta,
+                    },
+                  ]}>
                   {formatHour(commitment.startsAt)}–{formatHour(commitment.endsAt)} ·{' '}
                   {formatBRL(commitment.priceCents)}
                   {commitment.counterpartRating
                     ? ` · ★ ${commitment.counterpartRating.toLocaleString('pt-BR')}`
                     : ''}
-                  {commitment.role === 'poster' ? ' · minha vaga' : ''}
+                  {commitment.kind === 'candidacy'
+                    ? ' · candidatura enviada'
+                    : commitment.role === 'poster'
+                      ? ' · minha vaga'
+                      : ''}
                 </Text>
               </Pressable>
             ) : covering ? (

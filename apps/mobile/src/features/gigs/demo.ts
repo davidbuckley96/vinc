@@ -4,7 +4,7 @@
  * exercised without a backend.
  */
 
-import type { Category, OpenGig } from '@vinc/api';
+import type { Candidate, Category, OpenGig } from '@vinc/api';
 
 export const DEMO_CATEGORIES: Category[] = [
   { id: 'demo-domesticos', name: 'Serviços domésticos', icon: 'home' },
@@ -94,5 +94,36 @@ export const DEMO_GIGS: OpenGig[] = [
     categoryId: 'demo-outros',
     posterId: 'demo-user',
     posterName: 'Maria da Silva',
+  },
+];
+
+/** Candidates of "my" open demo gig — mirrors round 8, option A. */
+export const DEMO_CANDIDATES: Candidate[] = [
+  {
+    candidacyId: 'demo-cand-1',
+    appliedAt: inDays(0, 9),
+    firstName: 'Beto',
+    avgRating: 4.9,
+    reviewCount: 61,
+    completedServices: 64,
+    topTags: ['Pontual', 'Caprichou no serviço', 'Educado e gentil'],
+  },
+  {
+    candidacyId: 'demo-cand-2',
+    appliedAt: inDays(0, 10),
+    firstName: 'Carla',
+    avgRating: 4.7,
+    reviewCount: 23,
+    completedServices: 25,
+    topTags: ['Boa comunicação', 'Pontual'],
+  },
+  {
+    candidacyId: 'demo-cand-3',
+    appliedAt: inDays(0, 11),
+    firstName: 'Denise',
+    avgRating: null,
+    reviewCount: 0,
+    completedServices: 0,
+    topTags: [],
   },
 ];

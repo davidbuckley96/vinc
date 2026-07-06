@@ -14,7 +14,7 @@
 - [x] Calendário home (visões dia/semana/mês; horário livre → buscar/anunciar) — ligado à agenda real do usuário
 - [x] CRUD de vagas — criação com prévia (D-007); editar (vaga aberta, valor imutável) e excluir (reembolso do líquido, taxa fica) via Edge Functions (D-017, docs/02 §2.2), verificado e2e
 - [~] Busca/listagem de vagas — categorias primeiro + vagas recentes (D-007); falta filtro por horário
-- [~] Candidatura com ESCOLHA entre múltiplos candidatos anonimizados (D-024, docs/02 §3; substituiu o modelo Uber de D-012) — BACKEND no ar e verificado e2e (11 checagens: vaga segue na busca, anonimato garantido por RLS+função, recusa permanente por vaga, escolha atômica com re-checagem de agenda, candidatura não trava agenda); FALTA a UI (lista de candidatos — rodada 8 de design)
+- [x] Candidatura com ESCOLHA entre múltiplos candidatos anonimizados (D-024, docs/02 §3, rodada 8 opção A; substituiu o modelo Uber de D-012) — backend verificado e2e (11 checagens) e UI completa: cartões comparáveis (primeiro nome, nota, serviços, elogios frequentes) com Escolher/Recusar na vaga do anunciante; estados do candidato no detalhe da vaga; candidatura tracejada na agenda (não trava horário)
 - [x] Bloqueio entre usuários (docs/02 §8) — botão no perfil público; vagas ocultas nas duas direções e candidatura impedida (verificado e2e); corte de mensagens entra junto com o chat
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
 - [x] Carteira simulada (ledger imutável + tela dois cartões, D-008) com multa do anunciante (cancel-gig, D-018: 25% piso R$ 10, 80% ao prestador lesado), verificado e2e — reformulação da tela vem com D-015
@@ -87,8 +87,8 @@ revisados antes de abrir o app ao público:
 - **Backend real (Supabase) operacional e verificado e2e**: projeto
   `gexzpkbqodoyoxudzklb`, migrations 0001–0010 aplicadas, Edge Functions
   ATIVAS: `create-gig`, `update-gig`, `delete-gig`, `apply-gig`,
-  `respond-candidacy`, `cancel-gig`, `gig-lifecycle`, `withdraw`; job
-  pg_cron `expire-due-gigs` (5 min). Google OAuth configurado. Credenciais
+  `get-candidates`, `decide-candidacy`, `cancel-gig`, `gig-lifecycle`,
+  `withdraw`; job pg_cron `expire-due-gigs` (5 min). Migrations 0001–0012. Google OAuth configurado. Credenciais
   públicas em `apps/mobile/.env.example`.
 - **Fluxos completos funcionando com dados reais**: cadastro/login (e-mail e
   Google) → publicar vaga → buscar por categoria → detalhe → aceite atômico
@@ -104,10 +104,11 @@ revisados antes de abrir o app ao público:
   Playwright; para testar contra o backend real no navegador daqui, rotear
   as chamadas do Supabase via `page.route` → `context.request` (o Chromium
   não fala com o proxy do ambiente diretamente).
-- **Fluxo de candidatura (D-012) no ar**: apply-gig + respond-candidacy
-  deployadas (accept-gig legada removida); view visible_open_gigs filtra
-  recusados e bloqueados; UI completa (candidatar-se, decisão do
-  anunciante com aviso in-app, bloquear/desbloquear no perfil).
+- **Candidatura multi-candidato (D-024) no ar**: gig_candidacies substitui
+  gig_refusals e o pending_approval (legado); apply-gig + get-candidates
+  (anonimizada) + decide-candidacy deployadas (respond-candidacy
+  removida); vaga fica aberta juntando candidatos; anonimato garantido
+  por RLS + função (sem worker_id no cliente); UI rodada 8 opção A.
 - **Editar/excluir vaga (D-017) no ar**: update-gig e delete-gig
   deployadas; exclusão reembolsa o líquido (taxa fica) com trava atômica
   contra reembolso duplo; edição só com vaga aberta e valor imutável;

@@ -29,6 +29,7 @@ export function useMyAgenda() {
         startsAt: new Date(entry.startsAt),
         endsAt: new Date(entry.endsAt),
         priceCents: entry.priceCents,
+        kind: entry.kind,
       }));
     },
     enabled: status !== 'loading',

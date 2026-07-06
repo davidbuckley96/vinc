@@ -15,6 +15,8 @@ export interface AgendaCommitment {
   endsAt: Date;
   priceCents: number;
   counterpartRating?: number;
+  /** Sent candidacy waiting for the poster's choice (D-024) — dashed style. */
+  kind?: 'candidacy';
 }
 
 function at(date: Date, hour: number): Date {
@@ -66,6 +68,15 @@ export function getMockCommitments(today: Date): AgendaCommitment[] {
       startsAt: at(today, 18),
       endsAt: at(today, 19),
       priceCents: 5000,
+    },
+    {
+      id: 'demo-gig-4',
+      title: 'Garçom para festa de aniversário',
+      role: 'worker',
+      startsAt: at(today, 20),
+      endsAt: at(today, 22),
+      priceCents: 20000,
+      kind: 'candidacy',
     },
     {
       id: '6',

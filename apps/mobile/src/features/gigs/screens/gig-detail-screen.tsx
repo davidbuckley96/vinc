@@ -19,13 +19,14 @@ import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
 import { useTheme } from '@/hooks/use-theme';
 
-import { useApplyGig, useCategories, useGig } from '../hooks';
+import { useApplyGig, useCategories, useGig, useMyCandidacy } from '../hooks';
 
 const RESULT_MESSAGES: Record<Exclude<ApplyGigResult, 'applied'>, string> = {
+  already_applied: 'Você já se candidatou a esta vaga.',
   unauthorized: 'Entre na sua conta para se candidatar.',
   not_found: 'Esta vaga não existe mais.',
   own_gig: 'Esta vaga foi anunciada por você.',
-  not_available: 'Alguém se candidatou antes de você. Se for recusado, a vaga volta a aparecer.',
+  not_available: 'Esta vaga não está mais disponível.',
   refused_before: 'O anunciante recusou sua candidatura para esta vaga.',
   blocked: 'Não é possível se candidatar a vagas deste anunciante.',
   schedule_conflict: 'Você já tem um compromisso nesse horário.',
@@ -33,9 +34,17 @@ const RESULT_MESSAGES: Record<Exclude<ApplyGigResult, 'applied'>, string> = {
   network_error: 'Sem conexão. Verifique sua internet e tente de novo.',
 };
 
+/** State line for a candidacy the worker already sent (D-024). */
+const CANDIDACY_MESSAGES: Record<string, string> = {
+  pending: 'Candidatura enviada — o anunciante está escolhendo. Você pode se candidatar a outras vagas enquanto isso.',
+  refused: 'O anunciante recusou sua candidatura para esta vaga.',
+  not_chosen: 'Outra pessoa foi escolhida para esta vaga.',
+  chosen: 'Você foi escolhido para esta vaga! Veja na sua agenda.',
+};
+
 const WEEKDAYS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 
-/** Gig detail with the one-tap accept action (docs/02 §3: no selection process). */
+/** Gig detail with the one-tap candidacy (docs/02 §3 — D-024). */
 export function GigDetailScreen() {
   const theme = useTheme();
   const router = useRouter();
@@ -44,6 +53,7 @@ export function GigDetailScreen() {
   const gig = useGig(id);
   const categories = useCategories();
   const apply = useApplyGig();
+  const myCandidacy = useMyCandidacy(id);
   const [mapOpen, setMapOpen] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: 'error' | 'success'; text: string } | null>(
     null,
@@ -64,7 +74,7 @@ export function GigDetailScreen() {
         text:
           status === 'unconfigured'
             ? 'Modo demonstração: sua candidatura seria enviada agora.'
-            : `Candidatura enviada! ${gig.data?.posterName ?? 'O anunciante'} vai responder em breve.`,
+            : `Candidatura enviada! ${gig.data?.posterName ?? 'O anunciante'} vai comparar os candidatos e escolher.`,
       });
     } else {
       setFeedback({ kind: 'error', text: RESULT_MESSAGES[result] });
@@ -176,37 +186,50 @@ export function GigDetailScreen() {
               </Text>
             )}
 
-            {applied ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => router.replace('/')}
-                style={[styles.accept, { backgroundColor: theme.success }]}>
-                <Text style={[styles.acceptLabel, { color: theme.onPrimary }]}>
-                  Ver na minha agenda
-                </Text>
-              </Pressable>
-            ) : (
-              <Pressable
-                accessibilityRole="button"
-                disabled={apply.isPending}
-                onPress={onApply}
-                style={[
-                  styles.accept,
-                  { backgroundColor: theme.primary, opacity: apply.isPending ? 0.7 : 1 },
-                ]}>
-                {apply.isPending ? (
-                  <ActivityIndicator color={theme.onPrimary} />
-                ) : (
-                  <Text style={[styles.acceptLabel, { color: theme.onPrimary }]}>
-                    Me candidatar · {formatBRL(gig.data.priceCents)}
+            {applied || (myCandidacy.data && myCandidacy.data !== 'refused') ? (
+              <>
+                {!feedback && myCandidacy.data && (
+                  <Text style={[styles.feedback, { color: theme.success }]}>
+                    {CANDIDACY_MESSAGES[myCandidacy.data]}
                   </Text>
                 )}
-              </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => router.replace('/')}
+                  style={[styles.accept, { backgroundColor: theme.success }]}>
+                  <Text style={[styles.acceptLabel, { color: theme.onPrimary }]}>
+                    Ver na minha agenda
+                  </Text>
+                </Pressable>
+              </>
+            ) : myCandidacy.data === 'refused' ? (
+              <Text style={[styles.feedback, { color: theme.danger }]}>
+                {CANDIDACY_MESSAGES.refused}
+              </Text>
+            ) : (
+              <>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={apply.isPending}
+                  onPress={onApply}
+                  style={[
+                    styles.accept,
+                    { backgroundColor: theme.primary, opacity: apply.isPending ? 0.7 : 1 },
+                  ]}>
+                  {apply.isPending ? (
+                    <ActivityIndicator color={theme.onPrimary} />
+                  ) : (
+                    <Text style={[styles.acceptLabel, { color: theme.onPrimary }]}>
+                      Me candidatar · {formatBRL(gig.data.priceCents)}
+                    </Text>
+                  )}
+                </Pressable>
+                <Text style={[styles.note, { color: theme.textSecondary }]}>
+                  O anunciante compara os candidatos e escolhe um. Candidatar-se não ocupa
+                  a sua agenda — só a escolha ocupa.
+                </Text>
+              </>
             )}
-            <Text style={[styles.note, { color: theme.textSecondary }]}>
-              O anunciante aceita ou recusa sua candidatura. Enquanto ele decide, a vaga
-              fica reservada para você.
-            </Text>
           </ScrollView>
         )}
       </View>

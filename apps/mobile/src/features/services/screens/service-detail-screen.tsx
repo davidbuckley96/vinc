@@ -23,11 +23,12 @@ import {
 
 import { LocationModal } from '@/components/location-map';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
+import { CandidateList } from '@/features/gigs/components/candidate-list';
 import { useCancelGig, useDeleteGig } from '@/features/gigs/hooks';
 import { useHasReviewed } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
-import { useLifecycleAction, useRespondCandidacy, useServiceDetail } from '../hooks';
+import { useLifecycleAction, useServiceDetail } from '../hooks';
 
 const WEEKDAYS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 
@@ -50,20 +51,8 @@ function statusCard(service: ServiceDetail): StatusCard {
       return {
         icon: 'megaphone',
         title: 'Vaga publicada',
-        body: 'Sua vaga está visível para os trabalhadores. Você será avisado quando alguém se candidatar.',
+        body: 'Sua vaga está visível para os trabalhadores. Os candidatos aparecem aqui para você escolher.',
       };
-    case 'pending_approval':
-      return worker
-        ? {
-            icon: 'hourglass',
-            title: 'Candidatura enviada',
-            body: `${other} vai aceitar ou recusar em breve. A vaga está reservada para você enquanto isso.`,
-          }
-        : {
-            icon: 'person-add',
-            title: `${other} quer fazer o serviço`,
-            body: 'Aceite ou recuse. Enquanto você decide, ninguém mais pode se candidatar. Recusar não gera multa.',
-          };
     case 'accepted':
       return worker
         ? {
@@ -140,12 +129,10 @@ export function ServiceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const service = useServiceDetail(id);
   const lifecycle = useLifecycleAction(id);
-  const candidacy = useRespondCandidacy(id);
   const reviewed = useHasReviewed(id);
   const deletion = useDeleteGig();
   const cancellation = useCancelGig();
   const [error, setError] = useState<string | null>(null);
-  const [candidacyNote, setCandidacyNote] = useState<string | null>(null);
   const [deleteArmed, setDeleteArmed] = useState(false);
   const [deletedNote, setDeletedNote] = useState<string | null>(null);
   const [cancelArmed, setCancelArmed] = useState(false);
@@ -194,21 +181,6 @@ export function ServiceDetailScreen() {
       setError('Esta vaga não pode mais ser excluída — atualize e tente de novo.');
     } else {
       setError('Não foi possível excluir agora. Tente de novo.');
-    }
-  };
-
-  const decide = async (action: 'approve' | 'refuse') => {
-    setError(null);
-    setCandidacyNote(null);
-    const result = await candidacy.mutateAsync(action);
-    if (result === 'approved') {
-      setCandidacyNote('Candidato aceito! O valor foi reservado e o serviço está confirmado.');
-    } else if (result === 'refused') {
-      setCandidacyNote('Candidatura recusada. A vaga voltou a ficar aberta para outras pessoas.');
-    } else if (result === 'candidate_unavailable') {
-      setCandidacyNote('Este candidato ficou ocupado nesse horário. A vaga voltou a ficar aberta.');
-    } else {
-      setError('Não foi possível responder agora. Tente de novo.');
     }
   };
 
@@ -330,44 +302,7 @@ export function ServiceDetailScreen() {
               </Text>
             ) : null}
 
-            {candidacyNote && (
-              <Text style={[styles.error, { color: theme.success }]}>{candidacyNote}</Text>
-            )}
             {error && <Text style={[styles.error, { color: theme.danger }]}>{error}</Text>}
-
-            {data.status === 'pending_approval' && data.role === 'poster' && !candidacyNote && (
-              <View style={styles.decideRow}>
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={candidacy.isPending}
-                  onPress={() => decide('approve')}
-                  style={[
-                    styles.action,
-                    styles.decideButton,
-                    { backgroundColor: theme.primary, opacity: candidacy.isPending ? 0.7 : 1 },
-                  ]}>
-                  {candidacy.isPending ? (
-                    <ActivityIndicator color={theme.onPrimary} />
-                  ) : (
-                    <Text style={[styles.actionLabel, { color: theme.onPrimary }]}>
-                      Aceitar candidato
-                    </Text>
-                  )}
-                </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={candidacy.isPending}
-                  onPress={() => decide('refuse')}
-                  style={[
-                    styles.action,
-                    styles.decideButton,
-                    styles.refuseButton,
-                    { borderColor: theme.danger, backgroundColor: theme.background },
-                  ]}>
-                  <Text style={[styles.actionLabel, { color: theme.danger }]}>Recusar</Text>
-                </Pressable>
-              </View>
-            )}
 
             {deletedNote && (
               <Text style={[styles.error, { color: theme.success }]}>{deletedNote}</Text>
@@ -459,6 +394,10 @@ export function ServiceDetailScreen() {
                   </Pressable>
                 </View>
               )}
+
+            {data.role === 'poster' && data.status === 'open' && !deletedNote && (
+              <CandidateList gigId={data.id} enabled />
+            )}
 
             {card.actionLabel && (
               <Pressable

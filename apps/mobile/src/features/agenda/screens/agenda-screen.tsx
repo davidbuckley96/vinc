@@ -67,7 +67,13 @@ export function AgendaScreen() {
             commitments={dayCommitments}
             onSearchSlot={() => router.push('/search')}
             onPostSlot={() => router.push('/post')}
-            onOpenCommitment={(commitment) => router.push(`/service/${commitment.id}`)}
+            onOpenCommitment={(commitment) =>
+              router.push(
+                commitment.kind === 'candidacy'
+                  ? `/gig/${commitment.id}`
+                  : `/service/${commitment.id}`,
+              )
+            }
           />
         )}
         {view === 'week' && (

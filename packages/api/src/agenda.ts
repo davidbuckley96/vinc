@@ -10,6 +10,8 @@ export interface AgendaEntry {
   priceCents: number;
   status: string;
   counterpartName: string | null;
+  /** Sent candidacy still waiting for the poster's choice (D-024). */
+  kind?: "candidacy";
 }
 
 interface AgendaRow {
@@ -84,17 +86,27 @@ export async function fetchMyAgenda(
   client: SupabaseClient,
   userId: string,
 ): Promise<AgendaEntry[]> {
-  const { data, error } = await client
-    .from("gigs")
-    .select(
-      "id, title, starts_at, ends_at, price_cents, status, poster_id, worker_id, poster:poster_id (name), worker:worker_id (name)",
-    )
-    .or(`worker_id.eq.${userId},poster_id.eq.${userId}`)
-    .in("status", ["open", "pending_approval", "accepted", "in_progress", "awaiting_confirmation"])
-    .order("starts_at");
-  if (error) throw new Error(error.message);
+  const [gigsResult, candidaciesResult] = await Promise.all([
+    client
+      .from("gigs")
+      .select(
+        "id, title, starts_at, ends_at, price_cents, status, poster_id, worker_id, poster:poster_id (name), worker:worker_id (name)",
+      )
+      .or(`worker_id.eq.${userId},poster_id.eq.${userId}`)
+      .in("status", ["open", "accepted", "in_progress", "awaiting_confirmation"])
+      .order("starts_at"),
+    // Sent candidacies (pending, gig still open) — shown for awareness;
+    // they do NOT block the schedule (D-024).
+    client
+      .from("gig_candidacies")
+      .select("gig:gig_id (id, title, starts_at, ends_at, price_cents, status)")
+      .eq("worker_id", userId)
+      .eq("status", "pending"),
+  ]);
+  if (gigsResult.error) throw new Error(gigsResult.error.message);
+  if (candidaciesResult.error) throw new Error(candidaciesResult.error.message);
 
-  return (data as unknown as AgendaRow[]).map((row) => {
+  const entries: AgendaEntry[] = (gigsResult.data as unknown as AgendaRow[]).map((row) => {
     const role = row.poster_id === userId ? "poster" : "worker";
     return {
       id: row.id,
@@ -107,4 +119,23 @@ export async function fetchMyAgenda(
       counterpartName: role === "poster" ? (row.worker?.name ?? null) : (row.poster?.name ?? null),
     };
   });
+
+  for (const row of candidaciesResult.data as unknown as Array<{
+    gig: { id: string; title: string; starts_at: string; ends_at: string; price_cents: number; status: string } | null;
+  }>) {
+    if (!row.gig || row.gig.status !== "open") continue;
+    entries.push({
+      id: row.gig.id,
+      title: row.gig.title,
+      role: "worker",
+      startsAt: row.gig.starts_at,
+      endsAt: row.gig.ends_at,
+      priceCents: row.gig.price_cents,
+      status: "open",
+      counterpartName: null,
+      kind: "candidacy",
+    });
+  }
+  entries.sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  return entries;
 }

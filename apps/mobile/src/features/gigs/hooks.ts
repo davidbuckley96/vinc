@@ -4,22 +4,30 @@ import {
   applyGig,
   cancelGig,
   createGig,
+  decideCandidacy,
   deleteGig,
+  fetchCandidates,
   fetchCategories,
   fetchGigById,
+  fetchMyCandidacy,
   fetchOpenGigs,
   updateGig,
   type ApplyGigResult,
   type CancelGigResult,
+  type Candidate,
   type CreateGigResult,
+  type DecideCandidacyResult,
   type DeleteGigResult,
+  type MyCandidacyStatus,
   type UpdateGigResult,
 } from '@vinc/api';
 import type { GigDraft } from '@vinc/core';
 
 import { supabase } from '@/lib/supabase';
 
-import { DEMO_CATEGORIES, DEMO_GIGS } from './demo';
+import { useSession } from '@/features/auth/session-context';
+
+import { DEMO_CANDIDATES, DEMO_CATEGORIES, DEMO_GIGS } from './demo';
 
 export function useCategories() {
   return useQuery({
@@ -59,13 +67,57 @@ export function useApplyGig() {
       return applyGig(supabase, gigId);
     },
     onSuccess: (result) => {
-      if (result === 'applied' || result === 'not_available') {
+      if (result === 'applied' || result === 'already_applied' || result === 'not_available') {
         queryClient.invalidateQueries({ queryKey: ['gigs'] });
         queryClient.invalidateQueries({ queryKey: ['agenda'] });
+        queryClient.invalidateQueries({ queryKey: ['candidacy'] });
       }
     },
   });
 }
+
+/** Anonymized candidates of an own open gig (poster side — D-024). */
+export function useCandidates(gigId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['candidates', gigId],
+    queryFn: () =>
+      supabase ? fetchCandidates(supabase, gigId) : Promise.resolve(DEMO_CANDIDATES),
+    enabled,
+  });
+}
+
+export function useDecideCandidacy(gigId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      candidacyId: string;
+      action: 'choose' | 'refuse';
+    }): Promise<DecideCandidacyResult> => {
+      if (!supabase) return input.action === 'choose' ? 'chosen' : 'refused'; // demo
+      return decideCandidacy(supabase, input.candidacyId, input.action);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['candidates', gigId] });
+      queryClient.invalidateQueries({ queryKey: ['gigs'] });
+      queryClient.invalidateQueries({ queryKey: ['agenda'] });
+    },
+  });
+}
+
+/** The signed-in worker's own candidacy for a gig (state on gig detail). */
+export function useMyCandidacy(gigId: string) {
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
+  return useQuery({
+    queryKey: ['candidacy', gigId, userId ?? 'anonymous'],
+    queryFn: (): Promise<MyCandidacyStatus | null> => {
+      if (!supabase || !userId) return Promise.resolve(null);
+      return fetchMyCandidacy(supabase, gigId, userId);
+    },
+  });
+}
+
+export type { Candidate };
 
 export function useDeleteGig() {
   const queryClient = useQueryClient();

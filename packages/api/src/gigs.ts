@@ -113,6 +113,7 @@ export async function fetchGigById(
 
 export type ApplyGigResult =
   | "applied"
+  | "already_applied"
   | "unauthorized"
   | "not_found"
   | "own_gig"
@@ -147,8 +148,34 @@ export async function applyGig(
   return (data as { code?: ApplyGigResult })?.code ?? "network_error";
 }
 
-export type RespondCandidacyResult =
-  | "approved"
+/** Anonymized candidate of an open gig (D-024) — no real user id. */
+export interface Candidate {
+  candidacyId: string;
+  appliedAt: string;
+  firstName: string;
+  avgRating: number | null;
+  reviewCount: number;
+  completedServices: number;
+  topTags: string[];
+}
+
+/**
+ * Poster-only anonymized candidate list (get-candidates Edge Function).
+ * The client never receives worker ids, full names or photos (D-024).
+ */
+export async function fetchCandidates(
+  client: SupabaseClient,
+  gigId: string,
+): Promise<Candidate[]> {
+  const { data, error } = await client.functions.invoke("get-candidates", {
+    body: { gigId },
+  });
+  if (error) throw new Error("get_candidates_failed");
+  return (data as { candidates?: Candidate[] })?.candidates ?? [];
+}
+
+export type DecideCandidacyResult =
+  | "chosen"
   | "refused"
   | "candidate_unavailable"
   | "unauthorized"
@@ -159,20 +186,20 @@ export type RespondCandidacyResult =
   | "invalid_request"
   | "network_error";
 
-/** Poster approves/refuses the pending candidate (respond-candidacy). */
-export async function respondCandidacy(
+/** Poster chooses/refuses one candidacy (decide-candidacy — D-024). */
+export async function decideCandidacy(
   client: SupabaseClient,
-  gigId: string,
-  action: "approve" | "refuse",
-): Promise<RespondCandidacyResult> {
-  const { data, error } = await client.functions.invoke("respond-candidacy", {
-    body: { gigId, action },
+  candidacyId: string,
+  action: "choose" | "refuse",
+): Promise<DecideCandidacyResult> {
+  const { data, error } = await client.functions.invoke("decide-candidacy", {
+    body: { candidacyId, action },
   });
   if (error) {
     try {
       const context = (error as { context?: Response }).context;
       if (context) {
-        const body = (await context.json()) as { code?: RespondCandidacyResult };
+        const body = (await context.json()) as { code?: DecideCandidacyResult };
         if (body.code) return body.code;
       }
     } catch {
@@ -180,7 +207,25 @@ export async function respondCandidacy(
     }
     return "network_error";
   }
-  return (data as { code?: RespondCandidacyResult })?.code ?? "network_error";
+  return (data as { code?: DecideCandidacyResult })?.code ?? "network_error";
+}
+
+export type MyCandidacyStatus = "pending" | "chosen" | "refused" | "not_chosen";
+
+/** The caller's own candidacy for a gig, if any (RLS: workers read own). */
+export async function fetchMyCandidacy(
+  client: SupabaseClient,
+  gigId: string,
+  userId: string,
+): Promise<MyCandidacyStatus | null> {
+  const { data, error } = await client
+    .from("gig_candidacies")
+    .select("status")
+    .eq("gig_id", gigId)
+    .eq("worker_id", userId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data?.status as MyCandidacyStatus | undefined) ?? null;
 }
 
 export type LifecycleAction = "start" | "complete" | "confirm";
