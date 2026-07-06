@@ -23,7 +23,7 @@
 - [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
 - [x] Localização por mapa (D-023, rodada 7 opção A): picker em tela cheia com pino fixo + busca (Nominatim), modal de mapa ao ver a vaga, lat/lng validados e persistidos (verificado e2e); MapLibre + OpenFreeMap (trocar tiles p/ MapTiler no pré-lançamento)
 - [x] Mensagens entre as partes dentro do app (D-025, docs/02 §9, rodada 9 opção B) — backend verificado e2e (participantes do serviço vinculado, sem falsificar remetente, bloqueio corta nos dois sentidos, imutáveis, realtime) + UI: bolhas com respostas prontas de um toque, botão Conversar com contador de novas (marcas de leitura verificadas e2e)
-- [ ] Web e mobile funcionando com paridade
+- [x] Web e mobile funcionando com paridade — varredura das 12 telas em viewport desktop (1280px): layout centralizado via MaxContentWidth, sem quebras; mapa web nativo (MapLibre) e app via WebView; teclado tratado no chat (KeyboardAvoidingView)
 
 ## Fase 2 — Confiança
 - [ ] Denúncias, disputas e reembolsos (desenhar processo — parte mais complexa, ver dúvidas abertas)
@@ -82,7 +82,7 @@ revisados antes de abrir o app ao público:
 
 ## Estado atual
 
-**Última atualização:** 2026-07-03
+**Última atualização:** 2026-07-06 — **Fase 1 (MVP com pagamentos simulados) FUNCIONALMENTE COMPLETA**
 
 - **Backend real (Supabase) operacional e verificado e2e**: projeto
   `gexzpkbqodoyoxudzklb`, migrations 0001–0010 aplicadas, Edge Functions
@@ -139,4 +139,9 @@ revisados antes de abrir o app ao público:
   prestador que cancela paga 25% (piso R$ 10) da carteira (negativa no
   MVP; cartão na Fase 3), anunciante recebe o valor integral + 80% da
   multa; verificado e2e.
-- **Falta na Fase 1**: revisão final de paridade web/mobile.
+- **Paridade web verificada** (2026-07-06): 12 telas varridas em 1280px,
+  sem quebras de layout.
+- **Fase 1 completa.** Próximos: Fase 2 (denúncias/disputas — desenhar o
+  processo com o David, dúvida #6; notificações push; painel admin) e as
+  dúvidas abertas restantes (#2 percentual da taxa, #3, #4, #7, #8, #9,
+  #10, #12, #20).
