@@ -19,6 +19,7 @@ import {
   type DecideCandidacyResult,
   type DeleteGigResult,
   type MyCandidacyStatus,
+  type TimeSlotFilter,
   type UpdateGigResult,
 } from '@vinc/api';
 import type { GigDraft } from '@vinc/core';
@@ -37,15 +38,19 @@ export function useCategories() {
   });
 }
 
-export function useOpenGigs(categoryId?: string) {
+export function useOpenGigs(categoryId?: string, slot?: TimeSlotFilter) {
   return useQuery({
-    queryKey: ['gigs', 'open', categoryId ?? 'all'],
-    queryFn: () =>
-      supabase
-        ? fetchOpenGigs(supabase, { categoryId })
-        : Promise.resolve(
-            categoryId ? DEMO_GIGS.filter((gig) => gig.categoryId === categoryId) : DEMO_GIGS,
-          ),
+    queryKey: ['gigs', 'open', categoryId ?? 'all', slot?.startsAt ?? '-', slot?.endsAt ?? '-'],
+    queryFn: () => {
+      if (supabase) return fetchOpenGigs(supabase, { categoryId, slot });
+      let gigs = categoryId
+        ? DEMO_GIGS.filter((gig) => gig.categoryId === categoryId)
+        : DEMO_GIGS;
+      if (slot) {
+        gigs = gigs.filter((gig) => gig.startsAt < slot.endsAt && gig.endsAt > slot.startsAt);
+      }
+      return Promise.resolve(gigs);
+    },
   });
 }
 

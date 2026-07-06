@@ -103,6 +103,10 @@ export function ChatScreen() {
 
   const counterpart = service.data?.counterpartName ?? 'Conversa';
   const start = service.data ? new Date(service.data.startsAt) : null;
+  // The conversation ends with the service (D-026): history stays, input goes.
+  const closed =
+    service.isSuccess &&
+    !['accepted', 'in_progress', 'awaiting_confirmation'].includes(service.data?.status ?? '');
 
   return (
     <View style={[styles.root, { backgroundColor: theme.background }]}>
@@ -184,6 +188,15 @@ export function ChatScreen() {
           )}
         </ScrollView>
 
+        {closed && (
+          <Text style={[styles.closedNote, { color: theme.textSecondary }]}>
+            {service.data?.status === 'completed'
+              ? 'O serviço foi concluído e a conversa foi encerrada. As mensagens ficam guardadas.'
+              : 'Esta conversa está encerrada.'}
+          </Text>
+        )}
+
+        {!closed && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -204,8 +217,10 @@ export function ChatScreen() {
             </Pressable>
           ))}
         </ScrollView>
+        )}
 
         <SafeAreaView edges={['bottom']}>
+          {!closed && (
           <View style={[styles.inputBar, { borderTopColor: theme.line }]}>
             <TextInput
               style={[
@@ -238,6 +253,7 @@ export function ChatScreen() {
               />
             </Pressable>
           </View>
+          )}
         </SafeAreaView>
       </KeyboardAvoidingView>
     </View>
@@ -347,6 +363,13 @@ const styles = StyleSheet.create({
   quickLabel: {
     fontSize: 12.5,
     fontWeight: '700',
+  },
+  closedNote: {
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 17,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
   },
   inputBar: {
     flexDirection: 'row',

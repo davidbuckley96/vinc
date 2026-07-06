@@ -240,8 +240,9 @@ reembolso. Ver `07-duvidas-abertas.md`.
 
 - **Uma conversa por serviço**, entre o anunciante e o prestador
   **escolhido** — nunca durante a fase anônima de candidatura (D-024).
-- Disponível do momento da escolha até depois da conclusão (combinar
-  chegada, avisar atraso, resolver pendências).
+- Disponível **do momento da escolha até a conclusão** (combinar chegada,
+  avisar atraso). **Na conclusão a conversa encerra** (D-026): ninguém
+  mais envia; o histórico fica legível para os dois (registro, §6).
 - **Bloqueio corta o envio nos dois sentidos** (§8); mensagens antigas
   continuam legíveis (registro).
 - Mensagens **imutáveis** (sem editar/apagar — proteção em disputas, §6) e

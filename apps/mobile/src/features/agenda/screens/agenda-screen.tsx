@@ -65,7 +65,13 @@ export function AgendaScreen() {
         {view === 'day' && (
           <DayTimeline
             commitments={dayCommitments}
-            onSearchSlot={() => router.push('/search')}
+            onSearchSlot={(hour) => {
+              const day = new Date(selectedDate);
+              const pad = (n: number) => String(n).padStart(2, '0');
+              router.push(
+                `/search?day=${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}&hour=${hour}`,
+              );
+            }}
             onPostSlot={() => router.push('/post')}
             onOpenCommitment={(commitment) =>
               router.push(

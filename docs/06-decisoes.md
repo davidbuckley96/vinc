@@ -336,3 +336,13 @@ de mensagens novas** (marcas de leitura por usuário, RLS própria), e as
 regras de D-024/§8 no banco: conversa só entre anunciante e o prestador
 ESCOLHIDO, remetente não falsificável, bloqueio corta o envio nos dois
 sentidos, mensagens imutáveis.
+
+## D-026 — A conversa encerra na conclusão do serviço
+**Data:** 2026-07-06 · **Decidido por:** David (ajusta D-025)
+
+Ao fim do serviço, as partes **não podem mais se comunicar** pelo app: o
+envio de mensagens vale só enquanto o serviço está em curso (aceito, em
+andamento ou aguardando confirmação) — cortado no banco (migration 0015).
+O **histórico continua legível** para os dois (registro para disputas,
+§6); na conclusão o botão vira "Ver conversa" e o chat mostra "a conversa
+foi encerrada", sem campo de envio. Verificado e2e no ciclo completo.

@@ -52,9 +52,15 @@ export async function fetchCategories(client: SupabaseClient): Promise<Category[
  * Lists via the visible_open_gigs view, which already excludes gigs the
  * caller was refused for and gigs from blocked pairs (docs/02 §3/§8).
  */
+export interface TimeSlotFilter {
+  /** ISO range; gigs that OVERLAP it match (docs/02: busca por horário). */
+  startsAt: string;
+  endsAt: string;
+}
+
 export async function fetchOpenGigs(
   client: SupabaseClient,
-  filter: { categoryId?: string } = {},
+  filter: { categoryId?: string; slot?: TimeSlotFilter } = {},
 ): Promise<OpenGig[]> {
   let query = client
     .from("visible_open_gigs")
@@ -62,6 +68,9 @@ export async function fetchOpenGigs(
     .order("starts_at")
     .limit(50);
   if (filter.categoryId) query = query.eq("category_id", filter.categoryId);
+  if (filter.slot) {
+    query = query.lt("starts_at", filter.slot.endsAt).gt("ends_at", filter.slot.startsAt);
+  }
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);

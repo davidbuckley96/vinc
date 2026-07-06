@@ -133,13 +133,14 @@ export function ServiceDetailScreen() {
   const reviewed = useHasReviewed(id);
   const deletion = useDeleteGig();
   const cancellation = useCancelGig();
-  const chatReady =
+  // Sending ends with the service (D-026); on completed the button only
+  // opens the history.
+  const chatActive =
     service.data != null &&
     service.data.counterpartId != null &&
-    ['accepted', 'in_progress', 'awaiting_confirmation', 'completed'].includes(
-      service.data.status,
-    );
-  const unread = useUnreadCount(id, chatReady);
+    ['accepted', 'in_progress', 'awaiting_confirmation'].includes(service.data.status);
+  const chatReady = chatActive || (service.data?.status === 'completed' && service.data.counterpartId != null);
+  const unread = useUnreadCount(id, chatActive);
   const [error, setError] = useState<string | null>(null);
   const [deleteArmed, setDeleteArmed] = useState(false);
   const [deletedNote, setDeletedNote] = useState<string | null>(null);
@@ -255,7 +256,9 @@ export function ServiceDetailScreen() {
                 style={[styles.chat, { borderColor: theme.primary }]}>
                 <Ionicons name="chatbubble-ellipses-outline" size={17} color={theme.primary} />
                 <Text style={[styles.chatLabel, { color: theme.primary }]}>
-                  Conversar com {data.counterpartName ?? 'a outra pessoa'}
+                  {data.status === 'completed'
+                    ? 'Ver conversa'
+                    : `Conversar com ${data.counterpartName ?? 'a outra pessoa'}`}
                 </Text>
                 {(unread.data ?? 0) > 0 && (
                   <View style={[styles.badge, { backgroundColor: theme.danger }]}>

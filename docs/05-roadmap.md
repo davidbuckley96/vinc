@@ -13,7 +13,7 @@
 - [x] Autenticação (e-mail/senha + Google, D-006) — conectada ao Supabase real e verificada (cadastro, login, OAuth Google ativo)
 - [x] Calendário home (visões dia/semana/mês; horário livre → buscar/anunciar) — ligado à agenda real do usuário
 - [x] CRUD de vagas — criação com prévia (D-007); editar (vaga aberta, valor imutável) e excluir (reembolso do líquido, taxa fica) via Edge Functions (D-017, docs/02 §2.2), verificado e2e
-- [~] Busca/listagem de vagas — categorias primeiro + vagas recentes (D-007); falta filtro por horário
+- [x] Busca/listagem de vagas — categorias primeiro + vagas recentes (D-007) + filtro por dia/hora (chips; vaga aparece se SOBREPÕE o horário filtrado; o 'Buscar serviços' do horário livre da agenda chega com dia+hora pré-selecionados)
 - [x] Candidatura com ESCOLHA entre múltiplos candidatos anonimizados (D-024, docs/02 §3, rodada 8 opção A; substituiu o modelo Uber de D-012) — backend verificado e2e (11 checagens) e UI completa: cartões comparáveis (primeiro nome, nota, serviços, elogios frequentes) com Escolher/Recusar na vaga do anunciante; estados do candidato no detalhe da vaga; candidatura tracejada na agenda (não trava horário)
 - [x] Bloqueio entre usuários (docs/02 §8) — botão no perfil público; vagas ocultas nas duas direções e candidatura impedida (verificado e2e); corte de mensagens entra junto com o chat
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
@@ -128,9 +128,13 @@ revisados antes de abrir o app ao público:
   job pg_cron a cada 5 min (verificado e2e: expira aberta e pendente no
   início do horário, reembolsa o líquido uma única vez, poupa vagas
   futuras); busca e apply-gig recusam vagas já iniciadas.
-- **Chat (D-025) no ar**: gig_messages + gig_message_reads (migrations
-  0013–0014), realtime habilitado; tela de conversa com respostas prontas,
-  botão Conversar com contador de novas.
+- **Chat (D-025/D-026) no ar**: gig_messages + gig_message_reads
+  (migrations 0013–0015), realtime habilitado; tela de conversa com
+  respostas prontas, botão Conversar com contador de novas; a conversa
+  ENCERRA na conclusão do serviço (envio cortado no banco, histórico
+  legível — verificado e2e).
+- **Filtro de busca por horário no ar**: chips de dia + hora na busca
+  (sobreposição de horário), pré-seleção vinda do horário livre da agenda.
 - **Faltam na Fase 1**: punição de reputação do prestador que cancela
   (dúvida #5); filtro de busca por horário; revisão final de paridade
   web/mobile.
