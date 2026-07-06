@@ -267,18 +267,34 @@ export type LifecycleResult =
   | "invalid_request"
   | "network_error";
 
+/** Optional worker evidence attached on complete (D-032). */
+export interface CompletionEvidence {
+  report?: string;
+  /** Paths returned by uploadCompletionPhoto (max 5). */
+  photoPaths?: string[];
+}
+
 /**
  * Calls the gig-lifecycle Edge Function (start/complete/confirm).
- * start requires the poster's 4-digit check-in code (D-028).
+ * start requires the poster's 4-digit check-in code (D-028); complete
+ * accepts optional evidence (D-032) — a late complete after the 12h job
+ * only attaches the evidence, never errors.
  */
 export async function gigLifecycle(
   client: SupabaseClient,
   gigId: string,
   action: LifecycleAction,
   code?: string,
+  evidence?: CompletionEvidence,
 ): Promise<LifecycleResult> {
   const { data, error } = await client.functions.invoke("gig-lifecycle", {
-    body: { gigId, action, code },
+    body: {
+      gigId,
+      action,
+      code,
+      report: evidence?.report,
+      photoPaths: evidence?.photoPaths,
+    },
   });
   if (error) {
     try {
@@ -293,6 +309,26 @@ export async function gigLifecycle(
     return "network_error";
   }
   return (data as { code?: LifecycleResult })?.code ?? "network_error";
+}
+
+/**
+ * Uploads one completion photo to the private bucket, into the worker's
+ * own folder (required by gig-lifecycle). Returns the stored path.
+ */
+export async function uploadCompletionPhoto(
+  client: SupabaseClient,
+  userId: string,
+  gigId: string,
+  index: number,
+  file: Blob | ArrayBuffer,
+  contentType = "image/jpeg",
+): Promise<string> {
+  const path = `${userId}/${gigId}/${Date.now()}-${index}.jpg`;
+  const { error } = await client.storage
+    .from("completion-photos")
+    .upload(path, file, { contentType });
+  if (error) throw new Error(error.message);
+  return path;
 }
 
 export type DeleteGigResult =

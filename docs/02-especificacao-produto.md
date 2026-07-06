@@ -146,14 +146,25 @@ iniciadas e a candidatura a elas é recusada.
 
 ## 4. Execução e conclusão do serviço
 
-- No horário marcado, o prestador faz **check-in por código** (D-028, Fase
-  2): digita o código de 4 dígitos exibido na tela do anunciante — prova de
-  presença que alimenta disputas. (No MVP atual é um botão simples; o
-  código substitui na Fase 2.)
-- Ao final, o prestador marca como concluído e o **anunciante confirma** que o
-  serviço foi realizado corretamente — essa confirmação libera o pagamento.
+- No horário marcado, o prestador faz **check-in por código** (D-028,
+  implementado): digita o código de 4 dígitos exibido na tela do anunciante
+  — prova de presença que alimenta disputas.
+- Ao final, o prestador toca **"Concluí o serviço"** e pode anexar **fotos
+  de como ficou + relato do que foi feito** — opcionais, encorajados
+  (D-032): são a defesa dele contra o golpe da "foto antiga", porque o
+  que vale é o **horário de envio do servidor** (inadulterável), não a
+  data interna da foto.
+- O **anunciante confirma** que o serviço foi realizado corretamente —
+  essa confirmação libera o pagamento. Ele pode confirmar **já durante o
+  "em andamento"** (D-032): o caminho feliz não depende do celular do
+  prestador sobreviver ao serviço.
 - Proteção contra anunciante que não confirma de má-fé: **liberação
   automática após 48h** sem confirmação nem contestação (D-028).
+- Proteção contra prestador sem bateria/internet/celular quebrado
+  (D-032): concluir atrasado nunca pune (o toque tardio anexa as provas);
+  e um job move "em andamento" → "aguardando confirmação" **12h após o
+  fim previsto**, então o pagamento nunca fica preso — no pior caso ele
+  chega sozinho ~60h depois do fim, com a janela de contestação intacta.
 - Proteção contra serviço malfeito (ex.: faxina pela metade): o anunciante pode
   **contestar antes da liberação**, abrindo uma disputa (ver §6).
 
@@ -221,9 +232,10 @@ saque fixo embaixo e extrato na tela "Histórico". Regras:
 ## 6. Denúncias, disputas e reembolsos (D-028; backend implementado — D-031; UI na rodada 10)
 
 - **Quem analisa:** o David, num **painel admin simples** (web). Cada caso
-  exibe: relato do anunciante, fotos, a conversa do chat (imutável), o
-  check-in (código digitado ou não), e o histórico/reputação das duas
-  partes. Decisão com um clique.
+  exibe: relato do anunciante, fotos, **as provas de conclusão do
+  prestador (fotos + relato, com horário de envio — D-032)**, a conversa
+  do chat (imutável), o check-in (código digitado ou não), e o
+  histórico/reputação das duas partes. Decisão com um clique.
 - **Quando pode contestar:** (a) antes da liberação — em vez de confirmar
   a conclusão, o anunciante **contesta**, congelando o pagamento; (b)
   depois da liberação — durante os **7 dias de processamento** (D-016) o

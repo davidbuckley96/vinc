@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   fetchServiceDetail,
   gigLifecycle,
+  uploadCompletionPhoto,
   type LifecycleAction,
   type LifecycleResult,
   type ServiceDetail,
@@ -23,6 +24,42 @@ export function useServiceDetail(gigId: string) {
       if (!supabase) return DEMO_SERVICES[gigId] ?? null;
       if (!userId) return null;
       return fetchServiceDetail(supabase, gigId, userId);
+    },
+  });
+}
+
+/**
+ * Worker finishes the service with optional evidence (D-032): photos go
+ * to the private bucket first, then complete is called. A late complete
+ * (the 12h job already moved the gig) only attaches the evidence.
+ */
+export function useCompleteService(gigId: string) {
+  const queryClient = useQueryClient();
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
+
+  return useMutation({
+    mutationFn: async (input: {
+      report: string;
+      photos: { uri: string }[];
+    }): Promise<LifecycleResult> => {
+      if (!supabase) return 'done'; // demo mode: pretend success
+      if (!userId) return 'unauthorized';
+      const photoPaths: string[] = [];
+      for (const [index, photo] of input.photos.entries()) {
+        const blob = await (await fetch(photo.uri)).blob();
+        photoPaths.push(await uploadCompletionPhoto(supabase, userId, gigId, index, blob));
+      }
+      return gigLifecycle(supabase, gigId, 'complete', undefined, {
+        report: input.report.trim() || undefined,
+        photoPaths,
+      });
+    },
+    onSuccess: (result) => {
+      if (result === 'done') {
+        queryClient.invalidateQueries({ queryKey: ['service', gigId] });
+        queryClient.invalidateQueries({ queryKey: ['agenda'] });
+      }
     },
   });
 }

@@ -74,13 +74,14 @@ function statusCard(service: ServiceDetail): StatusCard {
         ? {
             icon: 'time',
             title: 'Serviço em andamento',
-            body: 'Ao terminar o trabalho, toque em concluir.',
+            body: 'Ao terminar o trabalho, toque em concluir. Você poderá anexar fotos de como ficou — elas te protegem.',
             actionLabel: 'Concluí o serviço',
           }
         : {
             icon: 'time',
             title: 'Serviço em andamento',
-            body: `${other} está realizando o serviço.`,
+            body: `${other} está realizando o serviço. Quando terminar e estiver tudo certo, você pode confirmar a conclusão por aqui — mesmo que ${other} fique sem celular ou internet.`,
+            actionLabel: 'Confirmar conclusão',
           };
     case 'awaiting_confirmation':
       return worker
@@ -165,6 +166,7 @@ export function ServiceDetailScreen() {
   const [mapOpen, setMapOpen] = useState(false);
   // Check-in by code (D-028): tapping "Iniciar serviço" reveals the input.
   const [startArmed, setStartArmed] = useState(false);
+  const [confirmArmed, setConfirmArmed] = useState(false);
   const [startCode, setStartCode] = useState('');
 
   const cancelWithFine = async () => {
@@ -222,6 +224,17 @@ export function ServiceDetailScreen() {
       service.data.role,
     );
     if (!action) return;
+    // Completing has its own screen (D-032): optional photos + report.
+    if (action === 'complete') {
+      router.push(`/complete/${service.data.id}`);
+      return;
+    }
+    // Confirming while still "in progress" (D-032 layer 2) releases the
+    // payment early — ask twice.
+    if (action === 'confirm' && service.data.status === 'in_progress' && !confirmArmed) {
+      setConfirmArmed(true);
+      return;
+    }
     if (action === 'start' && !startArmed) {
       setStartArmed(true);
       return;
@@ -233,6 +246,7 @@ export function ServiceDetailScreen() {
     const result = await lifecycle.mutateAsync({ action, code: startCode.trim() || undefined });
     if (result === 'done') {
       setStartArmed(false);
+      setConfirmArmed(false);
       setStartCode('');
     } else {
       setError(RESULT_MESSAGES[result] ?? RESULT_MESSAGES.invalid_request!);
@@ -500,6 +514,12 @@ export function ServiceDetailScreen() {
               />
             )}
 
+            {confirmArmed && data.status === 'in_progress' && (
+              <Text style={[styles.error, { color: theme.danger }]}>
+                Confirme só se o serviço já terminou e ficou tudo certo — {formatBRL(data.priceCents)}{' '}
+                são liberados para {data.counterpartName ?? 'o prestador'} na hora.
+              </Text>
+            )}
             {card.actionLabel && (
               <Pressable
                 accessibilityRole="button"
@@ -515,7 +535,9 @@ export function ServiceDetailScreen() {
                   <Text style={[styles.actionLabel, { color: theme.onPrimary }]}>
                     {startArmed && card.actionLabel === 'Iniciar serviço'
                       ? 'Confirmar código e iniciar'
-                      : card.actionLabel}
+                      : confirmArmed && data.status === 'in_progress'
+                        ? 'Confirmar conclusão agora'
+                        : card.actionLabel}
                   </Text>
                 )}
               </Pressable>

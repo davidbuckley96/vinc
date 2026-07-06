@@ -51,10 +51,19 @@ describe("gig state machine", () => {
     expect(canTransition("open", "accepted")).toBe(true);
   });
 
+  it("lets the poster confirm straight from in_progress (D-032)", () => {
+    expect(canTransition("in_progress", "completed")).toBe(true);
+  });
+
+  it("freezes and resolves disputes (D-028/D-031)", () => {
+    expect(canTransition("awaiting_confirmation", "disputed")).toBe(true);
+    expect(canTransition("disputed", "completed")).toBe(true);
+  });
+
   it("rejects invalid transitions", () => {
     expect(canTransition("open", "completed")).toBe(false);
     expect(canTransition("completed", "open")).toBe(false);
-    expect(canTransition("in_progress", "completed")).toBe(false);
+    expect(canTransition("disputed", "open")).toBe(false);
     expect(canTransition("awaiting_confirmation", "cancelled_by_poster")).toBe(false);
   });
 

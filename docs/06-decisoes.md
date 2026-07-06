@@ -454,3 +454,40 @@ Como o backend de disputas (bloco 2.4) foi implementado:
    pós-liberação → uma operação por pessoa (D-020): prestador −X,
    anunciante +X. X entre 0 (improcedente) e o valor do serviço — a taxa
    nunca é reembolsada (D-028). Verificado e2e (15 checks) em 2026-07-06.
+
+## D-032 — Provas de conclusão do prestador + 3 camadas contra punição injusta
+**Data:** 2026-07-06 · **Decidido por:** David (pergunta dele sobre o golpe da "foto antiga" e o celular sem bateria)
+
+**Problema 1 — golpe da foto antiga:** um anunciante mal-intencionado tira
+fotos ANTES do serviço, contesta dizendo que nada foi feito e envia as
+fotos antigas como "prova".
+
+**Salvaguarda:** ao tocar "Concluí o serviço", o prestador pode anexar
+**fotos de como ficou + relato do que foi feito** — **opcionais,
+encorajados** (decisão do David: sem atrito obrigatório; a tela explica
+que anexar protege). O que dá força à prova é o **horário de envio do
+servidor** (a data interna da foto é falsificável; o momento do upload
+não): prova enviada na conclusão vale mais que "prova" que só aparece na
+abertura da disputa. Mesmas regras de evidência da disputa: bucket
+privado, pasta própria, partes+admin leem, **ninguém apaga**. Aparece no
+painel admin (2.5) ao lado das provas da disputa, com os horários.
+
+**Problema 2 — celular sem bateria/internet/quebrado na hora de
+finalizar.** Decisão do David: **3 camadas**:
+
+1. **Concluir atrasado nunca pune**: o prestador finaliza quando voltar a
+   ter sinal; se o serviço já passou sozinho para "aguardando
+   confirmação" (camada 3), o toque tardio apenas **anexa as provas** —
+   nunca dá erro. Os horários ficam visíveis à análise.
+2. **O anunciante pode confirmar direto do "em andamento"** (com
+   confirmação em dois toques): o caminho feliz não depende do celular do
+   prestador — o pagamento é liberado na hora.
+3. **Rede de segurança**: job (15 min) move "em andamento" →
+   "aguardando confirmação" **12h após o horário previsto de fim**; daí
+   correm as 48h de auto-liberação (D-028). Pior caso (celular morto E
+   anunciante sumido): o pagamento chega sozinho, e o anunciante mantém
+   toda a janela para confirmar ou contestar.
+
+Nota registrada: "um trabalho de cada vez" já era garantido — a escolha
+re-verifica a agenda do candidato e recusa conflito de horário (D-024).
+Verificado e2e (7 checks) em 2026-07-06.

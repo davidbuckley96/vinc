@@ -31,7 +31,9 @@ const TRANSITIONS: Record<GigStatus, readonly GigStatus[]> = {
   open: ["accepted", "pending_approval", "cancelled_by_poster", "expired"],
   pending_approval: ["accepted", "open", "cancelled_by_poster", "expired"],
   accepted: ["in_progress", "cancelled_by_poster", "cancelled_by_worker"],
-  in_progress: ["awaiting_confirmation", "cancelled_by_poster", "cancelled_by_worker"],
+  // The poster may CONFIRM straight from in_progress (D-032 layer 2):
+  // the happy path never depends on the worker's phone surviving.
+  in_progress: ["awaiting_confirmation", "completed", "cancelled_by_poster", "cancelled_by_worker"],
   // Instead of confirming, the poster may DISPUTE (docs/02 §6 — D-028):
   // the escrow freezes (the 48h auto-release only touches
   // awaiting_confirmation) until the platform resolves it.
@@ -97,6 +99,10 @@ export function allowedLifecycleAction(
 ): "start" | "complete" | "confirm" | null {
   if (role === "worker" && status === "accepted") return "start";
   if (role === "worker" && status === "in_progress") return "complete";
-  if (role === "poster" && status === "awaiting_confirmation") return "confirm";
+  // Confirming is allowed from in_progress too (D-032 layer 2): if the
+  // worker's phone died, the poster can still finish the flow alone.
+  if (role === "poster" && (status === "in_progress" || status === "awaiting_confirmation")) {
+    return "confirm";
+  }
   return null;
 }
