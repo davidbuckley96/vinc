@@ -60,6 +60,11 @@ ABERTA → CANDIDATURA PENDENTE → ACEITA → EM ANDAMENTO
 ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
 ```
 
+**Expiração (D-022):** vaga que chega ao horário de INÍCIO sem ninguém
+aprovado expira sozinha (job a cada 5 min) e o valor do prestador é
+reembolsado — a taxa fica com a empresa. A busca nunca mostra vagas já
+iniciadas e a candidatura a elas é recusada.
+
 ### 2.2 Editar e excluir a própria vaga (D-017 — implementado)
 
 - **Excluir**: permitido enquanto ninguém foi aprovado (vaga aberta ou com

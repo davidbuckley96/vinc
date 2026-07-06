@@ -19,6 +19,12 @@ describe("deletion transitions (docs/02 §5.1)", () => {
     expect(canTransition("cancelled_by_poster", "open")).toBe(false);
     expect(canTransition("completed", "open")).toBe(false);
   });
+
+  it("expires unapproved gigs when the start time passes (D-022)", () => {
+    expect(canTransition("open", "expired")).toBe(true);
+    expect(canTransition("pending_approval", "expired")).toBe(true);
+    expect(canTransition("accepted", "expired")).toBe(false);
+  });
 });
 
 describe("posterCanDelete", () => {

@@ -263,3 +263,17 @@ que zera o disponível), extrato completo na tela "Histórico". A liberação
 dos 7 dias (D-016) é DERIVADA do ledger (`created_at + 7 dias`), sem job:
 `escrow_release` recente conta como "em processamento"; compensações,
 reembolsos e demais lançamentos entram no disponível imediatamente.
+
+## D-022 — Expiração automática de vaga no horário de início, com reembolso
+**Data:** 2026-07-03 · **Decidido por:** Claude (deriva de D-013; ajustes bem-vindos)
+
+Vaga que chega ao **horário de início** sem ninguém aprovado (aberta ou
+com candidato pendente não decidido) **expira automaticamente**: o valor
+do prestador volta ao anunciante e a taxa fica com a empresa (mesma regra
+do reembolso de D-013). Racional para expirar no INÍCIO (e não no fim) do
+horário: o serviço já não pode acontecer como anunciado, e esperar só
+atrasaria o reembolso. Implementação: job `pg_cron` a cada 5 minutos
+(função SQL `expire_due_gigs`, atômica, sem reembolso duplo); a busca
+nunca mostra vagas já iniciadas (a view filtra por `starts_at > now()`) e
+o `apply-gig` também recusa, então ninguém vê vaga "morta" entre as
+execuções do job.

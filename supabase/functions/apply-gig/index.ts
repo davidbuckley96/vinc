@@ -71,6 +71,9 @@ Deno.serve(async (request) => {
   if (!gig) return respond("not_found", 404);
   if (gig.poster_id === workerId) return respond("own_gig", 409);
   if (gig.status !== "open") return respond("not_available", 409);
+  // Already started: the expiration job (D-022) will collect it — the
+  // search hides it, but a stale deep link could still land here.
+  if (new Date(gig.starts_at) <= new Date()) return respond("not_available", 409);
 
   const { data: refusal } = await admin
     .from("gig_refusals")

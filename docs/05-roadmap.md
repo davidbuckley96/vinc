@@ -19,7 +19,7 @@
 - [x] Ciclo de vida do serviço (aceita → em andamento → aguardando confirmação → concluída) — Edge Function `gig-lifecycle` + tela "uma ação por vez" (D-008), verificado e2e no backend real
 - [x] Carteira simulada (ledger imutável + tela dois cartões, D-008) com multa do anunciante (cancel-gig, D-018: 25% piso R$ 10, 80% ao prestador lesado), verificado e2e — reformulação da tela vem com D-015
 - [x] Reformulação da carteira (D-015/D-021, docs/02 §5.2, rodada 6 opção C): saldo único (recebido desde o último saque), abas Disponível/Em processamento (7 dias derivados do ledger, D-016), tela Histórico, saque simulado via função `withdraw` (verificado e2e), saldo aparece no pagamento do anúncio. (Pedido de reembolso dentro do prazo → disputas, Fase 2; Pix real → Fase 3)
-- [~] Taxa de serviço na criação da vaga (D-013) — IMPLEMENTADO: pagamento antecipado via create-gig (taxa 10%-exemplo + escrow do líquido), taxa explícita na criação, prévia e busca com o líquido, reembolso do líquido na exclusão (delete-gig), tudo verificado e2e; FALTA: reembolso na expiração da vaga (job de expiração ainda não existe)
+- [x] Taxa de serviço na criação da vaga (D-013) — IMPLEMENTADO: pagamento antecipado via create-gig (taxa 10%-exemplo + escrow do líquido), taxa explícita na criação, prévia e busca com o líquido, reembolso do líquido na exclusão (delete-gig), tudo verificado e2e; e reembolso na expiração (job pg_cron a cada 5 min, D-022)
 - [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
 - [ ] Localização por mapa (pino arrastável + busca no mapa ao anunciar; modal de mapa ao ver a vaga — docs/02 §2.1; requer provedor de mapas, ver dúvidas #15)
 - [ ] Mensagens entre as partes dentro do app (chat simples; respeita bloqueios)
@@ -71,9 +71,11 @@ revisados antes de abrir o app ao público:
 **Última atualização:** 2026-07-03
 
 - **Backend real (Supabase) operacional e verificado e2e**: projeto
-  `gexzpkbqodoyoxudzklb`, migrations 0001–0004 aplicadas, Edge Functions
-  `accept-gig` (v2, com escrow) e `gig-lifecycle` ATIVAS, Google OAuth
-  configurado. Credenciais públicas em `apps/mobile/.env.example`.
+  `gexzpkbqodoyoxudzklb`, migrations 0001–0010 aplicadas, Edge Functions
+  ATIVAS: `create-gig`, `update-gig`, `delete-gig`, `apply-gig`,
+  `respond-candidacy`, `cancel-gig`, `gig-lifecycle`, `withdraw`; job
+  pg_cron `expire-due-gigs` (5 min). Google OAuth configurado. Credenciais
+  públicas em `apps/mobile/.env.example`.
 - **Fluxos completos funcionando com dados reais**: cadastro/login (e-mail e
   Google) → publicar vaga → buscar por categoria → detalhe → aceite atômico
   (escrow retido) → iniciar → concluir → confirmação do anunciante (escrow
@@ -107,7 +109,11 @@ revisados antes de abrir o app ao público:
   (sem job), função `withdraw` deployada (saque simulado zera o
   disponível, respeitando o processamento — verificado e2e), tela com
   abas + histórico separado, saldo exibido no pagamento do anúncio.
-- **Faltam na Fase 1**: expiração de vaga com reembolso; punição de
+- **Expiração de vagas (D-022) no ar**: função SQL `expire_due_gigs` +
+  job pg_cron a cada 5 min (verificado e2e: expira aberta e pendente no
+  início do horário, reembolsa o líquido uma única vez, poupa vagas
+  futuras); busca e apply-gig recusam vagas já iniciadas.
+- **Faltam na Fase 1**: punição de
   reputação do prestador que cancela (dúvida #5); localização por mapa
   (docs/02 §2.1, rodada de design + provedor, dúvida #15); mensagens no
   app (chat simples, respeitando bloqueios); filtro de busca por horário;

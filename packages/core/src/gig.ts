@@ -26,8 +26,9 @@ const TRANSITIONS: Record<GigStatus, readonly GigStatus[]> = {
   // deletion by the poster (net refund, fee kept — docs/02 §5.1) is
   // modelled as open/pending_approval → cancelled_by_poster, without fine
   open: ["pending_approval", "cancelled_by_poster", "expired"],
-  // approval -> accepted; refusal -> back to open (docs/02 §3)
-  pending_approval: ["accepted", "open", "cancelled_by_poster"],
+  // approval -> accepted; refusal -> back to open (docs/02 §3); expired
+  // when the start time passes with nobody approved (D-022)
+  pending_approval: ["accepted", "open", "cancelled_by_poster", "expired"],
   accepted: ["in_progress", "cancelled_by_poster", "cancelled_by_worker"],
   in_progress: ["awaiting_confirmation", "cancelled_by_poster", "cancelled_by_worker"],
   awaiting_confirmation: ["completed"],
