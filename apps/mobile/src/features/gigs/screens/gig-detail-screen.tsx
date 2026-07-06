@@ -216,7 +216,7 @@ export function GigDetailScreen() {
                 {myPriority.data && (
                   <View style={[styles.priorityNote, { backgroundColor: theme.primarySoft }]}>
                     <Text style={[styles.priorityNoteText, { color: theme.primarySoftText }]}>
-                      ⚡ Você tem prioridade nesta vaga: um serviço seu neste mesmo horário foi
+                      ⚡ Você tem destaque nesta vaga: um serviço seu neste mesmo horário foi
                       cancelado. Sua candidatura aparece no topo da lista.
                     </Text>
                   </View>

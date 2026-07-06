@@ -525,10 +525,12 @@ serviço, anotada na Fase 4 do roadmap).
 
 Mecânica: o cancelamento cria uma "janela de prioridade" (trigger no
 banco; expira sozinha quando o horário passa). Na lista de candidatos, o
-prioritário vem **no topo com selo "⚡ Prioridade — teve um serviço
+prioritário vem **no topo com selo "⚡ Destaque — teve um serviço
 cancelado neste mesmo horário"** — ordena e destaca, não esconde nem
 escolhe por ninguém. O prestador vê o aviso "você tem prioridade nesta
-vaga" no detalhe da vaga e na notificação do cancelamento. Verificado
+vaga" no detalhe da vaga e na notificação do cancelamento. **Nome voltado ao usuário: "destaque"**
+(decisão do David em 2026-07-06; "prioridade" fica como termo interno).
+Verificado
 e2e em 2026-07-06 (janela criada no cancelamento, prioritário reordenado
 na lista sobreposta mesmo se candidatando por último, sem efeito em
 horários que não sobrepõem, RLS de janelas só para o próprio).

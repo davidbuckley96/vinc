@@ -105,7 +105,7 @@ export function CandidateList({ gigId, enabled }: CandidateListProps) {
                   {candidate.priority && (
                     <View style={[styles.priorityBadge, { backgroundColor: theme.primarySoft }]}>
                       <Text style={[styles.priorityLabel, { color: theme.primarySoftText }]}>
-                        ⚡ Prioridade
+                        ⚡ Destaque
                       </Text>
                     </View>
                   )}
