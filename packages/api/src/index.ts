@@ -5,5 +5,6 @@ export * from "./client";
 export * from "./disputes";
 export * from "./gigs";
 export * from "./messages";
+export * from "./notifications";
 export * from "./reviews";
 export * from "./wallet";

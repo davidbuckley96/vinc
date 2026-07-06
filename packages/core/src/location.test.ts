@@ -53,10 +53,12 @@ describe("boundingBox", () => {
 });
 
 describe("formatDistanceLabel", () => {
-  it("shows meters under 1 km and km above", () => {
+  it("shows meters below 1000 m and km from 1000 m on (David's rule)", () => {
     expect(formatDistanceLabel(80)).toBe("≈ 100 m");
-    expect(formatDistanceLabel(840)).toBe("≈ 800 m");
-    expect(formatDistanceLabel(980)).toBe("≈ 1 km");
+    expect(formatDistanceLabel(840)).toBe("≈ 850 m");
+    expect(formatDistanceLabel(990)).toBe("≈ 950 m");
+    expect(formatDistanceLabel(1000)).toBe("≈ 1 km");
+    expect(formatDistanceLabel(1400)).toBe("≈ 1 km");
     expect(formatDistanceLabel(3200)).toBe("≈ 3 km");
   });
 });

@@ -60,10 +60,16 @@ export function boundingBox(center: LatLng, radiusKm: number) {
   };
 }
 
-/** "≈ 800 m" / "≈ 3 km" — shown on gig cards (D-029). */
+/**
+ * "≈ 850 m" / "≈ 1 km" — shown on gig cards (D-029). Rule set by David:
+ * below 1.000 m the label is in METERS (nearest 50); from 1.000 m on it
+ * is in KM.
+ */
 export function formatDistanceLabel(meters: number): string {
-  const roundedMeters = Math.max(100, Math.round(meters / 100) * 100);
-  if (roundedMeters < 1000) return `≈ ${roundedMeters} m`;
+  if (meters < 1000) {
+    const rounded = Math.min(950, Math.max(100, Math.round(meters / 50) * 50));
+    return `≈ ${rounded} m`;
+  }
   return `≈ ${Math.max(1, Math.round(meters / 1000))} km`;
 }
 

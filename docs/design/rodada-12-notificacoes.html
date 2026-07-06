@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 12: Central de notificações</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --roxo-med:#6D4FAE; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --danger:#DC2626; --ok:#059669; --ok-soft:#ECFDF5; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:880px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .head{background:var(--roxo);color:#fff;padding:26px 14px 12px;border-radius:0 0 22px 22px;display:flex;justify-content:space-between;align-items:center}
+  .head .t{font-size:15.5px;font-weight:800}
+  .bell{position:relative;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:14px}
+  .bell .n{position:absolute;top:-4px;right:-4px;background:var(--danger);color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px}
+  .body{flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+  .day{font-size:10px;font-weight:800;color:var(--ink2);letter-spacing:.5px;margin:4px 2px 0}
+  .item{display:flex;gap:9px;align-items:flex-start;border:1.5px solid var(--line);border-radius:13px;padding:10px 11px}
+  .item.unread{background:var(--lilas);border-color:#DCCFF7}
+  .item .ic{width:30px;height:30px;border-radius:50%;background:var(--lilas);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+  .item.unread .ic{background:#fff}
+  .item .tx{flex:1}
+  .item .tt{font-size:12.5px;font-weight:700;line-height:1.35}
+  .item .mm{font-size:11px;color:var(--ink2);margin-top:1px}
+  .item .dot{width:8px;height:8px;border-radius:50%;background:var(--roxo);margin-top:5px}
+  .abtn{display:inline-block;margin-top:6px;background:var(--roxo);color:#fff;border-radius:9px;padding:6px 11px;font-size:11px;font-weight:800}
+  .abtn.ghost{background:#fff;border:1.5px solid var(--roxo);color:var(--roxo-deep)}
+  .agendaTop{background:var(--lilas);border-radius:13px;padding:10px 11px;display:flex;gap:9px;align-items:center}
+  .agendaTop .tt{font-size:12px;font-weight:700;color:var(--roxo-deep);flex:1;line-height:1.35}
+  .agendaTop .x{color:var(--roxo-med);font-weight:800}
+  .cal{border:1.5px solid var(--line);border-radius:13px;flex:1;display:flex;align-items:center;justify-content:center;color:var(--ink2);font-size:12px}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 12 de design: central de notificações</h1>
+  <p class="sub">Backend pronto: os eventos (candidato novo, escolhido, serviço iniciado/concluído, pagamento liberado, disputa aberta/resolvida, cancelamentos, expiração) já geram notificações no banco — inclusive os automáticos (48h, 12h, expiração). Falta a cara da central. Nas três opções, o <b>sino com contador fica no cabeçalho da agenda</b> (a tela inicial) e tudo abre a tela do serviço ao tocar; abrir a central zera o contador. Push de verdade chega na fase das lojas.</p>
+
+  <div class="row">
+
+    <!-- A -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">‹ Notificações</div><div class="bell">🔔</div></div>
+        <div class="body">
+          <div class="day">HOJE</div>
+          <div class="item unread"><div class="ic">💰</div><div class="tx"><div class="tt">Pagamento liberado: R$ 120,00 de "Faxina apartamento 60m²" caiu na sua carteira.</div><div class="mm">há 2h</div></div><div class="dot"></div></div>
+          <div class="item unread"><div class="ic">🙋</div><div class="tx"><div class="tt">Novo candidato em "Passear com cachorro".</div><div class="mm">há 3h</div></div><div class="dot"></div></div>
+          <div class="day">ONTEM</div>
+          <div class="item"><div class="ic">🎉</div><div class="tx"><div class="tt">Você foi escolhido para "Babá para 2 crianças"!</div><div class="mm">ontem, 18:40</div></div></div>
+          <div class="item"><div class="ic">🏁</div><div class="tx"><div class="tt">"Garçom para festa" foi concluído pelo prestador — confirme a conclusão.</div><div class="mm">ontem, 23:05</div></div></div>
+          <div style="flex:1"></div>
+        </div>
+      </div>
+      <h3>Opção A — Lista simples por dia</h3>
+      <span class="tag">uma linha, um evento, um toque</span>
+      <p>Sino no cabeçalho da agenda abre esta lista agrupada por dia. Não lidas em lilás com ponto roxo. Tocar em qualquer item leva direto ao serviço, onde a ação acontece. O mais enxuto de entender e manter.</p>
+    </div>
+
+    <!-- B -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">‹ Notificações</div><div class="bell">🔔</div></div>
+        <div class="body">
+          <div class="day">HOJE</div>
+          <div class="item unread"><div class="ic">🙋</div><div class="tx"><div class="tt">Novo candidato em "Passear com cachorro".</div><div class="mm">há 3h</div><span class="abtn">Ver candidatos</span></div><div class="dot"></div></div>
+          <div class="item unread"><div class="ic">🏁</div><div class="tx"><div class="tt">"Garçom para festa" foi concluído — confirme a conclusão para liberar R$ 200,00.</div><div class="mm">há 5h</div><span class="abtn">Confirmar conclusão</span> <span class="abtn ghost">Ver serviço</span></div><div class="dot"></div></div>
+          <div class="day">ONTEM</div>
+          <div class="item"><div class="ic">💰</div><div class="tx"><div class="tt">Pagamento liberado: R$ 160,00 na sua carteira.</div><div class="mm">ontem, 19:12</div></div></div>
+          <div style="flex:1"></div>
+        </div>
+      </div>
+      <h3>Opção B — Lista com ação embutida</h3>
+      <span class="tag">resolve sem trocar de tela</span>
+      <p>Igual à A, mas as notificações que pedem uma decisão trazem o botão da ação ali mesmo (ver candidatos, confirmar conclusão). Menos toques para o que importa — em troca de uma central mais carregada e mais lógica para manter em dia.</p>
+    </div>
+
+    <!-- C -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Minha agenda</div><div class="bell">🔔<span class="n">3</span></div></div>
+        <div class="body">
+          <div class="agendaTop"><span>💰</span><div class="tt">R$ 120,00 liberados de "Faxina apartamento 60m²"</div><span class="x">×</span></div>
+          <div class="agendaTop"><span>🙋</span><div class="tt">Novo candidato em "Passear com cachorro"</div><span class="x">×</span></div>
+          <div class="cal">…calendário da agenda…</div>
+        </div>
+      </div>
+      <h3>Opção C — Avisos no topo da agenda</h3>
+      <span class="tag">impossível não ver</span>
+      <p>Além do sino (que abre a lista da opção A), as não lidas mais recentes aparecem como cartões dispensáveis no topo da própria agenda. Máxima visibilidade sem abrir nada — mas ocupa espaço da tela mais importante do app.</p>
+    </div>
+
+  </div>
+</body>
+</html>
