@@ -31,7 +31,7 @@ Campos essenciais:
 | Valor do serviço (BRL) | R$ 160,00 — **mínimo R$ 10** (D-019, contra anúncios maliciosos quase-grátis) |
 | Local | Escolhido **no mapa** (ver §2.1) — nível de detalhe exibido antes do aceite ⚠️ em aberto |
 
-### 2.1 Localização por mapa (definido pelo David em 2026-07-03)
+### 2.1 Localização por mapa (definido pelo David em 2026-07-03; implementada — D-023)
 
 - **Na criação do anúncio**, o local NÃO é uma caixa de texto livre (evita
   endereços inexistentes/ambíguos). A pessoa escolhe no **mapa**, estilo
@@ -40,10 +40,14 @@ Campos essenciais:
 - **Na visualização da vaga** (antes e depois do aceite), o endereço é
   clicável e abre um **modal com o mapa** mostrando o pino do local, com um
   botão de fechar.
-- Requisitos técnicos: colunas `lat`/`lng` na tabela `gigs`; provedor de
-  mapas/geocodificação a decidir (⚠️ `07-duvidas-abertas.md`).
-- **Rodada de opções de design obrigatória** antes de implementar (processo
-  padrão de UI).
+- Implementação (rodada 7, opção A — D-023): mapa em tela cheia com pino
+  fixo no centro (o mapa move por baixo, estilo Uber), busca no topo,
+  endereço lido na hora (Nominatim) e botão "Confirmar este local".
+  Colunas `lat`/`lng` em `gigs` (migration 0011), validadas no domínio e
+  nas functions. Vagas antigas sem pino mostram o endereço como texto.
+- Provedor: MapLibre GL (web: nativo; app: WebView no MVP) + tiles
+  OpenFreeMap (sem chave; trocar por MapTiler com chave própria no
+  pré-lançamento) + Nominatim para busca/leitura de endereço.
 
 Categorias iniciais: saúde, entretenimento, serviços domésticos (lista completa
 ⚠️ em aberto — expansível, cadastrada no banco e não no código).

@@ -56,18 +56,12 @@
     preenchido e backend verificado e2e. Contas Apple Developer / Google
     Play ficam para a Fase 4.
 
-15. 🟡 **Provedor de mapas/geocodificação** para a localização por mapa
-    (docs/02 §2.1). Rodada de design: `docs/design/rodada-07-mapa.html`.
-    **Recomendação do Claude (2026-07-06): MapLibre + MapTiler + Nominatim**
-    — custo R$ 0 no MVP, sem cartão de crédito: MapLibre GL é open-source e
-    roda com um só código na web e no app (`maplibre-react-native` +
-    `maplibre-gl-js`); MapTiler serve os mapas (plano gratuito ~100 mil
-    visualizações/mês, só pede cadastro); Nominatim (OpenStreetMap) faz a
-    busca de endereço gratuitamente. Alternativas: Google Maps (visual mais
-    familiar, mas exige cartão cadastrado e NÃO roda na web com a mesma
-    biblioteca do app — duas implementações) e Mapbox (bom, mas também pede
-    cartão). Trocar de provedor depois é barato se o código isolar o mapa
-    num componente próprio (princípio de docs/03).
+15. ~~🟡 **Provedor de mapas/geocodificação**~~ ✅ Respondida em
+    2026-07-06: **MapLibre GL + tiles abertos + Nominatim**, aprovado pelo
+    David junto com a opção A da rodada 7 (ver `06-decisoes.md` D-023).
+    Custo R$ 0 no MVP, sem cartão. Pendência derivada no checklist de
+    pré-lançamento: trocar os tiles OpenFreeMap por MapTiler com chave
+    própria.
 
 17. 🟡 **Meios de pagamento e saque** (D-016 dá a direção; escolha final na
     Fase 3, junto com o gateway — dúvida #13): David quer as opções mais

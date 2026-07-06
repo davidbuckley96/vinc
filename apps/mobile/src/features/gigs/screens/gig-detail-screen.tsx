@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ApplyGigResult } from '@vinc/api';
 import { formatBRL } from '@vinc/core';
 
+import { LocationModal } from '@/components/location-map';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
 import { useTheme } from '@/hooks/use-theme';
@@ -43,6 +44,7 @@ export function GigDetailScreen() {
   const gig = useGig(id);
   const categories = useCategories();
   const apply = useApplyGig();
+  const [mapOpen, setMapOpen] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: 'error' | 'success'; text: string } | null>(
     null,
   );
@@ -115,9 +117,29 @@ export function GigDetailScreen() {
                 📅 {WEEKDAYS[start.getDay()]}, {start.getDate()} · {start.getHours()}h às{' '}
                 {end.getHours()}h
               </Text>
-              <Text style={[styles.infoLine, { color: theme.primarySoftText }]}>
-                📍 {gig.data.address}
-              </Text>
+              {gig.data.lat !== null && gig.data.lng !== null ? (
+                <>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Ver o local no mapa"
+                    onPress={() => setMapOpen(true)}>
+                    <Text style={[styles.infoLine, styles.infoLink, { color: theme.primarySoftText }]}>
+                      📍 {gig.data.address} ›
+                    </Text>
+                  </Pressable>
+                  <LocationModal
+                    visible={mapOpen}
+                    lat={gig.data.lat}
+                    lng={gig.data.lng}
+                    address={gig.data.address}
+                    onClose={() => setMapOpen(false)}
+                  />
+                </>
+              ) : (
+                <Text style={[styles.infoLine, { color: theme.primarySoftText }]}>
+                  📍 {gig.data.address}
+                </Text>
+              )}
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`Ver perfil de ${gig.data.posterName}`}
@@ -251,6 +273,9 @@ const styles = StyleSheet.create({
   infoLine: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  infoLink: {
+    textDecorationLine: 'underline',
   },
   posterLink: {
     textDecorationLine: 'underline',

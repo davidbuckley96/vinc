@@ -69,6 +69,8 @@ Deno.serve(async (request) => {
       price_cents: pricing.netCents,
       fee_cents: pricing.feeCents,
       address: draft.address.trim(),
+      lat: draft.lat ?? null,
+      lng: draft.lng ?? null,
       status: "open",
     })
     .select("id")

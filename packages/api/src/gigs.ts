@@ -17,6 +17,9 @@ export interface OpenGig {
   endsAt: string;
   priceCents: number;
   address: string;
+  /** Map pin (docs/02 §2.1, D-023); null on gigs created before the map. */
+  lat: number | null;
+  lng: number | null;
   categoryId: string;
   posterName: string;
 }
@@ -30,6 +33,8 @@ interface GigRow {
   ends_at: string;
   price_cents: number;
   address: string;
+  lat: number | null;
+  lng: number | null;
   category_id: string;
   poster: { name: string } | null;
 }
@@ -53,7 +58,7 @@ export async function fetchOpenGigs(
 ): Promise<OpenGig[]> {
   let query = client
     .from("visible_open_gigs")
-    .select("id, title, description, starts_at, ends_at, price_cents, address, category_id, poster_id, poster_name")
+    .select("id, title, description, starts_at, ends_at, price_cents, address, lat, lng, category_id, poster_id, poster_name")
     .order("starts_at")
     .limit(50);
   if (filter.categoryId) query = query.eq("category_id", filter.categoryId);
@@ -69,6 +74,8 @@ export async function fetchOpenGigs(
     endsAt: row.ends_at,
     priceCents: row.price_cents,
     address: row.address,
+    lat: row.lat,
+    lng: row.lng,
     categoryId: row.category_id,
     posterName: row.poster_name,
   }));
@@ -81,7 +88,7 @@ export async function fetchGigById(
   const { data, error } = await client
     .from("gigs")
     .select(
-      "id, title, description, starts_at, ends_at, price_cents, address, category_id, poster_id, poster:poster_id (name)",
+      "id, title, description, starts_at, ends_at, price_cents, address, lat, lng, category_id, poster_id, poster:poster_id (name)",
     )
     .eq("id", gigId)
     .maybeSingle();
@@ -97,6 +104,8 @@ export async function fetchGigById(
     endsAt: row.ends_at,
     priceCents: row.price_cents,
     address: row.address,
+    lat: row.lat,
+    lng: row.lng,
     categoryId: row.category_id,
     posterName: row.poster?.name ?? "Anunciante",
   };

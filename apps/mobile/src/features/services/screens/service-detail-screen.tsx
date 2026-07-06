@@ -21,6 +21,7 @@ import {
   type GigStatus,
 } from '@vinc/core';
 
+import { LocationModal } from '@/components/location-map';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useCancelGig, useDeleteGig } from '@/features/gigs/hooks';
 import { useHasReviewed } from '@/features/reviews/hooks';
@@ -149,6 +150,7 @@ export function ServiceDetailScreen() {
   const [deletedNote, setDeletedNote] = useState<string | null>(null);
   const [cancelArmed, setCancelArmed] = useState(false);
   const [cancelledNote, setCancelledNote] = useState<string | null>(null);
+  const [mapOpen, setMapOpen] = useState(false);
 
   const cancelWithFine = async () => {
     if (!service.data) return;
@@ -296,10 +298,32 @@ export function ServiceDetailScreen() {
                 </Text>
               </Pressable>
             )}
-            <View style={[styles.kv, { borderBottomColor: theme.line }]}>
-              <Text style={[styles.kvLabel, { color: theme.textSecondary }]}>Onde</Text>
-              <Text style={[styles.kvValue, { color: theme.text }]}>{data.address}</Text>
-            </View>
+            {data.lat !== null && data.lng !== null ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Ver o local no mapa"
+                onPress={() => setMapOpen(true)}
+                style={[styles.kv, { borderBottomColor: theme.line }]}>
+                <Text style={[styles.kvLabel, { color: theme.textSecondary }]}>Onde</Text>
+                <Text style={[styles.kvValue, styles.kvLink, { color: theme.primary }]}>
+                  {data.address} ›
+                </Text>
+              </Pressable>
+            ) : (
+              <View style={[styles.kv, { borderBottomColor: theme.line }]}>
+                <Text style={[styles.kvLabel, { color: theme.textSecondary }]}>Onde</Text>
+                <Text style={[styles.kvValue, { color: theme.text }]}>{data.address}</Text>
+              </View>
+            )}
+            {data.lat !== null && data.lng !== null && (
+              <LocationModal
+                visible={mapOpen}
+                lat={data.lat}
+                lng={data.lng}
+                address={data.address}
+                onClose={() => setMapOpen(false)}
+              />
+            )}
             {data.description ? (
               <Text style={[styles.description, { color: theme.textSecondary }]}>
                 {data.description}

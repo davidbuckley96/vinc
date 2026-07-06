@@ -277,3 +277,18 @@ atrasaria o reembolso. Implementação: job `pg_cron` a cada 5 minutos
 nunca mostra vagas já iniciadas (a view filtra por `starts_at > now()`) e
 o `apply-gig` também recusa, então ninguém vê vaga "morta" entre as
 execuções do job.
+
+## D-023 — Mapa: rodada 7 opção A (tela cheia estilo Uber); MapLibre + Nominatim
+**Data:** 2026-07-06 · **Decidido por:** David
+
+Da rodada 7 (`docs/design/rodada-07-mapa.html`), David escolheu a **Opção
+A**: tocar em "ONDE?" abre o mapa em **tela cheia com pino fixo no centro**
+(a pessoa arrasta o mapa por baixo, padrão Uber/iFood), busca de endereço
+no topo, endereço lido na hora embaixo e botão único "Confirmar este
+local". Visualização: endereço clicável abre modal com o pino (padrão da
+spec §2.1). Provedor aprovado: **MapLibre GL** (um código para web e app;
+no app via WebView no MVP — sem módulo nativo, funciona no Expo Go),
+**tiles abertos sem chave** (OpenFreeMap no MVP; migrar para MapTiler com
+chave própria no pré-lançamento) e **Nominatim/OpenStreetMap** para busca
+e leitura de endereço (gratuito, sem chave). Mapa isolado em componente
+próprio para troca barata de provedor (docs/03).

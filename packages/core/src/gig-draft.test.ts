@@ -50,6 +50,12 @@ describe("validateGigDraft", () => {
     expect(validateGigDraft({ ...VALID, priceCents: 1000 }, NOW)).toEqual([]);
   });
 
+  it("validates the map pin when present (D-023)", () => {
+    expect(validateGigDraft({ ...VALID, lat: -8.05, lng: -34.88 }, NOW)).toEqual([]);
+    expect(validateGigDraft({ ...VALID, lat: -8.05 }, NOW)).toContain("location_invalid");
+    expect(validateGigDraft({ ...VALID, lat: 120, lng: -34.88 }, NOW)).toContain("location_invalid");
+  });
+
   it("rejects fractional price cents", () => {
     expect(validateGigDraft({ ...VALID, priceCents: 100.5 }, NOW)).toContain("price_required");
   });

@@ -21,7 +21,7 @@
 - [x] Reformulação da carteira (D-015/D-021, docs/02 §5.2, rodada 6 opção C): saldo único (recebido desde o último saque), abas Disponível/Em processamento (7 dias derivados do ledger, D-016), tela Histórico, saque simulado via função `withdraw` (verificado e2e), saldo aparece no pagamento do anúncio. (Pedido de reembolso dentro do prazo → disputas, Fase 2; Pix real → Fase 3)
 - [x] Taxa de serviço na criação da vaga (D-013) — IMPLEMENTADO: pagamento antecipado via create-gig (taxa 10%-exemplo + escrow do líquido), taxa explícita na criação, prévia e busca com o líquido, reembolso do líquido na exclusão (delete-gig), tudo verificado e2e; e reembolso na expiração (job pg_cron a cada 5 min, D-022)
 - [x] Avaliações mútuas (1–5) e reputação no perfil público — fluxo híbrido estrelas+marcadores (D-009), perfil com nota por papel; RLS só permite avaliar participante de serviço concluído, 1x por serviço
-- [ ] Localização por mapa (pino arrastável + busca no mapa ao anunciar; modal de mapa ao ver a vaga — docs/02 §2.1; requer provedor de mapas, ver dúvidas #15)
+- [x] Localização por mapa (D-023, rodada 7 opção A): picker em tela cheia com pino fixo + busca (Nominatim), modal de mapa ao ver a vaga, lat/lng validados e persistidos (verificado e2e); MapLibre + OpenFreeMap (trocar tiles p/ MapTiler no pré-lançamento)
 - [ ] Mensagens entre as partes dentro do app (chat simples; respeita bloqueios)
 - [ ] Web e mobile funcionando com paridade
 
@@ -65,6 +65,11 @@ revisados antes de abrir o app ao público:
    publicar) para permitir logins de qualquer conta Google.
 5. Migrar e-mails transacionais para um provedor SMTP próprio (o SMTP
    embutido do Supabase é só para desenvolvimento e tem limites baixos).
+6. **Tiles do mapa**: o MVP usa OpenFreeMap (público, sem chave, sem SLA).
+   Antes do lançamento, criar conta MapTiler (plano gratuito) e trocar
+   `MAP_STYLE_URL` em `apps/mobile/src/components/location-map/config.ts`;
+   revisar também o volume de geocodificação no Nominatim (política de uso
+   justo — considerar um serviço pago se o volume crescer).
 
 ## Estado atual
 

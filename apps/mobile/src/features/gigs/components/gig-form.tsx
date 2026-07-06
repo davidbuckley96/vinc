@@ -18,6 +18,7 @@ import {
   type GigDraftError,
 } from '@vinc/core';
 
+import { LocationPicker, type PickedLocation } from '@/components/location-map';
 import { Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
 import { useWallet } from '@/features/wallet/hooks';
@@ -35,7 +36,8 @@ const ERROR_MESSAGES: Record<GigDraftError, string> = {
   ends_before_starts: 'O fim precisa ser depois do início.',
   price_required: 'Diga quanto vai pagar.',
   price_too_low: 'O valor mínimo de uma vaga é R$ 10,00.',
-  address_required: 'Diga onde será o serviço.',
+  address_required: 'Escolha o local do serviço no mapa.',
+  location_invalid: 'Não foi possível marcar o local. Escolha de novo no mapa.',
 };
 
 const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
@@ -122,11 +124,17 @@ export function GigForm({
   );
   const [endHour, setEndHour] = useState(initial ? new Date(initial.endsAt).getHours() : 17);
   const [priceCents, setPriceCents] = useState(initial?.priceCents ?? 0);
-  const [address, setAddress] = useState(initial?.address ?? '');
+  const [location, setLocation] = useState<PickedLocation | null>(
+    initial?.address
+      ? { address: initial.address, lat: initial.lat ?? 0, lng: initial.lng ?? 0 }
+      : null,
+  );
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   const selectedDay = days[dayIndex] ?? days[0]!;
   const pricing = computeGigPricing(priceCents);
+  const hasPin = location !== null && !(location.lat === 0 && location.lng === 0);
   const draft: GigDraft = {
     categoryId,
     title,
@@ -134,7 +142,9 @@ export function GigForm({
     startsAt: buildIso(selectedDay, startHour),
     endsAt: buildIso(selectedDay, endHour),
     priceCents,
-    address,
+    address: location?.address ?? '',
+    lat: hasPin ? location.lat : null,
+    lng: hasPin ? location.lng : null,
   };
 
   const previewGig: OpenGig = {
@@ -145,7 +155,9 @@ export function GigForm({
     startsAt: draft.startsAt,
     endsAt: draft.endsAt,
     priceCents,
-    address: address.trim() || 'Local',
+    address: location?.address ?? 'Local',
+    lat: hasPin ? location.lat : null,
+    lng: hasPin ? location.lng : null,
     categoryId,
     posterName: userName ?? 'Você',
   };
@@ -341,12 +353,34 @@ export function GigForm({
       )}
 
       {label('ONDE?')}
-      <TextInput
-        style={inputStyle}
-        placeholder="Endereço ou bairro do serviço"
-        placeholderTextColor={theme.textSecondary}
-        value={address}
-        onChangeText={setAddress}
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => setPickerOpen(true)}
+        style={[
+          styles.input,
+          styles.locationField,
+          { borderColor: theme.line, backgroundColor: theme.background },
+        ]}>
+        <Text
+          style={[
+            styles.locationLabel,
+            { color: location ? theme.text : theme.textSecondary },
+          ]}
+          numberOfLines={2}>
+          🗺 {location ? location.address : 'Escolher o local no mapa'}
+        </Text>
+        <Text style={[styles.locationAction, { color: theme.primary }]}>
+          {location ? 'mudar' : 'abrir'}
+        </Text>
+      </Pressable>
+      <LocationPicker
+        visible={pickerOpen}
+        initial={hasPin ? location : null}
+        onConfirm={(picked) => {
+          setLocation(picked);
+          setPickerOpen(false);
+        }}
+        onClose={() => setPickerOpen(false)}
       />
 
       <Text style={[styles.label, { color: theme.textSecondary }]}>
@@ -461,6 +495,21 @@ const styles = StyleSheet.create({
     borderRadius: Radius.large - 2,
     paddingVertical: 14,
     alignItems: 'center',
+  },
+  locationField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  locationLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  locationAction: {
+    fontSize: 12.5,
+    fontWeight: '800',
   },
   publishLabel: {
     fontSize: 15,

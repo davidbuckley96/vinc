@@ -36,6 +36,9 @@ export interface ServiceDetail {
   endsAt: string;
   priceCents: number;
   address: string;
+  /** Map pin (docs/02 §2.1, D-023); null on gigs created before the map. */
+  lat: number | null;
+  lng: number | null;
   counterpartId: string | null;
   counterpartName: string | null;
 }
@@ -48,13 +51,13 @@ export async function fetchServiceDetail(
   const { data, error } = await client
     .from("gigs")
     .select(
-      "id, title, description, status, starts_at, ends_at, price_cents, address, poster_id, worker_id, poster:poster_id (name), worker:worker_id (name)",
+      "id, title, description, status, starts_at, ends_at, price_cents, address, lat, lng, poster_id, worker_id, poster:poster_id (name), worker:worker_id (name)",
     )
     .eq("id", gigId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) return null;
-  const row = data as unknown as AgendaRow & { description: string; address: string };
+  const row = data as unknown as AgendaRow & { description: string; address: string; lat: number | null; lng: number | null };
   const role = row.poster_id === userId ? "poster" : "worker";
   return {
     id: row.id,
@@ -66,6 +69,8 @@ export async function fetchServiceDetail(
     endsAt: row.ends_at,
     priceCents: row.price_cents,
     address: row.address,
+    lat: row.lat,
+    lng: row.lng,
     counterpartId: role === "poster" ? row.worker_id : row.poster_id,
     counterpartName: role === "poster" ? (row.worker?.name ?? null) : (row.poster?.name ?? null),
   };

@@ -12,7 +12,11 @@ export interface GigDraft {
   startsAt: string;
   endsAt: string;
   priceCents: number;
+  /** Human-readable label of the map pin (docs/02 §2.1). */
   address: string;
+  /** Map pin (D-023). Optional during rollout; the form always sends it. */
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export type GigDraftError =
@@ -24,7 +28,8 @@ export type GigDraftError =
   | "ends_before_starts"
   | "price_required"
   | "price_too_low"
-  | "address_required";
+  | "address_required"
+  | "location_invalid";
 
 export const GIG_TITLE_MIN = 3;
 export const GIG_TITLE_MAX = 80;
@@ -51,6 +56,14 @@ export function validateGigDraft(draft: GigDraft, now: Date): GigDraftError[] {
     errors.push("price_too_low");
   }
   if (!draft.address.trim()) errors.push("address_required");
+  const hasLat = draft.lat !== undefined && draft.lat !== null;
+  const hasLng = draft.lng !== undefined && draft.lng !== null;
+  if (hasLat !== hasLng) errors.push("location_invalid");
+  if (hasLat && hasLng) {
+    const validLat = Number.isFinite(draft.lat) && Math.abs(draft.lat!) <= 90;
+    const validLng = Number.isFinite(draft.lng) && Math.abs(draft.lng!) <= 180;
+    if (!validLat || !validLng) errors.push("location_invalid");
+  }
 
   return errors;
 }

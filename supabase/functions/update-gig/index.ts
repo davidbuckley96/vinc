@@ -84,6 +84,8 @@ Deno.serve(async (request) => {
       starts_at: draft.startsAt,
       ends_at: draft.endsAt,
       address: draft.address.trim(),
+      lat: draft.lat ?? null,
+      lng: draft.lng ?? null,
     })
     .eq("id", gig.id)
     .eq("status", "open")
