@@ -362,3 +362,25 @@ No MVP a multa é debitada da carteira simulada do prestador (pode ficar
 negativa); a **cobrança real no cartão** do prestador quando o saldo não
 cobrir entra com o gateway da **Fase 3** (requisito registrado no
 roadmap). Verificado e2e.
+
+## D-028 — Desenho da Fase 2 (confiança): disputas, 48h, código de check-in, endereço aproximado
+**Data:** 2026-07-06 · **Decidido por:** David (fecha as dúvidas #4, #6, #7 e #8)
+
+1. **Disputas/reembolsos**: analisadas pelo **David num painel admin
+   simples** (web): cada caso mostra relato, fotos, conversa do chat e
+   histórico das duas partes; decisão com um clique.
+2. **Reembolso parcial ou total**, a critério de quem analisa, **sempre
+   limitado ao valor do serviço** — a taxa nunca é reembolsada. O que não
+   for reembolsado é liberado ao prestador.
+3. **Auto-liberação em 48h**: se o anunciante não confirmar nem contestar
+   a conclusão, o pagamento libera sozinho (encerra a janela de
+   contestação pré-liberação; a janela de 7 dias da carteira — D-016 —
+   continua valendo para o pedido de reembolso pós-liberação).
+4. **Endereço aproximado antes da escolha** (segurança): a vaga mostra só
+   bairro/região e pino aproximado; o endereço completo e o pino exato
+   aparecem apenas para o prestador ESCOLHIDO.
+5. **Check-in por código**: ao chegar, o prestador digita o código de 4
+   dígitos exibido na tela do anunciante (estilo iFood/99) para iniciar o
+   serviço — prova de presença que alimenta as disputas.
+6. **Pedido de reembolso**: relato em texto obrigatório + até 5 fotos
+   opcionais; análise considera também o chat e o histórico.

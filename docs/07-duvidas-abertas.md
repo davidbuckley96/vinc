@@ -14,19 +14,20 @@
    definir o **percentual/fórmula** — 10% está em uso como exemplo.
 3. 🔴 **Conflito de agenda no aceite:** bloquear de vez o aceite conflitante ou
    apenas alertar fortemente?
-4. 🔴 **Confirmação de conclusão:** se o anunciante não confirmar nem contestar,
-   liberar pagamento automaticamente após quanto tempo (24h? 48h?)?
+4. ~~🔴 **Confirmação de conclusão**~~ ✅ Respondida em 2026-07-06:
+   auto-liberação após **48h** (D-028).
 5. ~~🟡 **Cancelamento pelo prestador**~~ ✅ Respondida em 2026-07-06:
    multa espelhada de 25% (piso R$ 10) restituindo o anunciante, cobrança
    no cartão na Fase 3 (ver `06-decisoes.md` D-027).
-6. 🟡 **Denúncias/disputas/reembolsos** (parte mais complexa, reconhecida pelo
-   David como ainda não resolvida): quem analisa no início (o próprio David
-   como admin?), quais evidências (fotos, descrição), prazos, consequências
-   para denúncias procedentes e improcedentes, limite de reembolso.
-7. 🟡 **Check-in do serviço:** como marcar início/fim (botão simples dos dois
-   lados? geolocalização? código de confirmação?).
-8. 🟢 **Endereço da vaga:** mostrar endereço completo só após o aceite e apenas
-   bairro/região antes? (recomendação de segurança)
+6. ~~🟡 **Denúncias/disputas/reembolsos**~~ ✅ Desenhado em 2026-07-06:
+   David analisa num painel admin; relato obrigatório + fotos opcionais;
+   reembolso total ou parcial limitado ao valor do serviço (D-028, docs/02
+   §6). Fica ⚠️ calibrar com o uso as punições de má-fé reincidente.
+7. ~~🟡 **Check-in do serviço**~~ ✅ Respondida em 2026-07-06: código de
+   4 dígitos exibido pelo anunciante e digitado pelo prestador (D-028).
+8. ~~🟢 **Endereço da vaga**~~ ✅ Respondida em 2026-07-06: só
+   bairro/região (e pino aproximado) antes da escolha; completo para o
+   prestador escolhido (D-028).
 9. 🟢 **Lista inicial de categorias** e subcategorias (além de saúde,
    entretenimento e serviços domésticos).
 10. 🟢 **Avaliações:** comentário textual além da nota? Avaliação é pública no

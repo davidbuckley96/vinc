@@ -25,11 +25,14 @@
 - [x] Mensagens entre as partes dentro do app (D-025, docs/02 §9, rodada 9 opção B) — backend verificado e2e (participantes do serviço vinculado, sem falsificar remetente, bloqueio corta nos dois sentidos, imutáveis, realtime) + UI: bolhas com respostas prontas de um toque, botão Conversar com contador de novas (marcas de leitura verificadas e2e)
 - [x] Web e mobile funcionando com paridade — varredura das 12 telas em viewport desktop (1280px): layout centralizado via MaxContentWidth, sem quebras; mapa web nativo (MapLibre) e app via WebView; teclado tratado no chat (KeyboardAvoidingView)
 
-## Fase 2 — Confiança
-- [ ] Denúncias, disputas e reembolsos (desenhar processo — parte mais complexa, ver dúvidas abertas)
-- [ ] Notificações push (vaga aceita, lembretes de serviço, pagamento liberado)
-- [ ] Mecanismos de prioridade para lesados por cancelamento (modelo Uber)
-- [ ] Painel administrativo mínimo (análise de disputas)
+## Fase 2 — Confiança (desenho fechado em D-028; ordem de execução abaixo)
+- [ ] 2.1 Auto-liberação em 48h (job pg_cron sobre awaiting_confirmation — D-028)
+- [ ] 2.2 Check-in por código de 4 dígitos (gera na escolha, anunciante exibe, prestador digita para iniciar — D-028)
+- [ ] 2.3 Endereço/pino aproximados antes da escolha; completos para o escolhido (D-028)
+- [ ] 2.4 Disputas e reembolsos (D-028): contestar em vez de confirmar (congela) + pedido de reembolso nos 7 dias (congela o contestado); relato + até 5 fotos; resolução total/parcial via função (ledger)
+- [ ] 2.5 Painel admin do David (rota /admin no web, papel admin): fila de disputas com relato, fotos, chat, check-in e histórico; decisão com um clique
+- [ ] 2.6 Notificações: central in-app primeiro (candidato novo, escolhido, serviço iniciado/concluído, pagamento liberado, disputa); push real requer build de desenvolvimento (EAS) — junto com a Fase 4/lojas
+- [ ] 2.7 Prioridade para lesados por cancelamento (desenhar mecanismo — ex.: destaque na busca por N dias)
 
 ## Fase 3 — Pagamentos reais
 - [ ] Gateway brasileiro (Mercado Pago/Pagar.me — a decidir, dúvida #13) com split; meios de pagamento: Pix + cartões no lançamento, carteiras digitais conforme o gateway (D-016, dúvida #17)

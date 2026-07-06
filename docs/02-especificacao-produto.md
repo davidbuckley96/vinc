@@ -29,7 +29,7 @@ Campos essenciais:
 | Descrição do serviço esperado | Texto livre, com o que deve ser feito |
 | Data e horário | dia X, 15h–22h |
 | Valor do serviço (BRL) | R$ 160,00 — **mínimo R$ 10** (D-019, contra anúncios maliciosos quase-grátis) |
-| Local | Escolhido **no mapa** (ver §2.1) — nível de detalhe exibido antes do aceite ⚠️ em aberto |
+| Local | Escolhido **no mapa** (ver §2.1) — antes da escolha só bairro/região + pino aproximado; completo para o escolhido (D-028) |
 
 ### 2.1 Localização por mapa (definido pelo David em 2026-07-03; implementada — D-023)
 
@@ -134,11 +134,14 @@ iniciadas e a candidatura a elas é recusada.
 
 ## 4. Execução e conclusão do serviço
 
-- No horário marcado, o serviço entra **EM ANDAMENTO** (mecânica de check-in ⚠️).
+- No horário marcado, o prestador faz **check-in por código** (D-028, Fase
+  2): digita o código de 4 dígitos exibido na tela do anunciante — prova de
+  presença que alimenta disputas. (No MVP atual é um botão simples; o
+  código substitui na Fase 2.)
 - Ao final, o prestador marca como concluído e o **anunciante confirma** que o
   serviço foi realizado corretamente — essa confirmação libera o pagamento.
-- Proteção contra anunciante que não confirma de má-fé: liberação automática
-  após prazo se não houver contestação (prazo ⚠️ em aberto).
+- Proteção contra anunciante que não confirma de má-fé: **liberação
+  automática após 48h** sem confirmação nem contestação (D-028).
 - Proteção contra serviço malfeito (ex.: faxina pela metade): o anunciante pode
   **contestar antes da liberação**, abrindo uma disputa (ver §6).
 
@@ -203,19 +206,30 @@ saque fixo embaixo e extrato na tela "Histórico". Regras:
 - O **extrato completo** (todos os pagamentos e recebimentos) sai da tela
   principal e fica atrás de um botão **"Ver histórico"**.
 
-## 6. Denúncias, disputas e reembolsos ⚠️ (parte mais complexa — em aberto)
+## 6. Denúncias, disputas e reembolsos (desenhado — D-028; implementação na Fase 2)
 
-Direção já definida pelo David:
-
-- Usuário lesado pode **denunciar** e **pedir reembolso**; o caso passa por um
-  **processo de análise** com aprovação ou negação (modelo Uber).
-- A plataforma **não dá descontos/créditos em dinheiro** para compensar danos
-  na fase inicial — compensações são não-financeiras (ex.: prioridade).
-- O processo precisa proteger os usuários **e** a plataforma contra fraude.
-
-A desenhar: quem analisa (admin humano no início?), evidências (fotos?),
-prazos, consequências de denúncias procedentes/improcedentes, limites de
-reembolso. Ver `07-duvidas-abertas.md`.
+- **Quem analisa:** o David, num **painel admin simples** (web). Cada caso
+  exibe: relato do anunciante, fotos, a conversa do chat (imutável), o
+  check-in (código digitado ou não), e o histórico/reputação das duas
+  partes. Decisão com um clique.
+- **Quando pode contestar:** (a) antes da liberação — em vez de confirmar
+  a conclusão, o anunciante **contesta**, congelando o pagamento; (b)
+  depois da liberação — durante os **7 dias de processamento** (D-016) o
+  anunciante pode abrir **pedido de reembolso**, que congela o valor
+  contestado na carteira do prestador.
+- **Auto-liberação em 48h** (D-028): sem confirmação nem contestação, o
+  pagamento libera sozinho.
+- **Pedido de reembolso:** relato em texto **obrigatório** + até 5 fotos
+  opcionais.
+- **Resultado:** procedente → reembolso **total ou parcial** (percentual
+  definido na análise), sempre **limitado ao valor do serviço** (a taxa
+  nunca é reembolsada); o restante é liberado ao prestador. Improcedente →
+  valor liberado integralmente ao prestador.
+- A plataforma **não compensa com dinheiro próprio** (D-002/princípios):
+  compensações não-financeiras (prioridade) para lesados.
+- Má-fé reincidente (denúncias improcedentes repetidas, dos dois lados):
+  avaliada no painel; pode levar a suspensão. ⚠️ regras exatas a calibrar
+  com o uso.
 
 ## 7. Avaliações
 
