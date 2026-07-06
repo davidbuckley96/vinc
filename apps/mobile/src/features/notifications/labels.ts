@@ -43,7 +43,8 @@ export const NOTIFICATION_PRESENTATIONS: Record<NotificationType, NotificationPr
   },
   cancelled_by_poster: {
     icon: 'close-circle',
-    text: (title) => `O anunciante cancelou "${title}". A compensação entra na sua carteira.`,
+    text: (title) =>
+      `O anunciante cancelou "${title}". A compensação entra na sua carteira e você tem prioridade em vagas nesse mesmo horário.`,
   },
   cancelled_by_worker: {
     icon: 'close-circle',

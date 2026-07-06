@@ -50,7 +50,7 @@ Deno.serve(async (request) => {
 
   const { data: gig } = await admin
     .from("gigs")
-    .select("id, poster_id")
+    .select("id, poster_id, starts_at, ends_at")
     .eq("id", gigId)
     .maybeSingle();
   if (!gig) return respond("not_found", 404);
@@ -62,6 +62,19 @@ Deno.serve(async (request) => {
     .eq("gig_id", gig.id)
     .eq("status", "pending")
     .order("created_at");
+
+  // Priority (D-034): workers whose cancelled service OVERLAPS this
+  // gig's period go to the top of the list.
+  const workerIds = (candidacies ?? []).map((candidacy) => candidacy.worker_id);
+  const { data: windows } = workerIds.length
+    ? await admin
+        .from("priority_windows")
+        .select("worker_id")
+        .in("worker_id", workerIds)
+        .lt("starts_at", gig.ends_at)
+        .gt("ends_at", gig.starts_at)
+    : { data: [] };
+  const priorityWorkers = new Set((windows ?? []).map((row) => row.worker_id as string));
 
   const candidates = [];
   for (const candidacy of candidacies ?? []) {
@@ -102,8 +115,12 @@ Deno.serve(async (request) => {
       reviewCount: stats?.worker_review_count ?? 0,
       completedServices: stats?.completed_as_worker ?? 0,
       topTags,
+      priority: priorityWorkers.has(candidacy.worker_id),
     });
   }
+
+  // Priority first (D-034); inside each group, first-come first-listed.
+  candidates.sort((a, b) => Number(b.priority) - Number(a.priority));
 
   return respond("ok", 200, { candidates });
 });

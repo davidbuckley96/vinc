@@ -19,7 +19,7 @@ import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
 import { useTheme } from '@/hooks/use-theme';
 
-import { useApplyGig, useCategories, useGig, useMyCandidacy } from '../hooks';
+import { useApplyGig, useCategories, useGig, useMyCandidacy, useMyPriority } from '../hooks';
 
 const RESULT_MESSAGES: Record<Exclude<ApplyGigResult, 'applied'>, string> = {
   already_applied: 'Você já se candidatou a esta vaga.',
@@ -54,6 +54,7 @@ export function GigDetailScreen() {
   const categories = useCategories();
   const apply = useApplyGig();
   const myCandidacy = useMyCandidacy(id);
+  const myPriority = useMyPriority(id, gig.data?.startsAt, gig.data?.endsAt);
   const [mapOpen, setMapOpen] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: 'error' | 'success'; text: string } | null>(
     null,
@@ -212,6 +213,14 @@ export function GigDetailScreen() {
               </Text>
             ) : (
               <>
+                {myPriority.data && (
+                  <View style={[styles.priorityNote, { backgroundColor: theme.primarySoft }]}>
+                    <Text style={[styles.priorityNoteText, { color: theme.primarySoftText }]}>
+                      ⚡ Você tem prioridade nesta vaga: um serviço seu neste mesmo horário foi
+                      cancelado. Sua candidatura aparece no topo da lista.
+                    </Text>
+                  </View>
+                )}
                 <Pressable
                   accessibilityRole="button"
                   disabled={apply.isPending}
@@ -342,5 +351,14 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     textAlign: 'center',
     paddingHorizontal: Spacing.three,
+  },
+  priorityNote: {
+    borderRadius: Radius.medium,
+    padding: Spacing.two + 2,
+  },
+  priorityNoteText: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    fontWeight: '600',
   },
 });

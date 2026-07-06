@@ -221,6 +221,8 @@ export interface Candidate {
   reviewCount: number;
   completedServices: number;
   topTags: string[];
+  /** Had a service cancelled in this same period (D-034) — listed first. */
+  priority: boolean;
 }
 
 /**
@@ -272,6 +274,27 @@ export async function decideCandidacy(
     return "network_error";
   }
   return (data as { code?: DecideCandidacyResult })?.code ?? "network_error";
+}
+
+/**
+ * True when the caller holds a priority window (D-034) overlapping the
+ * gig's period — their candidacy will be listed first for the poster.
+ */
+export async function hasPriorityForPeriod(
+  client: SupabaseClient,
+  userId: string,
+  startsAt: string,
+  endsAt: string,
+): Promise<boolean> {
+  const { data, error } = await client
+    .from("priority_windows")
+    .select("id")
+    .eq("worker_id", userId)
+    .lt("starts_at", endsAt)
+    .gt("ends_at", startsAt)
+    .limit(1);
+  if (error) throw new Error(error.message);
+  return (data ?? []).length > 0;
 }
 
 export type MyCandidacyStatus = "pending" | "chosen" | "refused" | "not_chosen";

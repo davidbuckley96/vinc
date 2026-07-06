@@ -100,12 +100,26 @@ export function CandidateList({ gigId, enabled }: CandidateListProps) {
                 <Ionicons name="person" size={19} color={theme.primarySoftText} />
               </View>
               <View style={styles.cardInfo}>
-                <Text style={[styles.name, { color: theme.text }]}>{candidate.firstName}</Text>
+                <View style={styles.nameRow}>
+                  <Text style={[styles.name, { color: theme.text }]}>{candidate.firstName}</Text>
+                  {candidate.priority && (
+                    <View style={[styles.priorityBadge, { backgroundColor: theme.primarySoft }]}>
+                      <Text style={[styles.priorityLabel, { color: theme.primarySoftText }]}>
+                        ⚡ Prioridade
+                      </Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={[styles.meta, { color: theme.textSecondary }]}>
                   {candidate.avgRating !== null
                     ? `★ ${candidate.avgRating.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} (${candidate.reviewCount} ${candidate.reviewCount === 1 ? 'avaliação' : 'avaliações'}) · ${candidate.completedServices} serviços`
                     : 'sem avaliações ainda · novo no Vinc'}
                 </Text>
+                {candidate.priority && (
+                  <Text style={[styles.priorityHint, { color: theme.primarySoftMeta }]}>
+                    teve um serviço cancelado neste mesmo horário
+                  </Text>
+                )}
               </View>
             </View>
 
@@ -220,9 +234,27 @@ const styles = StyleSheet.create({
   cardInfo: {
     flex: 1,
   },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one + 2,
+  },
   name: {
     fontSize: 15,
     fontWeight: '800',
+  },
+  priorityBadge: {
+    borderRadius: Radius.pill,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  priorityLabel: {
+    fontSize: 10.5,
+    fontWeight: '800',
+  },
+  priorityHint: {
+    fontSize: 11,
+    marginTop: 1,
   },
   meta: {
     fontSize: 12,

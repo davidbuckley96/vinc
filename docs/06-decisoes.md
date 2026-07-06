@@ -508,3 +508,27 @@ Acesso: `profiles.is_admin` (conta do David marcada) — e o RLS garante no
 banco que não-admins não leem nada, mesmo alcançando a rota. Admin também
 lê o chat e o estado do check-in (migration 0020) — leitura apenas: a
 plataforma não participa da conversa.
+
+## D-034 — Prioridade para lesados: no PERÍODO do serviço cancelado
+**Data:** 2026-07-06 · **Decidido por:** David
+
+Quando o anunciante cancela um serviço já aceito/em andamento, o
+prestador lesado — além da multa (D-018), que compensa o dinheiro —
+ganha **prioridade nas candidaturas a vagas que SOBREPÕEM o horário do
+serviço cancelado**: recupera exatamente o buraco aberto na agenda dele.
+
+Decisão do David sobre o escopo: a prioridade vale **só no período
+cancelado**, não por N dias — uma prioridade longa inflacionaria (muita
+gente prioritária = ninguém prioritário). **Prioridade de usuário ampla
+fica reservada como possível recurso PREMIUM futuro** (expansão do
+serviço, anotada na Fase 4 do roadmap).
+
+Mecânica: o cancelamento cria uma "janela de prioridade" (trigger no
+banco; expira sozinha quando o horário passa). Na lista de candidatos, o
+prioritário vem **no topo com selo "⚡ Prioridade — teve um serviço
+cancelado neste mesmo horário"** — ordena e destaca, não esconde nem
+escolhe por ninguém. O prestador vê o aviso "você tem prioridade nesta
+vaga" no detalhe da vaga e na notificação do cancelamento. Verificado
+e2e em 2026-07-06 (janela criada no cancelamento, prioritário reordenado
+na lista sobreposta mesmo se candidatando por último, sem efeito em
+horários que não sobrepõem, RLS de janelas só para o próprio).

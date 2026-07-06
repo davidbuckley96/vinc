@@ -12,6 +12,7 @@ import {
   fetchGigById,
   fetchMyCandidacy,
   fetchOpenGigs,
+  hasPriorityForPeriod,
   updateGig,
   type ApplyGigResult,
   type CancelGigResult,
@@ -117,6 +118,20 @@ export function useDecideCandidacy(gigId: string) {
       queryClient.invalidateQueries({ queryKey: ['gigs'] });
       queryClient.invalidateQueries({ queryKey: ['agenda'] });
     },
+  });
+}
+
+/** Whether the caller has priority (D-034) for a gig's period. */
+export function useMyPriority(gigId: string, startsAt?: string, endsAt?: string) {
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
+  return useQuery({
+    queryKey: ['priority', gigId, userId ?? 'anonymous'],
+    queryFn: async (): Promise<boolean> => {
+      if (!supabase || !userId || !startsAt || !endsAt) return false;
+      return hasPriorityForPeriod(supabase, userId, startsAt, endsAt);
+    },
+    enabled: Boolean(startsAt && endsAt),
   });
 }
 

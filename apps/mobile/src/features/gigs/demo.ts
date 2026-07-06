@@ -122,6 +122,7 @@ export const DEMO_CANDIDATES: Candidate[] = [
     reviewCount: 61,
     completedServices: 64,
     topTags: ['Pontual', 'Caprichou no serviço', 'Educado e gentil'],
+    priority: true,
   },
   {
     candidacyId: 'demo-cand-2',
@@ -131,6 +132,7 @@ export const DEMO_CANDIDATES: Candidate[] = [
     reviewCount: 23,
     completedServices: 25,
     topTags: ['Boa comunicação', 'Pontual'],
+    priority: false,
   },
   {
     candidacyId: 'demo-cand-3',
@@ -140,5 +142,6 @@ export const DEMO_CANDIDATES: Candidate[] = [
     reviewCount: 0,
     completedServices: 0,
     topTags: [],
+    priority: false,
   },
 ];
