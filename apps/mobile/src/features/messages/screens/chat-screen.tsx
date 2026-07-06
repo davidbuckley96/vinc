@@ -192,7 +192,9 @@ export function ChatScreen() {
           <Text style={[styles.closedNote, { color: theme.textSecondary }]}>
             {service.data?.status === 'completed'
               ? 'O serviço foi concluído e a conversa foi encerrada. As mensagens ficam guardadas.'
-              : 'Esta conversa está encerrada.'}
+              : service.data?.status === 'disputed'
+                ? 'A conversa fica pausada enquanto a plataforma analisa a contestação. As mensagens fazem parte da análise.'
+                : 'Esta conversa está encerrada.'}
           </Text>
         )}
 

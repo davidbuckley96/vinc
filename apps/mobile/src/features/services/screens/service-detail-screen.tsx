@@ -24,6 +24,7 @@ import {
 
 import { LocationModal } from '@/components/location-map';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
+import { useDispute } from '@/features/disputes/hooks';
 import { CandidateList } from '@/features/gigs/components/candidate-list';
 import { useCancelGig, useDeleteGig } from '@/features/gigs/hooks';
 import { useUnreadCount } from '@/features/messages/hooks';
@@ -147,6 +148,7 @@ export function ServiceDetailScreen() {
   const reviewed = useHasReviewed(id);
   const deletion = useDeleteGig();
   const cancellation = useCancelGig();
+  const dispute = useDispute(id);
   // Sending ends with the service (D-026); on completed the button only
   // opens the history.
   const chatActive =
@@ -518,6 +520,30 @@ export function ServiceDetailScreen() {
                 )}
               </Pressable>
             )}
+            {/* Contest entry (docs/02 §6, round 10 option B): a discreet
+                link that never competes with the primary action. */}
+            {data.role === 'poster' &&
+              ['awaiting_confirmation', 'completed'].includes(data.status) &&
+              !dispute.data && (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => router.push(`/dispute/${data.id}`)}
+                  style={styles.disputeLink}>
+                  <Text style={[styles.disputeLinkLabel, { color: theme.danger }]}>
+                    Algo deu errado?{' '}
+                    {data.status === 'completed' ? 'Pedir reembolso' : 'Contestar'}
+                  </Text>
+                </Pressable>
+              )}
+            {dispute.data && data.status === 'completed' && (
+              <Text style={[styles.disputeState, { color: theme.textSecondary }]}>
+                {dispute.data.status === 'open'
+                  ? 'Contestação em análise pela plataforma. Você será avisado da decisão.'
+                  : dispute.data.refundCents
+                    ? `Contestação resolvida: reembolso de ${formatBRL(dispute.data.refundCents)} ao anunciante.`
+                    : 'Contestação resolvida: o pagamento foi liberado integralmente.'}
+              </Text>
+            )}
             {data.status === 'completed' && reviewed.isSuccess && !reviewed.data && (
               <Pressable
                 accessibilityRole="button"
@@ -629,6 +655,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     padding: Spacing.two,
+  },
+  disputeLink: {
+    alignItems: 'center',
+    paddingVertical: Spacing.one,
+  },
+  disputeLinkLabel: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
+  },
+  disputeState: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    textAlign: 'center',
+    paddingHorizontal: Spacing.two,
   },
   decideRow: {
     flexDirection: 'row',
