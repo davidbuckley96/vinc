@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 7: Localização por mapa</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --roxo-med:#6D4FAE; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --verde:#059669; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  h2.section{font-size:17px;margin:34px 0 4px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:840px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column;position:relative}
+  .head{background:var(--roxo);color:#fff;padding:26px 16px 14px;border-radius:0 0 22px 22px;z-index:3}
+  .head .t{font-size:16px;font-weight:800}
+  .map{flex:1;position:relative;background:
+    linear-gradient(90deg, transparent 48%, #D9E2CF 48%, #D9E2CF 52%, transparent 52%),
+    linear-gradient(0deg, transparent 30%, #CFE0DF 30%, #CFE0DF 34%, transparent 34%),
+    linear-gradient(35deg, transparent 60%, #E8E4D8 60%, #E8E4D8 66%, transparent 66%),
+    #EAF0E4}
+  .map::after{content:"";position:absolute;inset:0;background:
+    radial-gradient(circle at 70% 20%, rgba(180,200,230,.55) 0 42px, transparent 43px),
+    radial-gradient(circle at 22% 72%, rgba(205,190,225,.4) 0 30px, transparent 31px)}
+  .pin{position:absolute;left:50%;top:47%;transform:translate(-50%,-100%);font-size:40px;z-index:2;filter:drop-shadow(0 4px 5px rgba(0,0,0,.25))}
+  .pindot{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;background:rgba(76,29,149,.35);z-index:1}
+  .search{position:absolute;top:12px;left:12px;right:12px;background:#fff;border-radius:13px;padding:11px 13px;font-size:13px;color:#9aa1ab;box-shadow:0 4px 16px rgba(0,0,0,.14);z-index:4}
+  .confirmbar{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;padding:14px;box-shadow:0 -6px 24px rgba(0,0,0,.12);z-index:4}
+  .confirmbar .addr{font-size:13px;font-weight:700}
+  .confirmbar .addr2{font-size:11.5px;color:var(--ink2);margin-top:1px}
+  .btn{border-radius:13px;padding:13px 0;text-align:center;font-weight:800;font-size:14px;background:var(--roxo);color:#fff;margin-top:10px}
+  .body{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+  .label{font-size:10.5px;font-weight:800;letter-spacing:.5px;color:var(--ink2)}
+  .field{border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;font-size:13px;color:#9aa1ab}
+  .minimap{height:150px;border-radius:14px;position:relative;overflow:hidden;border:1.5px solid var(--line);background:
+    linear-gradient(90deg, transparent 48%, #D9E2CF 48%, #D9E2CF 52%, transparent 52%),
+    linear-gradient(0deg, transparent 30%, #CFE0DF 30%, #CFE0DF 34%, transparent 34%),#EAF0E4}
+  .minimap .pin{font-size:30px;top:52%}
+  .minimap .hint{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:10.5px;color:var(--roxo-deep);font-weight:700;background:rgba(255,255,255,.0)}
+  .result{display:flex;gap:9px;align-items:center;border-bottom:1px solid var(--line);padding:9px 2px;font-size:12.5px}
+  .result .ricon{font-size:15px}
+  .result b{display:block;font-size:12.5px}
+  .result span{font-size:11px;color:var(--ink2)}
+  .kv{display:flex;justify-content:space-between;font-size:12.5px;padding:8px 2px;border-bottom:1px solid var(--line)}
+  .kv .link{color:var(--roxo);font-weight:700}
+  .modal{position:absolute;inset:0;background:rgba(12,10,18,.45);display:flex;align-items:center;justify-content:center;z-index:9}
+  .modalcard{width:86%;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+  .modalmap{height:210px;position:relative;background:
+    linear-gradient(90deg, transparent 48%, #D9E2CF 48%, #D9E2CF 52%, transparent 52%),
+    linear-gradient(0deg, transparent 30%, #CFE0DF 30%, #CFE0DF 34%, transparent 34%),#EAF0E4}
+  .modalmap .pin{font-size:34px;top:55%}
+  .modalfoot{padding:12px 14px}
+  .modalfoot b{font-size:13px}
+  .modalfoot span{display:block;font-size:11.5px;color:var(--ink2);margin-top:2px}
+  .close{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 7 de design: localização por mapa</h1>
+  <p class="sub">Como definido em docs/02 §2.1: na criação da vaga o local é escolhido <b>no mapa</b> (pino + busca dentro do mapa, nunca texto livre), e na visualização o endereço abre um <b>modal com o pino</b>. As opções abaixo mudam COMO o anunciante chega no mapa. A visualização (seção 2) é igual para todas.</p>
+
+  <h2 class="section">Seção 1 — Escolher o local ao anunciar</h2>
+  <div class="row">
+
+    <!-- A -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Onde será o serviço?</div></div>
+        <div class="map">
+          <div class="search">🔍 Buscar endereço ou bairro…</div>
+          <div class="pindot"></div><div class="pin">📍</div>
+          <div class="confirmbar">
+            <div class="addr">Rua das Flores, 120 — Boa Vista</div>
+            <div class="addr2">arraste o mapa para ajustar o pino</div>
+            <div class="btn">Confirmar este local</div>
+          </div>
+        </div>
+      </div>
+      <h3>Opção A — Mapa em tela cheia (estilo Uber) · recomendada</h3>
+      <span class="tag">pino fixo no centro, mapa move por baixo</span>
+      <p>Tocar em "ONDE?" no formulário abre o mapa em tela cheia: o pino fica parado no centro e a pessoa arrasta o MAPA (padrão Uber/iFood, o gesto mais conhecido do Brasil). Busca no topo, endereço lido na hora embaixo e um botão único de confirmar.</p>
+    </div>
+
+    <!-- B -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Anunciar vaga</div></div>
+        <div class="body">
+          <div class="label">ONDE?</div>
+          <div class="field">🔍 Buscar endereço ou bairro…</div>
+          <div class="minimap">
+            <div class="pindot"></div><div class="pin">📍</div>
+            <div class="hint">toque para ampliar e ajustar</div>
+          </div>
+          <div class="label" style="margin-top:6px">QUANTO O PRESTADOR VAI RECEBER?</div>
+          <div class="field">R$ 0,00</div>
+          <div style="flex:1"></div>
+          <div class="btn">Publicar vaga</div>
+        </div>
+      </div>
+      <h3>Opção B — Mini-mapa dentro do formulário</h3>
+      <span class="tag">tudo numa tela só</span>
+      <p>O mapa aparece pequeno dentro do próprio formulário de anunciar, logo abaixo da busca de endereço. Tocar nele amplia para ajuste fino. Mantém o fluxo numa tela só, mas o mapa pequeno é menos preciso e deixa o formulário mais pesado.</p>
+    </div>
+
+    <!-- C -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Onde será o serviço?</div></div>
+        <div class="body">
+          <div class="field">🔍 rua das flo…</div>
+          <div class="result"><span class="ricon">📍</span><div><b>Rua das Flores, 120</b><span>Boa Vista · Recife</span></div></div>
+          <div class="result"><span class="ricon">📍</span><div><b>Rua das Flores, 89</b><span>Centro · Recife</span></div></div>
+          <div class="result"><span class="ricon">🕐</span><div><b>Av. Central, 45</b><span>usado no último anúncio</span></div></div>
+          <div class="minimap" style="margin-top:4px">
+            <div class="pindot"></div><div class="pin">📍</div>
+            <div class="hint">confira e ajuste o pino</div>
+          </div>
+          <div class="btn">Confirmar este local</div>
+        </div>
+      </div>
+      <h3>Opção C — Busca primeiro, mapa para conferir</h3>
+      <span class="tag">bom para quem sabe o endereço</span>
+      <p>A pessoa digita, escolhe na lista (com sugestão do último local usado) e o mapa entra só para conferir/ajustar o pino. Menos gesto de mapa, mais leitura — ligeiramente menos amigável para quem tem dificuldade com leitura.</p>
+    </div>
+
+  </div>
+
+  <h2 class="section">Seção 2 — Ver o local da vaga (igual em todas as opções)</h2>
+  <div class="row">
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Detalhes da vaga</div></div>
+        <div class="body">
+          <div class="kv"><span>Quando</span><b>sábado, 4 · 14h às 17h</b></div>
+          <div class="kv"><span>Valor</span><b style="color:var(--roxo)">R$ 120,00</b></div>
+          <div class="kv"><span>Onde</span><span class="link">Boa Vista, Recife 🗺 ›</span></div>
+        </div>
+        <div class="modal">
+          <div class="modalcard">
+            <div class="modalmap">
+              <div class="close">✕</div>
+              <div class="pindot"></div><div class="pin">📍</div>
+            </div>
+            <div class="modalfoot">
+              <b>Rua das Flores, 120 — Boa Vista</b>
+              <span>endereço completo visível após ser aceito</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h3>Modal do local (padrão da spec)</h3>
+      <span class="tag">endereço clicável → mapa com pino → fechar</span>
+      <p>Em qualquer vaga, tocar no endereço abre este modal com o pino e botão de fechar. Antes do aceite mostra a região aproximada; o endereço exato aparece para o prestador aceito (recomendação de segurança — dúvida #8).</p>
+    </div>
+  </div>
+</body>
+</html>
