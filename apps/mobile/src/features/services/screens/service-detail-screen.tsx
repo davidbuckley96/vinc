@@ -548,6 +548,17 @@ export function ServiceDetailScreen() {
                 )}
               </Pressable>
             )}
+            {data.role === 'poster' && data.status === 'pending_payment' && (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push(`/pay/${data.id}`)}
+                style={[styles.action, { backgroundColor: theme.primary }]}>
+                <Text style={[styles.actionLabel, { color: theme.onPrimary }]}>
+                  Pagar agora via Pix
+                </Text>
+              </Pressable>
+            )}
+
             {/* Contest entry (docs/02 §6, round 10 option B): a discreet
                 link that never competes with the primary action. */}
             {data.role === 'poster' &&

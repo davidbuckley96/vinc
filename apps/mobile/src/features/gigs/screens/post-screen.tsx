@@ -33,14 +33,22 @@ export function PostScreen() {
       return;
     }
     try {
-      const result = await createGig.mutateAsync(draft);
-      if (result !== 'created') {
+      const outcome = await createGig.mutateAsync(draft);
+      // Gateway mode (D-035): the gig waits for the Pix — go pay it.
+      if (outcome.code === 'created_pending_payment' && outcome.gigId) {
+        setFormKey((key) => key + 1);
+        router.push(`/pay/${outcome.gigId}`);
+        return;
+      }
+      if (outcome.code !== 'created') {
         setFeedback({
           kind: 'error',
           text:
-            result === 'unauthorized'
+            outcome.code === 'unauthorized'
               ? 'Entre na sua conta para anunciar.'
-              : 'Não foi possível publicar. Verifique os dados e tente de novo.',
+              : outcome.code === 'payment_failed'
+                ? 'Não foi possível gerar a cobrança Pix. Tente de novo.'
+                : 'Não foi possível publicar. Verifique os dados e tente de novo.',
         });
         return;
       }

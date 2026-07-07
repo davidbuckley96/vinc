@@ -10,6 +10,7 @@ import {
   fetchCandidates,
   fetchCategories,
   fetchGigById,
+  fetchGigPayment,
   fetchMyCandidacy,
   fetchOpenGigs,
   hasPriorityForPeriod,
@@ -17,7 +18,7 @@ import {
   type ApplyGigResult,
   type CancelGigResult,
   type Candidate,
-  type CreateGigResult,
+  type CreateGigOutcome,
   type DecideCandidacyResult,
   type DeleteGigResult,
   type MyCandidacyStatus,
@@ -203,13 +204,40 @@ export function useUpdateGig() {
 export function useCreateGig() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (draft: GigDraft): Promise<CreateGigResult> => {
-      if (!supabase) return 'created'; // demo mode: pretend success
+    mutationFn: async (draft: GigDraft): Promise<CreateGigOutcome> => {
+      if (!supabase) return { code: 'created' }; // demo mode: pretend success
       return createGig(supabase, draft);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gigs'] });
+      queryClient.invalidateQueries({ queryKey: ['agenda'] });
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
     },
+  });
+}
+
+/**
+ * The gig's Pix charge (gateway mode — round 13, option B). While the
+ * payment is pending, polls every 3s so the screen flips to "confirmed"
+ * by itself the moment the webhook publishes the gig.
+ */
+export function useGigPayment(gigId: string) {
+  return useQuery({
+    queryKey: ['gig-payment', gigId],
+    queryFn: async () => {
+      if (!supabase) {
+        // demo mode: a sample pending charge so the screen can be seen
+        return {
+          chargeId: 'demo-charge',
+          status: 'pending' as const,
+          totalCents: 5500,
+          qrCode: '00020126580014BR.GOV.BCB.PIX-DEMO-0000000000',
+          qrCodeBase64: null,
+        };
+      }
+      return fetchGigPayment(supabase, gigId);
+    },
+    refetchInterval: (query) =>
+      query.state.data?.status === 'pending' ? 3000 : false,
   });
 }

@@ -504,17 +504,40 @@ export async function cancelGig(
   return (data as { code?: CancelGigResult })?.code ?? "network_error";
 }
 
-export type CreateGigResult = "created" | "unauthorized" | "invalid_draft" | "invalid_request" | "network_error";
+export type CreateGigResult =
+  | "created"
+  | "created_pending_payment"
+  | "payment_failed"
+  | "unauthorized"
+  | "invalid_draft"
+  | "invalid_request"
+  | "network_error";
+
+/** Pix charge waiting to be paid (gateway mode — D-035, 3.2). */
+export interface PendingPixPayment {
+  chargeId: string;
+  qrCode: string | null;
+  qrCodeBase64: string | null;
+  totalCents: number;
+}
+
+export interface CreateGigOutcome {
+  code: CreateGigResult;
+  gigId?: string;
+  /** Present when code is created_pending_payment. */
+  payment?: PendingPixPayment;
+}
 
 /**
  * Publishes via the create-gig Edge Function: the poster pays upfront
  * (escrowed worker amount + platform fee on top — docs/02 §5.1,
- * D-013/D-014). draft.priceCents is what the WORKER receives.
+ * D-013/D-014). draft.priceCents is what the WORKER receives. In gateway
+ * mode the gig waits for the Pix payment (created_pending_payment).
  */
 export async function createGig(
   client: SupabaseClient,
   draft: GigDraft,
-): Promise<CreateGigResult> {
+): Promise<CreateGigOutcome> {
   const { data, error } = await client.functions.invoke("create-gig", {
     body: { draft },
   });
@@ -522,13 +545,34 @@ export async function createGig(
     try {
       const context = (error as { context?: Response }).context;
       if (context) {
-        const body = (await context.json()) as { code?: CreateGigResult };
-        if (body.code) return body.code;
+        const body = (await context.json()) as CreateGigOutcome;
+        if (body.code) return body;
       }
     } catch {
       // fall through
     }
-    return "network_error";
+    return { code: "network_error" };
   }
-  return (data as { code?: CreateGigResult })?.code ?? "network_error";
+  return (data as CreateGigOutcome | null) ?? { code: "network_error" };
+}
+
+/** The gig's Pix charge, if any (RLS: poster only). */
+export async function fetchGigPayment(
+  client: SupabaseClient,
+  gigId: string,
+): Promise<(PendingPixPayment & { status: "pending" | "confirmed" | "expired" }) | null> {
+  const { data, error } = await client
+    .from("gig_payments")
+    .select("charge_id, status, amount_total_cents, qr_code, qr_code_base64")
+    .eq("gig_id", gigId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  return {
+    chargeId: data.charge_id as string,
+    status: data.status as "pending" | "confirmed" | "expired",
+    totalCents: data.amount_total_cents as number,
+    qrCode: (data.qr_code as string | null) ?? null,
+    qrCodeBase64: (data.qr_code_base64 as string | null) ?? null,
+  };
 }
