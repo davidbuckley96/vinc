@@ -180,7 +180,7 @@ Deno.serve(async (request) => {
       type: "escrow_release",
       amount_cents: gig.price_cents,
     });
-    await getPaymentProvider().releaseToWorker({
+    await getPaymentProvider(admin).releaseToWorker({
       workerId: gig.worker_id,
       gigId: gig.id,
       amountCents: gig.price_cents,

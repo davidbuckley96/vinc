@@ -14,7 +14,13 @@ import { approximateLocation, deriveAreaLabel } from "../../../packages/core/src
 import { computeGigPricing } from "../../../packages/core/src/pricing.ts";
 import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
-type ResultCode = "created" | "unauthorized" | "invalid_draft" | "invalid_request";
+type ResultCode =
+  | "created"
+  | "created_pending_payment"
+  | "payment_failed"
+  | "unauthorized"
+  | "invalid_draft"
+  | "invalid_request";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -66,6 +72,10 @@ Deno.serve(async (request) => {
     ? approximateLocation(draft.lat, draft.lng)
     : null;
 
+  // Two-phase publication (D-035, 3.2): the gig is born PENDING_PAYMENT;
+  // the simulated provider confirms instantly (MVP behaviour unchanged),
+  // while the gateway returns a Pix QR and the payment-webhook publishes
+  // the gig — and writes the ledger — once the payment lands.
   const { data: gig, error: insertError } = await admin
     .from("gigs")
     .insert({
@@ -80,7 +90,7 @@ Deno.serve(async (request) => {
       area: deriveAreaLabel(address),
       approx_lat: approx?.lat ?? null,
       approx_lng: approx?.lng ?? null,
-      status: "open",
+      status: "pending_payment",
     })
     .select("id")
     .single();
@@ -93,21 +103,42 @@ Deno.serve(async (request) => {
     lng: draft.lng ?? null,
   });
 
-  // Upfront payment (total = net + fee): non-refundable fee + escrowed
-  // worker amount (docs/02 §5.1 — D-014). The ledger records the
-  // decision; the provider executes the external charge (D-035 — in
-  // gateway mode, 3.2 turns this into a Pix charge + webhook and the gig
-  // only publishes once paid).
-  await admin.from("ledger_entries").insert([
-    { user_id: posterId, gig_id: gig.id, type: "fee", amount_cents: -pricing.feeCents },
-    { user_id: posterId, gig_id: gig.id, type: "escrow_hold", amount_cents: -pricing.netCents },
-  ]);
-  await getPaymentProvider().chargePoster({
-    posterId,
-    gigId: gig.id,
-    netCents: pricing.netCents,
-    feeCents: pricing.feeCents,
-  });
+  let charge;
+  try {
+    charge = await getPaymentProvider(admin).chargePoster({
+      posterId,
+      gigId: gig.id,
+      netCents: pricing.netCents,
+      feeCents: pricing.feeCents,
+    });
+  } catch (error) {
+    console.error(`charge failed for gig ${gig.id}:`, error);
+    await admin.from("gigs").delete().eq("id", gig.id).eq("status", "pending_payment");
+    return respond("payment_failed", 502);
+  }
 
-  return respond("created", 200, { gigId: gig.id });
+  if (charge.status === "confirmed") {
+    // Upfront payment (total = net + fee): non-refundable fee + escrowed
+    // worker amount (docs/02 §5.1 — D-014).
+    await admin
+      .from("gigs")
+      .update({ status: "open" })
+      .eq("id", gig.id)
+      .eq("status", "pending_payment");
+    await admin.from("ledger_entries").insert([
+      { user_id: posterId, gig_id: gig.id, type: "fee", amount_cents: -pricing.feeCents },
+      { user_id: posterId, gig_id: gig.id, type: "escrow_hold", amount_cents: -pricing.netCents },
+    ]);
+    return respond("created", 200, { gigId: gig.id });
+  }
+
+  return respond("created_pending_payment", 200, {
+    gigId: gig.id,
+    payment: {
+      chargeId: charge.chargeId,
+      qrCode: charge.qrCode,
+      qrCodeBase64: charge.qrCodeBase64,
+      totalCents: pricing.totalCents,
+    },
+  });
 });

@@ -115,7 +115,7 @@ Deno.serve(async (request) => {
       });
     }
     await admin.from("ledger_entries").insert(entries);
-    const provider = getPaymentProvider();
+    const provider = getPaymentProvider(admin);
     if (fine.posterRefundCents > 0) {
       await provider.refundPoster({
         posterId: userId,
@@ -146,7 +146,7 @@ Deno.serve(async (request) => {
   ]);
   // The worker's own fine (negative entry) has no external movement yet:
   // charging their card when the balance doesn't cover it is block 3.8.
-  const provider = getPaymentProvider();
+  const provider = getPaymentProvider(admin);
   await provider.refundPoster({
     posterId: gig.poster_id,
     gigId: gig.id,

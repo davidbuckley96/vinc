@@ -1,18 +1,22 @@
-// PaymentProvider PORT (Fase 3.1 — D-035).
+// PaymentProvider PORT (Fase 3.1/3.2 — D-035).
 //
 // The internal LEDGER stays the source of truth for every DECISION
 // (holds, releases, refunds, fines); this port executes the matching
-// EXTERNAL money movement at the payment provider. Two implementations:
-//   - 'simulated' (default): the MVP — no external money exists, calls
-//     only log. Behaviour is identical to before this port existed.
-//   - 'mercadopago' (block 3.2): sandbox adapter — Pix charge with
-//     webhook confirmation, controlled release with split, Pix refunds,
-//     payout. Plugged into production once the CNPJ exists (3.7) by
-//     swapping credentials/env only.
+// EXTERNAL money movement at the payment provider. Implementations:
+//   - 'simulated' (default): the MVP — no external money exists;
+//     charges confirm instantly and everything else only logs.
+//   - 'mercadopago' (3.2): Pix charge with QR + webhook confirmation.
+//     Points at the real API or at the mp-mock test double via
+//     MP_BASE_URL. Release/split (3.4) and payout (3.5) come next.
+// Selected via the PAYMENT_PROVIDER function secret.
 //
 // NOTE for gateway mode (3.4): the pg_cron jobs that move money purely
 // in SQL today (expire_due_gigs, auto_release_confirmations) must become
 // scheduled Edge Functions so they can call this port too.
+
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
+
+import { createMercadoPagoProvider } from "./mercadopago.ts";
 
 export interface ChargePosterInput {
   posterId: string;
@@ -22,6 +26,16 @@ export interface ChargePosterInput {
   /** Non-refundable platform fee (10% — D-035). */
   feeCents: number;
 }
+
+/** Instant (simulated) or pending a real Pix payment (gateway). */
+export type ChargeResult =
+  | { status: "confirmed" }
+  | {
+      status: "pending";
+      chargeId: string;
+      qrCode: string | null;
+      qrCodeBase64: string | null;
+    };
 
 export interface ReleaseToWorkerInput {
   workerId: string;
@@ -50,7 +64,7 @@ export interface PayoutWithdrawalInput {
 export interface PaymentProvider {
   readonly name: string;
   /** Poster pays net + fee at gig creation (Pix charge in gateway mode). */
-  chargePoster(input: ChargePosterInput): Promise<void>;
+  chargePoster(input: ChargePosterInput): Promise<ChargeResult>;
   /** Escrowed net (or a dispute remainder) goes to the worker. */
   releaseToWorker(input: ReleaseToWorkerInput): Promise<void>;
   /** Held money returns to the poster (delete, cancel, dispute, expiry). */
@@ -66,6 +80,7 @@ const simulated: PaymentProvider = {
   // deno-lint-ignore require-await
   async chargePoster(input) {
     console.log(`[payments:simulated] chargePoster ${JSON.stringify(input)}`);
+    return { status: "confirmed" };
   },
   // deno-lint-ignore require-await
   async releaseToWorker(input) {
@@ -87,9 +102,9 @@ const simulated: PaymentProvider = {
 
 /** Selected by the PAYMENT_PROVIDER env (function secrets); defaults to
  * the simulation so nothing changes until an adapter is enabled. */
-export function getPaymentProvider(): PaymentProvider {
+export function getPaymentProvider(admin: SupabaseClient): PaymentProvider {
   const which = Deno.env.get("PAYMENT_PROVIDER") ?? "simulated";
   if (which === "simulated") return simulated;
-  // 'mercadopago' lands with block 3.2 (sandbox adapter).
+  if (which === "mercadopago") return createMercadoPagoProvider(admin);
   throw new Error(`unknown payment provider: ${which}`);
 }

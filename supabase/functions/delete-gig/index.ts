@@ -85,7 +85,7 @@ Deno.serve(async (request) => {
     type: "refund",
     amount_cents: gig.price_cents,
   });
-  await getPaymentProvider().refundPoster({
+  await getPaymentProvider(admin).refundPoster({
     posterId: userId,
     gigId: gig.id,
     amountCents: gig.price_cents,

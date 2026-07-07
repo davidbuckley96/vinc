@@ -132,7 +132,7 @@ Deno.serve(async (request) => {
   // External execution (D-035): under model A the payment is still held
   // while a dispute is open (the 7-day window defers the real release),
   // so BOTH kinds resolve as refund + remainder release at the provider.
-  const provider = getPaymentProvider();
+  const provider = getPaymentProvider(admin);
   if (refund > 0) {
     await provider.refundPoster({ posterId: gig.poster_id, gigId: gig.id, amountCents: refund });
   }

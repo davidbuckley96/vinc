@@ -81,7 +81,7 @@ Deno.serve(async (request) => {
     type: "withdrawal",
     amount_cents: -availableCents,
   });
-  await getPaymentProvider().payoutWithdrawal({
+  await getPaymentProvider(admin).payoutWithdrawal({
     userId,
     amountCents: availableCents,
   });

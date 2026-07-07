@@ -9,6 +9,7 @@
  */
 
 export const GIG_STATUSES = [
+  "pending_payment",
   "open",
   "pending_approval",
   "accepted",
@@ -24,6 +25,10 @@ export const GIG_STATUSES = [
 export type GigStatus = (typeof GIG_STATUSES)[number];
 
 const TRANSITIONS: Record<GigStatus, readonly GigStatus[]> = {
+  // Gateway mode (D-035, Fase 3.2): the gig waits for the Pix payment
+  // confirmation before publishing; unpaid gigs expire with no refund
+  // (nothing was charged). The simulated provider confirms instantly.
+  pending_payment: ["open", "expired", "cancelled_by_poster"],
   // The gig stays OPEN collecting candidates (D-024); choosing one moves
   // it straight to accepted. Deletion (net refund, fee kept) and
   // expiration also leave from open. pending_approval is LEGACY (D-012's

@@ -50,6 +50,12 @@ function statusCard(service: ServiceDetail): StatusCard {
   const worker = service.role === 'worker';
 
   switch (service.status) {
+    case 'pending_payment':
+      return {
+        icon: 'qr-code',
+        title: 'Aguardando pagamento',
+        body: `Pague ${price} via Pix para publicar a vaga. Sem pagamento em 1 hora, o anúncio é descartado sem custo.`,
+      };
     case 'open':
       return {
         icon: 'megaphone',

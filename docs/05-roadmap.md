@@ -38,7 +38,7 @@
 
 ## Fase 3 — Pagamentos reais (desenho fechado em D-035: Pix-only, modelo A subcontas/split, taxa 10%, sandbox até o CNPJ)
 - [x] 3.1 Porta `PaymentProvider` no backend (`_shared/payment-provider.ts`): todas as 6 functions que movem dinheiro chamam a porta (chargePoster/releaseToWorker/refundPoster/transferCompensation/payoutWithdrawal); `simulated` (padrão) = comportamento atual, seleção por env `PAYMENT_PROVIDER`; smoke e2e verde após o redeploy
-- [ ] 3.2 Adapter sandbox (Mercado Pago): cobrança Pix por QR dinâmico na criação da vaga + webhook de confirmação (vaga só publica com pagamento confirmado)
+- [x] 3.2 (backend) Cobrança Pix na criação — verificado e2e com o DUBLÊ do Mercado Pago (`mp-mock`, mesma API, dinheiro falso): vaga nasce `pending_payment` com QR dinâmico, `payment-webhook` (verify_jwt off; nunca confia no corpo — reconsulta o provedor) publica e grava o ledger idempotente, replays não duplicam, exclusão devolve o líquido via devolução Pix real no provedor (taxa fica), job expira não-pagas em 1h sem custo; adapter `mercadopago` aponta ao mock/sandbox real via `MP_BASE_URL`. **Falta a UI do QR** (tela de pagamento — rodada de design) e trocar o mock pelo sandbox real quando o David criar a conta MP
 - [ ] 3.3 Onboarding do recebedor: prestador conecta/cria a subconta (CPF + chave Pix) no perfil antes do primeiro recebimento
 - [ ] 3.4 Liberação com split na confirmação/48h; devoluções Pix (totais/parciais) nas disputas e cancelamentos — ledger continua a fonte de verdade, provedor executa
 - [ ] 3.5 Saque real: withdraw passa a mover o saldo da subconta do prestador para a conta bancária dele
@@ -84,7 +84,10 @@ revisados antes de abrir o app ao público:
    trabalha); (d) na Fase 3, custódia de dinheiro real via gateway
    licenciado (split), nunca em conta própria; (e) LGPD: política de
    privacidade (dados pessoais + localização).
-7. **Tiles do mapa**: o MVP usa OpenFreeMap (público, sem chave, sem SLA).
+7. **Remover o dublê de pagamentos**: apagar a function `mp-mock` e a
+   tabela `mp_mock_payments`; apontar `MP_BASE_URL` para a API real com
+   credenciais de produção (exige CNPJ — bloco 3.7).
+8. **Tiles do mapa**: o MVP usa OpenFreeMap (público, sem chave, sem SLA).
    Antes do lançamento, criar conta MapTiler (plano gratuito) e trocar
    `MAP_STYLE_URL` em `apps/mobile/src/components/location-map/config.ts`;
    revisar também o volume de geocodificação no Nominatim (política de uso
