@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 13: Pagamento Pix da vaga</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --roxo-med:#6D4FAE; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --ok:#059669; --ok-soft:#ECFDF5; --warn:#B45309; --warn-soft:#FFFBEB; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:900px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .head{background:var(--roxo);color:#fff;padding:26px 14px 12px;border-radius:0 0 22px 22px}
+  .head .t{font-size:15.5px;font-weight:800}
+  .head .st{font-size:11px;opacity:.85;margin-top:1px}
+  .body{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+  .amount{text-align:center}
+  .amount .v{font-size:26px;font-weight:800;color:var(--roxo)}
+  .amount .d{font-size:11px;color:var(--ink2);margin-top:1px}
+  .qr{width:150px;height:150px;margin:0 auto;border-radius:12px;border:1.5px solid var(--line);display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);padding:10px;gap:2px}
+  .qr i{background:#1c1f24;border-radius:1px}
+  .qr i.o{background:transparent}
+  .copy{background:var(--roxo);color:#fff;border-radius:12px;padding:13px;text-align:center;font-size:13.5px;font-weight:800}
+  .copy.ghost{background:#fff;border:1.5px solid var(--roxo);color:var(--roxo-deep)}
+  .status{display:flex;align-items:center;justify-content:center;gap:7px;background:var(--warn-soft);border-radius:12px;padding:10px;font-size:12px;color:var(--warn);font-weight:700}
+  .status.ok{background:var(--ok-soft);color:var(--ok)}
+  .spinner{width:12px;height:12px;border-radius:50%;border:2px solid #E5C88C;border-top-color:var(--warn)}
+  .note{font-size:11px;color:var(--ink2);text-align:center;line-height:1.5;padding:0 8px}
+  .steps{display:flex;flex-direction:column;gap:8px}
+  .step{display:flex;gap:9px;align-items:flex-start;border:1.5px solid var(--line);border-radius:12px;padding:10px}
+  .step .n{width:20px;height:20px;border-radius:50%;background:var(--lilas);color:var(--roxo-deep);font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .step .tx{font-size:12px;line-height:1.45}
+  .step .tx b{display:block;font-size:12.5px}
+  .pill{align-self:center;font-size:10px;font-weight:800;color:var(--roxo);background:var(--lilas);border-radius:99px;padding:2px 9px}
+  .mini{font-size:10.5px;color:var(--ink2);text-align:center}
+  .linkqr{font-size:12px;color:var(--roxo-deep);font-weight:700;text-align:center;text-decoration:underline}
+  .preview{border:1.5px solid var(--line);border-radius:12px;padding:10px}
+  .preview .pt{font-size:12.5px;font-weight:700}
+  .preview .pm{font-size:11px;color:var(--ink2);margin-top:1px}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 13 de design: pagamento Pix da vaga</h1>
+  <p class="sub">Fluxo novo (D-035): ao publicar, a vaga fica "aguardando pagamento" até o Pix de <b>valor + taxa</b> cair (webhook confirma; sem pagar em 1h, descarta sem custo). Detalhe importante: <b>no próprio celular ninguém escaneia o próprio QR</b> — o caminho real é o "Pix copia e cola" (copiar → abrir o app do banco → colar). O QR importa na versão web/desktop. A tela avisa ao vivo quando o pagamento cai e leva à vaga publicada.</p>
+
+  <div class="row">
+
+    <!-- A -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Pagar e publicar</div><div class="st">Faxina apartamento 60m²</div></div>
+        <div class="body">
+          <div class="amount"><div class="v">R$ 110,00</div><div class="d">R$ 100,00 do prestador + R$ 10,00 de taxa</div></div>
+          <div class="qr">
+            <i></i><i class="o"></i><i></i><i></i><i class="o"></i><i></i><i></i>
+            <i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i>
+            <i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i>
+            <i></i><i></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i>
+            <i class="o"></i><i></i><i></i><i class="o"></i><i></i><i></i><i></i>
+            <i></i><i class="o"></i><i class="o"></i><i></i><i class="o"></i><i></i><i class="o"></i>
+            <i></i><i></i><i class="o"></i><i></i><i></i><i class="o"></i><i></i>
+          </div>
+          <div class="copy">Copiar código Pix</div>
+          <div class="status"><div class="spinner"></div> Aguardando o pagamento…</div>
+          <div class="note">Pague no app do seu banco. Assim que o Pix cair, sua vaga é publicada sozinha. Sem pagamento em 1 hora, o anúncio é descartado sem custo.</div>
+          <div style="flex:1"></div>
+        </div>
+      </div>
+      <h3>Opção A — QR em destaque</h3>
+      <span class="tag">clássica, boa no desktop</span>
+      <p>Valor no topo, QR grande, botão de copiar logo abaixo e o status ao vivo. Layout que todo mundo já viu em e-commerce — mas no celular o QR ocupa o espaço nobre sem ser o caminho que a pessoa vai usar.</p>
+    </div>
+
+    <!-- B -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Pagar e publicar</div><div class="st">Faxina apartamento 60m² · R$ 110,00</div></div>
+        <div class="body">
+          <div class="steps">
+            <div class="step"><div class="n">1</div><div class="tx"><b>Copie o código Pix</b>toque no botão roxo abaixo</div></div>
+            <div class="step"><div class="n">2</div><div class="tx"><b>Abra o app do seu banco</b>e escolha Pix → copia e cola</div></div>
+            <div class="step"><div class="n">3</div><div class="tx"><b>Cole e pague R$ 110,00</b>sua vaga publica sozinha na hora</div></div>
+          </div>
+          <div class="copy">Copiar código Pix</div>
+          <div class="status"><div class="spinner"></div> Aguardando o pagamento…</div>
+          <div class="linkqr">Prefere escanear? Mostrar QR code</div>
+          <div class="note">Sem pagamento em 1 hora, o anúncio é descartado sem custo.</div>
+          <div style="flex:1"></div>
+        </div>
+      </div>
+      <h3>Opção B — Copia e cola guiado (1-2-3)</h3>
+      <span class="tag">o caminho real do celular, passo a passo</span>
+      <p>Três passos numerados ensinam exatamente o que fazer — pensado para quem nunca pagou um "copia e cola". O QR fica atrás de um link ("prefere escanear?"), aparecendo grande só na web/desktop, onde faz sentido.</p>
+    </div>
+
+    <!-- C -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Quase lá!</div><div class="st">falta só o pagamento</div></div>
+        <div class="body">
+          <div class="preview"><div class="pt">Faxina apartamento 60m²</div><div class="pm">ter, 7 · 14h–17h · Boa Vista, Recife</div></div>
+          <div class="amount"><div class="v">R$ 110,00</div><div class="d">R$ 100,00 do prestador + R$ 10,00 de taxa (10%)</div></div>
+          <div class="copy">Copiar código Pix</div>
+          <div class="copy ghost">Mostrar QR code</div>
+          <div class="status ok">✓ Pagamento confirmado — publicando…</div>
+          <div class="note">A tela avisa sozinha quando o Pix cair. Sem pagamento em 1 hora, o anúncio é descartado sem custo.</div>
+          <div style="flex:1"></div>
+        </div>
+      </div>
+      <h3>Opção C — Resumo da vaga + dois botões</h3>
+      <span class="tag">contexto e o momento-confirmação</span>
+      <p>Mantém o resumo da vaga no topo (a pessoa vê o que está pagando), dois botões de mesmo peso (copia e cola / QR) e o estado de confirmação em verde bem visível — o "caiu!" é o momento mais importante da tela. Menos didática que a B para quem nunca usou Pix copia e cola.</p>
+    </div>
+
+  </div>
+</body>
+</html>
