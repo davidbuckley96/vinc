@@ -86,3 +86,17 @@
     (paga por QR, recebe na chave); cartões entram depois — e com eles a
     cobrança real da multa do prestador sem saldo (D-027). Carteiras
     digitais conforme o suporte do provedor contratado.
+
+## Pendências de ação do David (não são dúvidas, são lembretes)
+
+21. 🟡 **Criar a conta de desenvolvedor do Mercado Pago** em
+    mercadopago.com.br/developers e enviar ao Claude o **Access Token de
+    TESTE** (2026-07-06, David: "irei criar a conta futuramente, mas não
+    me deixe esquecer"). Sem custo e sem CNPJ. Com ele, o Claude troca o
+    dublê (`mp-mock`) pelo **sandbox oficial** (`MP_BASE_URL` +
+    `MP_ACCESS_TOKEN`) e valida o fluxo Pix contra a infraestrutura real.
+    ⚠️ O Claude deve RELEMBRAR o David disso ao fechar cada bloco da
+    Fase 3 enquanto estiver pendente.
+22. 🔴 **CNPJ** (bloqueia o 3.7 — produção): constituir a empresa e então
+    contratar o provedor (decisão final Mercado Pago × Pagar.me, dúvida
+    #13) com credenciais de produção.
