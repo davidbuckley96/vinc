@@ -649,3 +649,42 @@ Implementação: migration 0026 (status `withdrawn` + trigger de
 notificação com dedup), function `withdraw-candidacy`, `apply-gig` aceita
 recandidatura, `get-candidates` reordenado, botão "Desistir da
 candidatura" (2 toques) no detalhe da vaga. Verificado e2e (9 checks).
+
+## D-040 — Publicar é grátis; o Pix acontece na ESCOLHA; taxa só no serviço realizado
+**Data:** 2026-07-09 · **Decidido por:** David ("Aprovo o plano completo"; pesquisa em `08-pesquisa-cobranca-taxa.md`)
+
+Substitui o pagamento na publicação (D-013/D-014) pelo padrão vencedor do
+mercado (Airtasker/Workana/Triider/Uber): **a plataforma só ganha quando
+o serviço acontece**.
+
+1. **Publicar é grátis** — a vaga nasce `open`, sem Pix, sem lançamentos.
+   Anunciar casualmente vira convite (cold start).
+2. **O Pix (valor + taxa) acontece na escolha do candidato**: a vaga fica
+   `pending_payment` segurando a candidacia escolhida por **30 minutos**
+   (`pending_candidacy_id` + `choice_pending_since`); o provedor simulado
+   confirma na hora e o gateway finaliza via `payment-webhook`. Na
+   confirmação: aceite, ledger (fee + escrow_hold), código de check-in,
+   endereço/chat liberados e SÓ ENTÃO a notificação "escolhido" — o
+   candidato nunca fica sabendo de escolha não paga ("vaga fantasma" não
+   frustra ninguém).
+3. **Escolha não paga expira em 30 min** (job SQL a cada 5 min) e a vaga
+   REABRE com os candidatos; um Pix atrasado num QR velho é devolvido
+   INTEGRALMENTE pelo webhook (claim atômico na cobrança — sem devolução
+   dupla). Candidato que desistiu/ocupou durante a janela → mesma coisa.
+4. **Nada de dinheiro antes da escolha**: exclusão e expiração de vaga
+   aberta não movem dinheiro nem escrevem no ledger. Multas e disputas
+   pós-escolha seguem D-018/D-027/D-028.
+5. **Anti-spam/anúncio externo** (substitui o papel do Pix na entrada):
+   filtro de contato (telefone/e-mail/link/messenger) em título e
+   descrição (`containsContactInfo` no domínio, aplicado em criar/editar);
+   limite de vagas abertas simultâneas (3 sem histórico de anunciante,
+   10 com); denúncia de vaga (`gig_reports`, 1 por usuário/vaga, leitura
+   de admin); 1 CPF = 1 conta (D-038); contato/endereço só após o
+   pagamento (D-028/D-030).
+6. **Cold start orgânico**: promo "taxa R$ 0" no lançamento (constante em
+   pricing.ts, item no checklist de pré-lançamento), lançamento
+   concentrado por região, empty states que convidam a anunciar ("é
+   grátis") — nunca conteúdo falso.
+
+Detalhe técnico: `gig_payments` passou a aceitar várias cobranças por
+vaga (id próprio; a mais recente é a ativa) e ganhou o status `refunded`.

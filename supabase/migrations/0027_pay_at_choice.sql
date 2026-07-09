@@ -18,6 +18,12 @@ alter table public.gig_payments
   add constraint gig_payments_status_check
   check (status in ('pending', 'confirmed', 'expired', 'refunded'));
 
+-- A gig can be charged more than once now (choice expired → new choice),
+-- so the payment row gets its own id and gig_id becomes a plain index.
+alter table public.gig_payments drop constraint gig_payments_pkey;
+alter table public.gig_payments add column id uuid primary key default gen_random_uuid();
+create index gig_payments_gig on public.gig_payments (gig_id, created_at desc);
+
 -- The unpaid-CREATION expiry (0023) becomes the unpaid-CHOICE expiry:
 -- reopen instead of expire — the gig goes back to collecting candidates.
 create or replace function public.expire_unpaid_gigs()

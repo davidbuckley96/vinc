@@ -83,25 +83,23 @@ ABERTA → CANDIDATURA PENDENTE → ACEITA → EM ANDAMENTO
 ABERTA → excluída antes de candidatura/aceite (sem punição) · expirada
 ```
 
-**Expiração (D-022):** vaga que chega ao horário de INÍCIO sem ninguém
-aprovado expira sozinha (job a cada 5 min) e o valor do prestador é
-reembolsado — a taxa fica com a empresa. A busca nunca mostra vagas já
-iniciadas e a candidatura a elas é recusada.
+**Expiração (D-022/D-040):** vaga que chega ao horário de INÍCIO sem
+ninguém aprovado expira sozinha — e como nada foi pago antes da escolha,
+não há nada a devolver. A busca nunca mostra vagas já iniciadas e a
+candidatura a elas é recusada.
 
 ### 2.2 Editar e excluir a própria vaga (D-017 — implementado)
 
 - **Excluir**: permitido enquanto ninguém foi aprovado (vaga aberta ou com
-  candidato pendente). O **valor do prestador volta** para o anunciante; a
-  **taxa fica** com a empresa (§5.1). Após aprovar alguém vira
-  cancelamento, com multa (⚠️ dúvida #1). Botão com confirmação em dois
-  toques na tela da vaga.
+  candidato pendente). **Nada foi pago antes da escolha (D-040), então a
+  exclusão não move dinheiro.** Após aprovar alguém vira cancelamento,
+  com multa (D-018). Botão com confirmação em dois toques na tela da vaga.
 - **Editar**: permitido apenas com a vaga **aberta e sem candidato
   pendente** (o candidato se candidatou a termos específicos — decida
   primeiro). Editáveis: categoria, título, descrição, dia/horário e local.
-- **O valor NÃO é editável** (nem para cima nem para baixo): ele está
-  amarrado ao pagamento feito na criação (escrow + taxa). Para pagar outro
-  valor: excluir a vaga (reembolso do líquido) e criar outra. Confirmação
-  do David ⚠️ dúvida #18.
+- **O valor NÃO é editável** (nem para cima nem para baixo): os
+  candidatos se candidataram a ele (D-017/D-018). Para combinar outro
+  valor: excluir a vaga (nada foi pago — D-040) e criar outra.
 - Técnica: edição e exclusão passam por Edge Functions (`update-gig`,
   `delete-gig`); a política de UPDATE direto do cliente foi removida
   (migration 0007) para o valor não ser alterável fora do fluxo.
@@ -224,24 +222,30 @@ iniciadas e a candidatura a elas é recusada.
      saque simulado; no futuro: Pix via gateway — Fase 3) ou o usa para
      **criar vagas**.
 
-### 5.1 Taxa de serviço na criação (D-013, ajustada por D-014)
+### 5.1 Pagamento na ESCOLHA do candidato (D-040; valores de D-013/D-014)
 
-- **O anunciante escolhe o valor que o PRESTADOR RECEBERÁ (x)** e a taxa de
-  serviço é somada por cima: ao confirmar a vaga ele paga **x + taxa**.
-  **Taxa oficial: 10% (D-035)**: prestador recebe R$ 100 → taxa de
-  R$ 10 → o anunciante paga R$ 110.
-- **O prestador sempre vê o valor escolhido (x)** (na busca, no detalhe, na
-  agenda, na carteira): ele recebe integralmente o valor pelo qual se
-  candidatou. A **prévia** do anúncio na criação mostra esse valor.
-- A **taxa aparece explícita no momento da criação** ("O prestador recebe
-  R$ 100 · Taxa de serviço + R$ 10 · Você paga R$ 110").
-- **Reembolso:** se ninguém se candidatar, se o anunciante recusar todos os
-  candidatos ou se ele excluir a vaga antes de aprovar alguém, o **valor do
-  prestador é reembolsado** (R$ 100 no exemplo) — **a taxa fica com a
-  empresa**. Isso
-  impede o golpe de "recusar indefinidamente esperando reembolso total":
-  arrepender-se de abrir a vaga custa a taxa.
-- Multas são cobradas do saldo/forma de pagamento do anunciante infrator.
+- **Publicar é GRÁTIS** (D-040): a vaga entra no ar sem pagamento. O
+  quadro da taxa na criação vira informação: "você só paga quando
+  escolher um candidato".
+- **O anunciante escolhe o valor que o PRESTADOR RECEBERÁ (x)** e a taxa
+  é somada por cima. **Taxa oficial: 10% (D-035)**: prestador recebe
+  R$ 100 → taxa de R$ 10 → o anunciante paga R$ 110 **no Pix da escolha**.
+- **O Pix acontece ao ESCOLHER**: a escolha vale por **30 minutos**; o
+  candidato só é efetivado (agenda, código de check-in, endereço, chat e
+  a notificação "escolhido") **depois que o pagamento confirma**. Escolha
+  não paga se desfaz sozinha e a vaga reabre — o candidato nunca soube.
+- **O prestador sempre vê o valor escolhido (x)** (na busca, no detalhe,
+  na agenda, na carteira): ele recebe integralmente o valor pelo qual se
+  candidatou.
+- **A plataforma só ganha a taxa quando o serviço acontece**: vaga que
+  expira sem escolha ou é excluída antes não custou nada a ninguém.
+  Cancelamentos pós-escolha seguem as multas (D-018/D-027) e as disputas
+  seguem D-028.
+- **Anti-spam/anúncio externo** (o dinheiro na porta saiu, entram):
+  filtro de contato no texto do anúncio (telefone/e-mail/link →
+  recusado), limite de vagas abertas simultâneas (3 sem histórico de
+  anunciante, 10 com), denúncia de vaga (1 toque, fila do admin) e
+  1 CPF = 1 conta (D-038).
 - Todo movimento financeiro gera **registro imutável em ledger** (auditoria).
 
 ### 5.2 Carteira (D-015/D-021/D-037 — implementada; design: rodada 6, opção C)

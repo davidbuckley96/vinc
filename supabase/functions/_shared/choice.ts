@@ -42,6 +42,13 @@ export async function finalizeChosenCandidacy(
       .update({ status: "open", pending_candidacy_id: null, choice_pending_since: null })
       .eq("id", gig.id)
       .eq("status", "pending_payment");
+    // Park the charge: a later Pix on it is refunded by the webhook, and
+    // it can never be confirmed by a future choice's finalization.
+    await admin
+      .from("gig_payments")
+      .update({ status: "expired" })
+      .eq("gig_id", gig.id)
+      .eq("status", "pending");
   };
 
   const { data: candidacy } = await admin

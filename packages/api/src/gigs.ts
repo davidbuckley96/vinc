@@ -605,12 +605,16 @@ export async function fetchGigPayment(
   client: SupabaseClient,
   gigId: string,
 ): Promise<(PendingPixPayment & { status: "pending" | "confirmed" | "expired" | "refunded" }) | null> {
-  const { data, error } = await client
+  // A gig can hold several charges over time (expired choices — D-040);
+  // the LATEST row is the active one.
+  const { data: rows, error } = await client
     .from("gig_payments")
     .select("charge_id, status, amount_total_cents, qr_code, qr_code_base64")
     .eq("gig_id", gigId)
-    .maybeSingle();
+    .order("created_at", { ascending: false })
+    .limit(1);
   if (error) throw new Error(error.message);
+  const data = rows?.[0];
   if (!data) return null;
   return {
     chargeId: data.charge_id as string,

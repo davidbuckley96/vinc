@@ -78,7 +78,7 @@ Deno.serve(async (request) => {
     .from("gig_payments")
     .update({ status: "refunded" })
     .eq("charge_id", chargeId)
-    .eq("status", "pending")
+    .in("status", ["pending", "expired"])
     .select("gig_id, amount_total_cents");
   if (!refundable || refundable.length === 0) return ok({ ignored: "already settled" });
 

@@ -48,6 +48,7 @@
 - [ ] 3.8 (pós-lançamento Pix) Cartões de crédito/débito + cobrança real da multa do prestador sem saldo (D-027); carteiras digitais conforme o provedor
 
 ## Melhorias contínuas (fora de fase)
+- [x] Modelo de cobrança D-040 (aprovado pelo David em 2026-07-09; pesquisa em docs/08): **publicar é grátis**; o Pix (valor+taxa) acontece na ESCOLHA (janela de 30 min; candidato só sabe após confirmação; escolha não paga reabre a vaga e Pix atrasado é devolvido integralmente pelo webhook); taxa só é ganha em serviço realizado; anti-spam: filtro de contato no anúncio, limite de vagas simultâneas (3/10), denúncia de vaga (`gig_reports`), CTAs "anunciar é grátis" nos empty states. Verificado e2e nos DOIS modos (simulado e gateway/dublê, 13 checks)
 - [x] Desistência de candidatura + recandidatura + notificação sem duplicata + lista de candidatos por relevância (D-039, 2026-07-09, verificado e2e 9 checks)
 
 ## Fase 4 — Crescimento
@@ -94,7 +95,13 @@ revisados antes de abrir o app ao público:
    apontar `MP_BASE_URL` para a API real com credenciais de produção e
    trocar os endpoints `/test/*` do adapter pelas chamadas reais de
    split/transferência do provedor (exige CNPJ — bloco 3.7).
-8. **Tiles do mapa**: o MVP usa OpenFreeMap (público, sem chave, sem SLA).
+8. **Ativar a promo de lançamento "taxa R$ 0"** (D-040, cold start):
+   zerar a taxa em `packages/core/src/pricing.ts` pelo período que o
+   David definir (sugestão: 3 meses), estampar no quadro da taxa e
+   planejar o aviso de volta. Junto: concentrar a divulgação numa
+   região por vez (lançamento por bairro/cidade — a busca 2.8 já
+   recorta) e semear as primeiras vagas com demanda real.
+9. **Tiles do mapa**: o MVP usa OpenFreeMap (público, sem chave, sem SLA).
    Antes do lançamento, criar conta MapTiler (plano gratuito) e trocar
    `MAP_STYLE_URL` em `apps/mobile/src/components/location-map/config.ts`;
    revisar também o volume de geocodificação no Nominatim (política de uso

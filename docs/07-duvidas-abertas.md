@@ -53,15 +53,11 @@
     aprovada a proposta + recandidatura permitida + dedup de notificação
     não lida + lista por relevância (ver `06-decisoes.md` D-039;
     implementado e verificado e2e).
-24. 🔴 **Quando cobrar a taxa da plataforma** (levantado pelo David em
-    2026-07-09; pesquisa pronta em `08-pesquisa-cobranca-taxa.md`):
-    hoje a taxa fica com a plataforma mesmo quando a vaga expira sem
-    prestador — no cold start isso pune quem anuncia e trava o
-    ecossistema. Recomendação do Claude: **Opção A** (devolução TOTAL,
-    taxa incluída, sempre que ninguém foi escolhido — taxa só é ganha
-    quando o serviço acontece) + **Opção C** (promo "taxa zero" de
-    lançamento) na abertura ao público; Opção B (publicar grátis, Pix só
-    na escolha) reavaliar com liquidez. Aguardando decisão do David.
+24. ~~🔴 **Quando cobrar a taxa da plataforma**~~ ✅ Decidida em
+    2026-07-09: David aprovou a **proposta completa** (docs/08 §5) —
+    publicar grátis, Pix na escolha, taxa só no serviço realizado,
+    anti-spam e promo de lançamento (ver `06-decisoes.md` D-040;
+    implementado e verificado e2e nos dois modos).
 
 ## Design
 
