@@ -115,5 +115,73 @@ Deno.serve(async (request) => {
     return reply(200, { paid: payMatch[1], webhookStatus: webhook.status });
   }
 
+  // POST /test/credit — release/compensation lands in the worker's
+  // subaccount balance (model A: money stays at the provider until the
+  // withdrawal).
+  if (request.method === "POST" && path === "/test/credit") {
+    const body = await request.json().catch(() => ({}));
+    const amountCents = Math.round(Number(body.amount) * 100);
+    if (!body.user_id || !Number.isFinite(amountCents) || amountCents <= 0) {
+      return reply(400, { error: "bad credit" });
+    }
+    const { data: row } = await admin
+      .from("mp_mock_balances")
+      .select("balance_cents")
+      .eq("user_id", body.user_id)
+      .maybeSingle();
+    await admin.from("mp_mock_balances").upsert({
+      user_id: body.user_id,
+      balance_cents: (row?.balance_cents ?? 0) + amountCents,
+    });
+    await admin.from("mp_mock_transfers").insert({
+      user_id: body.user_id,
+      kind: "credit",
+      amount_cents: amountCents,
+      reference: body.reference ?? null,
+    });
+    return reply(201, { credited: amountCents });
+  }
+
+  // POST /test/payout — Pix out to the worker's key, debiting the
+  // subaccount balance.
+  if (request.method === "POST" && path === "/test/payout") {
+    const body = await request.json().catch(() => ({}));
+    const amountCents = Math.round(Number(body.amount) * 100);
+    if (!body.user_id || !body.pix_key || !Number.isFinite(amountCents) || amountCents <= 0) {
+      return reply(400, { error: "bad payout" });
+    }
+    const { data: row } = await admin
+      .from("mp_mock_balances")
+      .select("balance_cents")
+      .eq("user_id", body.user_id)
+      .maybeSingle();
+    if ((row?.balance_cents ?? 0) < amountCents) {
+      return reply(400, { error: "insufficient balance" });
+    }
+    await admin
+      .from("mp_mock_balances")
+      .update({ balance_cents: row!.balance_cents - amountCents })
+      .eq("user_id", body.user_id);
+    await admin.from("mp_mock_transfers").insert({
+      user_id: body.user_id,
+      kind: "payout",
+      pix_key: body.pix_key,
+      amount_cents: amountCents,
+      reference: body.reference ?? null,
+    });
+    return reply(201, { paid_out: amountCents });
+  }
+
+  // GET /test/balance/{user_id}
+  const balanceMatch = path.match(/^\/test\/balance\/([0-9a-f-]+)$/);
+  if (request.method === "GET" && balanceMatch) {
+    const { data: row } = await admin
+      .from("mp_mock_balances")
+      .select("balance_cents")
+      .eq("user_id", balanceMatch[1])
+      .maybeSingle();
+    return reply(200, { balance_cents: row?.balance_cents ?? 0 });
+  }
+
   return reply(404, { error: `no route ${request.method} ${path}` });
 });

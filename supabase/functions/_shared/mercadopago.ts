@@ -111,17 +111,55 @@ export function createMercadoPagoProvider(admin: SupabaseClient): PaymentProvide
       if (!response.ok) throw new Error(`mp refund failed: ${response.status}`);
     },
 
-    // deno-lint-ignore require-await
-    async releaseToWorker(input) {
-      console.warn(`[mercadopago] releaseToWorker TODO(3.4) ${JSON.stringify(input)}`);
+    // Model A (D-035): releasing/compensating keeps the money at the
+    // provider, credited to the party's subaccount; only the withdrawal
+    // leaves as Pix out. Against the real MP these become the
+    // marketplace money-release/disbursement calls (3.7); the mock
+    // mirrors the accounting so it is auditable end-to-end.
+    async releaseToWorker({ workerId, gigId, amountCents }) {
+      const response = await fetch(`${baseUrl()}/test/credit`, {
+        method: "POST",
+        headers: headers(`release-${gigId}`),
+        body: JSON.stringify({
+          user_id: workerId,
+          amount: amountCents / 100,
+          reference: `release-${gigId}`,
+        }),
+      });
+      if (!response.ok) throw new Error(`mp release failed: ${response.status}`);
     },
-    // deno-lint-ignore require-await
-    async transferCompensation(input) {
-      console.warn(`[mercadopago] transferCompensation TODO(3.4) ${JSON.stringify(input)}`);
+
+    async transferCompensation({ userId, gigId, amountCents }) {
+      const response = await fetch(`${baseUrl()}/test/credit`, {
+        method: "POST",
+        headers: headers(`fine-${gigId}-${userId}`),
+        body: JSON.stringify({
+          user_id: userId,
+          amount: amountCents / 100,
+          reference: `fine-${gigId}`,
+        }),
+      });
+      if (!response.ok) throw new Error(`mp compensation failed: ${response.status}`);
     },
-    // deno-lint-ignore require-await
-    async payoutWithdrawal(input) {
-      console.warn(`[mercadopago] payoutWithdrawal TODO(3.5) ${JSON.stringify(input)}`);
+
+    async payoutWithdrawal({ userId, amountCents }) {
+      const { data: account } = await admin
+        .from("payout_accounts")
+        .select("pix_key")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!account) throw new Error(`no payout account for ${userId}`);
+      const response = await fetch(`${baseUrl()}/test/payout`, {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify({
+          user_id: userId,
+          pix_key: account.pix_key,
+          amount: amountCents / 100,
+          reference: `withdrawal-${userId}`,
+        }),
+      });
+      if (!response.ok) throw new Error(`mp payout failed: ${response.status}`);
     },
   };
 }
