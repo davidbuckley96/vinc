@@ -49,6 +49,24 @@
     dado (não existe edição de perfil). Entra quando o perfil tiver o
     campo — decidir junto: obrigatório ou opcional? aparece sempre ou só
     quando o prestador quiser exibir?
+23. 🟡 **Desistir da candidatura** (perguntado pelo David em 2026-07-09):
+    hoje o prestador **não** consegue cancelar uma candidatura pendente —
+    os status são só pending/chosen/refused/not_chosen e não há ação nem
+    tela para isso. Proposta do Claude: permitir desistir enquanto
+    `pending` (sem punição — a vaga segue aberta e nada estava
+    bloqueado), removendo a candidatura da lista do anunciante; depois de
+    escolhido, vale a regra de cancelamento com multa (D-027). Confirmar
+    com o David: pode se candidatar de novo à mesma vaga depois de
+    desistir? (proposta: sim, enquanto a vaga estiver aberta).
+24. 🔴 **Quando cobrar a taxa da plataforma** (levantado pelo David em
+    2026-07-09; pesquisa pronta em `08-pesquisa-cobranca-taxa.md`):
+    hoje a taxa fica com a plataforma mesmo quando a vaga expira sem
+    prestador — no cold start isso pune quem anuncia e trava o
+    ecossistema. Recomendação do Claude: **Opção A** (devolução TOTAL,
+    taxa incluída, sempre que ninguém foi escolhido — taxa só é ganha
+    quando o serviço acontece) + **Opção C** (promo "taxa zero" de
+    lançamento) na abertura ao público; Opção B (publicar grátis, Pix só
+    na escolha) reavaliar com liquidez. Aguardando decisão do David.
 
 ## Design
 

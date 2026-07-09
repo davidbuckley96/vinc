@@ -48,6 +48,7 @@
 - [ ] 3.8 (pós-lançamento Pix) Cartões de crédito/débito + cobrança real da multa do prestador sem saldo (D-027); carteiras digitais conforme o provedor
 
 ## Fase 4 — Crescimento
+- [ ] Central de suporte no app + agente de IA para dúvidas básicas (pedido do David, 2026-07-09 — começar com um modelo gratuito; fazer "no momento propício", antes da abertura ao público)
 - [ ] Prioridade de usuário como recurso premium (expansão do D-034 — ideia do David)
 - [ ] Geolocalização e busca por proximidade/mapa
 - [ ] Filtros avançados, recomendações, favoritos
