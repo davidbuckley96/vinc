@@ -140,3 +140,86 @@ recontratação fácil (pós-MVP).
   [Hagiu & Wright — Platform leakage](https://platformchronicles.substack.com/p/platform-leakage),
   [Sharetribe — how to prevent marketplace leakage](https://www.sharetribe.com/academy/how-to-discourage-people-from-going-around-your-payment-system/),
   [CometChat — platform leakage](https://www.cometchat.com/blog/platform-leakage)
+
+## 5. Proposta completa para aprovação (2026-07-09; vira ADR se aprovada)
+
+Pedido do David: proposta concreta do **padrão vencedor** (publicar
+grátis + dinheiro no match + plataforma só ganha no serviço realizado),
+incluindo o plano de cold start — "o marketplace não pode morrer ou
+parecer vazio, mas deve ser orgânico".
+
+### 5.1 Modelo de cobrança
+
+1. **Publicar é grátis.** A vaga entra no ar sem Pix (morre o
+   `pending_payment` na criação; a tela de anúncio perde a etapa de
+   pagamento). Anunciar casualmente vira um convite — zero risco, zero
+   dinheiro parado.
+2. **O Pix acontece na ESCOLHA do candidato.** Ao tocar "Escolher", o
+   anunciante paga **valor + taxa** na tela de pagamento que já existe
+   (QR/copia-e-cola do 3.2). A escolha fica interna como "aguardando
+   pagamento" por um prazo curto (**30 minutos**, prorrogável a gosto):
+   - Pix caiu → escolha efetivada: agenda do prestador bloqueada, código
+     de check-in gerado, endereço exato e chat liberados, notificação
+     "você foi escolhido".
+   - Pix não caiu → escolha desfeita sozinha (job agendado), a vaga
+     segue aberta com os candidatos.
+   - **O candidato só fica sabendo DEPOIS do pagamento confirmado** —
+     "vaga fantasma" não frustra ninguém, porque ninguém é avisado de
+     uma escolha não paga.
+3. **A taxa só é ganha quando o serviço acontece.** Expirou sem escolha
+   → nada foi cobrado. Excluiu antes de escolher → nada. Multas
+   pós-pagamento (anunciante cancela / prestador cancela) seguem
+   D-018/D-027; disputas seguem D-028/D-031. O escrow ("pagamento
+   garantido pelo app") continua existindo do momento da escolha em
+   diante — o prestador nunca trabalha sem o dinheiro já retido.
+
+### 5.2 Anti-spam / anti-anúncio externo (substitui o papel do Pix na entrada)
+
+- **Filtro de contato no anúncio**: telefone, e-mail e links em
+  título/descrição são bloqueados na criação (client + server), com
+  mensagem educada ("o contato acontece pelo app depois da escolha").
+- **Limite de vagas abertas simultâneas**: 3 para contas sem nenhum
+  serviço concluído; sobe com histórico (ex.: 10). Freia robôs e
+  anunciantes de má-fé sem atrapalhar uso real.
+- **Denunciar vaga** (1 toque no detalhe) + remoção pelo painel admin.
+- **1 CPF = 1 conta** (D-038 já garante) — spam não escala.
+- **Endereço exato e chat só depois do pagamento** (já existe): um
+  anúncio externo não tem como entregar o contato do anunciante.
+
+### 5.3 Cold start (orgânico, sem conteúdo falso)
+
+- **Promo de lançamento "taxa R$ 0"**: taxa zerada por um período/nº de
+  serviços definido pelo David (sugestão: 3 primeiros meses), estampada
+  no quadro da taxa ("Lançamento: taxa grátis"). Sem liquidez a receita
+  seria ~zero de qualquer jeito — o custo real é nulo e o argumento de
+  marketing é o mais simples possível. A volta da taxa é avisada com
+  antecedência dentro do app.
+- **Lançamento por região** (atomic network, a16z): concentrar a
+  divulgação numa cidade/bairro por vez até haver densidade — a busca
+  por região (2.8) já dá o recorte. Melhor 1 bairro vivo que 1 país
+  vazio.
+- **Empty states que convidam em vez de constranger**: sem vagas na
+  região → "Seja o primeiro a anunciar aqui" + botão direto; vaga sem
+  candidatos há X horas → dica automática ao anunciante (ajustar
+  valor/horário). Nunca conteúdo falso.
+- **Semear com demanda real**: primeiras vagas reais do David/conhecidos
+  na região de lançamento; o Destaque (D-034) e as notificações já
+  cuidam da retenção do prestador.
+
+### 5.4 O que muda de código (estimativa: ~2 blocos)
+
+`create-gig` sem cobrança; `decide-candidacy` (choose) cria a cobrança e
+um estado interno "escolha aguardando pagamento" (reusa `gig_payments`,
+`payment-webhook` e a tela `/pay`); job agendado desfaz escolhas não
+pagas em 30 min; notificação `chosen` movida para o pós-confirmação;
+filtro de contato + limite de vagas + denúncia de vaga. Os fluxos de
+multa/disputa/liberação/saque (Fase 2 e 3) não mudam.
+
+### 5.5 Riscos e resposta
+
+| Risco | Resposta |
+|---|---|
+| Anunciante escolhe e não paga | Escolha expira em 30 min; candidato nunca soube; vaga segue aberta |
+| Spam/ads externos (publicar ficou grátis) | §5.2 (filtro de contato + limites + denúncia + CPF único + contato só pós-pagamento) |
+| Fechar por fora depois do match | Já mitigado: multas (D-018/D-027), escrow como valor, chat monitorável; recontratação fácil pós-MVP |
+| Perda do "compromisso" do dinheiro na entrada | O compromisso real continua onde importa: ninguém trabalha sem escrow; antes do match não havia compromisso mesmo |
