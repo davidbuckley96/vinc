@@ -40,8 +40,8 @@
 - [x] 3.1 Porta `PaymentProvider` no backend (`_shared/payment-provider.ts`): todas as 6 functions que movem dinheiro chamam a porta (chargePoster/releaseToWorker/refundPoster/transferCompensation/payoutWithdrawal); `simulated` (padrão) = comportamento atual, seleção por env `PAYMENT_PROVIDER`; smoke e2e verde após o redeploy
 - [x] 3.2 (backend) Cobrança Pix na criação — verificado e2e com o DUBLÊ do Mercado Pago (`mp-mock`, mesma API, dinheiro falso): vaga nasce `pending_payment` com QR dinâmico, `payment-webhook` (verify_jwt off; nunca confia no corpo — reconsulta o provedor) publica e grava o ledger idempotente, replays não duplicam, exclusão devolve o líquido via devolução Pix real no provedor (taxa fica), job expira não-pagas em 1h sem custo; adapter `mercadopago` aponta ao mock/sandbox real via `MP_BASE_URL`. UI rodada 13 **opção B** (David, 2026-07-06): tela /pay com copia-e-cola guiado em 3 passos, QR atrás de "prefere escanear?", status ao vivo (poll 3s) que confirma e volta ao serviço sozinho; botão "Pagar agora via Pix" no serviço pendente. Falta só trocar o mock pelo sandbox real quando o David criar a conta MP
 - [x] 3.3 Onboarding do recebedor (verificado e2e): tela "Receber pagamentos" (perfil) com chave Pix (CPF/celular/e-mail/aleatória, validação com dígitos do CPF) + CPF do titular; tabela `payout_accounts` (RLS própria linha, colunas status/external só da plataforma, trocar a chave reseta a verificação); saque BLOQUEADO sem chave (`payout_account_missing` → app leva ao cadastro); `external_account_id` recebe a subconta do provedor no sandbox real/3.7
-- [ ] 3.4 Liberação com split na confirmação/48h; devoluções Pix (totais/parciais) nas disputas e cancelamentos — ledger continua a fonte de verdade, provedor executa
-- [ ] 3.5 Saque real: withdraw passa a mover o saldo da subconta do prestador para a conta bancária dele
+- [x] 3.4 Liberação e devoluções pelo provedor (verificado e2e, 19 checks): os dois jobs que MOVEM dinheiro (expiração com devolução do líquido e liberação 48h) saíram do SQL e viraram a function agendada `scheduled-money-jobs` (pg_cron → pg_net a cada 15 min, protegida pelo header `x-cron-secret`; jobs só-status continuam em SQL); confirmação/48h creditam a subconta do prestador no provedor (`releaseToWorker`), multas idem (`transferCompensation`), expiração/exclusão/disputas devolvem via Pix (`refundPoster`); no dublê, subcontas auditáveis em `mp_mock_balances`/`mp_mock_transfers`
+- [x] 3.5 Saque real (verificado e2e junto com 3.4): `withdraw` debita a subconta no provedor e dispara o Pix para a chave cadastrada (`payoutWithdrawal` consulta `payout_accounts`); contra o dublê o payout sai com a chave certa e o saldo zera — a chamada real de transferência do MP entra no 3.7 junto com as credenciais
 - [ ] 3.6 KYC / verificação de identidade (o que o provedor exigir das subcontas + selo no perfil)
 - [ ] 3.7 "Plugar" produção quando houver CNPJ: contratar provedor (decisão final MP × Pagar.me), credenciais de produção, revisar taxas vigentes, ativar o adapter
 - [ ] 3.8 (pós-lançamento Pix) Cartões de crédito/débito + cobrança real da multa do prestador sem saldo (D-027); carteiras digitais conforme o provedor
@@ -84,9 +84,11 @@ revisados antes de abrir o app ao público:
    trabalha); (d) na Fase 3, custódia de dinheiro real via gateway
    licenciado (split), nunca em conta própria; (e) LGPD: política de
    privacidade (dados pessoais + localização).
-7. **Remover o dublê de pagamentos**: apagar a function `mp-mock` e a
-   tabela `mp_mock_payments`; apontar `MP_BASE_URL` para a API real com
-   credenciais de produção (exige CNPJ — bloco 3.7).
+7. **Remover o dublê de pagamentos**: apagar a function `mp-mock` e as
+   tabelas `mp_mock_payments`, `mp_mock_balances` e `mp_mock_transfers`;
+   apontar `MP_BASE_URL` para a API real com credenciais de produção e
+   trocar os endpoints `/test/*` do adapter pelas chamadas reais de
+   split/transferência do provedor (exige CNPJ — bloco 3.7).
 8. **Tiles do mapa**: o MVP usa OpenFreeMap (público, sem chave, sem SLA).
    Antes do lançamento, criar conta MapTiler (plano gratuito) e trocar
    `MAP_STYLE_URL` em `apps/mobile/src/components/location-map/config.ts`;
@@ -95,15 +97,25 @@ revisados antes de abrir o app ao público:
 
 ## Estado atual
 
-**Última atualização:** 2026-07-06 — **Fase 1 completa; Fase 2 em andamento (2.1, 2.2 e 2.3 no ar)**
+**Última atualização:** 2026-07-09 — **Fases 1 e 2 completas; Fase 3 em
+andamento (3.1–3.5 no ar em modo sandbox, aguardando conta MP e CNPJ para 3.6–3.7)**
 
 - **Backend real (Supabase) operacional e verificado e2e**: projeto
-  `gexzpkbqodoyoxudzklb`, migrations 0001–0017 aplicadas, Edge Functions
+  `gexzpkbqodoyoxudzklb`, migrations 0001–0025 aplicadas, Edge Functions
   ATIVAS: `create-gig`, `update-gig`, `delete-gig`, `apply-gig`,
   `get-candidates`, `decide-candidacy`, `cancel-gig`, `gig-lifecycle`,
-  `withdraw`; jobs pg_cron `expire-due-gigs` (5 min) e
-  `auto-release-confirmations` (15 min). Google OAuth configurado.
-  Credenciais públicas em `apps/mobile/.env.example`.
+  `withdraw`, `open-dispute`, `resolve-dispute`, `payment-webhook`,
+  `scheduled-money-jobs` e o dublê `mp-mock` (só teste); jobs pg_cron
+  `auto-mark-awaiting`, `expire-unpaid-gigs` (só-status, SQL) e
+  `run-money-jobs` (pg_net → `scheduled-money-jobs` a cada 15 min, header
+  `x-cron-secret`). Google OAuth configurado. Credenciais públicas em
+  `apps/mobile/.env.example`.
+- **Fase 3 em sandbox**: porta `PaymentProvider` em todas as functions que
+  movem dinheiro; modo `mercadopago` (env `PAYMENT_PROVIDER`) cobra Pix com
+  QR na criação, publica via webhook, credita a subconta do prestador na
+  liberação e paga o saque na chave Pix cadastrada — tudo provado e2e
+  contra o dublê `mp-mock`; produção pluga trocando `MP_BASE_URL` +
+  credenciais (3.7). Hoje o app roda em modo `simulated` (padrão).
 - **Fase 2 quase completa**: 2.1 auto-liberação 48h, 2.2 check-in por
   código, 2.3 endereço aproximado (D-030), 2.4 disputas + provas de
   conclusão (D-031/D-032), 2.5 painel admin (D-033) e 2.8 busca por
@@ -144,10 +156,11 @@ revisados antes de abrir o app ao público:
   (sem job), função `withdraw` deployada (saque simulado zera o
   disponível, respeitando o processamento — verificado e2e), tela com
   abas + histórico separado, saldo exibido no pagamento do anúncio.
-- **Expiração de vagas (D-022) no ar**: função SQL `expire_due_gigs` +
-  job pg_cron a cada 5 min (verificado e2e: expira aberta e pendente no
-  início do horário, reembolsa o líquido uma única vez, poupa vagas
-  futuras); busca e apply-gig recusam vagas já iniciadas.
+- **Expiração de vagas (D-022) no ar**: hoje dentro de
+  `scheduled-money-jobs` (desde 3.4; era a função SQL `expire_due_gigs`) —
+  expira aberta e pendente no início do horário, reembolsa o líquido uma
+  única vez (com devolução Pix no modo gateway), poupa vagas futuras;
+  busca e apply-gig recusam vagas já iniciadas.
 - **Chat (D-025/D-026) no ar**: gig_messages + gig_message_reads
   (migrations 0013–0015), realtime habilitado; tela de conversa com
   respostas prontas, botão Conversar com contador de novas; a conversa
