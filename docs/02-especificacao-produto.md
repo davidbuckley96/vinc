@@ -151,6 +151,22 @@ iniciadas e a candidatura a elas é recusada.
 - Notificações de candidatura/escolha: aviso dentro do app no MVP; push na
   Fase 2.
 
+### Desistir da candidatura (D-039)
+
+- O prestador pode **desistir de uma candidatura pendente** a qualquer
+  momento, sem punição — a vaga segue aberta e a agenda dele nunca esteve
+  bloqueada. A candidatura some da lista do anunciante.
+- **Recandidatar-se é permitido** enquanto a vaga estiver aberta. Recusa
+  do anunciante continua definitiva (D-024).
+- **Notificações sem spam:** no máximo uma notificação "novo candidato"
+  não lida por vaga; enquanto o anunciante não a vê, novas candidaturas
+  (inclusive recandidaturas) não geram outra.
+- **Lista ordenada por relevância** (anti-manipulação): Destaque (D-034)
+  → serviços concluídos → avaliação; a hora da candidatura é só
+  desempate, então sair e voltar não melhora posição.
+- Depois de **escolhido**, sair do serviço é cancelamento com multa
+  (D-027).
+
 ### Punições pós-aprovação
 - **Anunciante** cancela após aprovar (serviço aceito ou em andamento) →
   paga **multa de 25% do valor do prestador, com piso de R$ 10** (D-018).

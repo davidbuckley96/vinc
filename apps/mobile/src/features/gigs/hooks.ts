@@ -12,6 +12,7 @@ import {
   fetchGigById,
   fetchGigPayment,
   fetchMyCandidacy,
+  withdrawCandidacy,
   fetchOpenGigs,
   hasPriorityForPeriod,
   updateGig,
@@ -22,6 +23,7 @@ import {
   type DecideCandidacyResult,
   type DeleteGigResult,
   type MyCandidacyStatus,
+  type WithdrawCandidacyResult,
   type RegionFilter,
   type TimeSlotFilter,
   type UpdateGigResult,
@@ -142,9 +144,28 @@ export function useMyCandidacy(gigId: string) {
   const userId = session?.user.id ?? null;
   return useQuery({
     queryKey: ['candidacy', gigId, userId ?? 'anonymous'],
-    queryFn: (): Promise<MyCandidacyStatus | null> => {
-      if (!supabase || !userId) return Promise.resolve(null);
-      return fetchMyCandidacy(supabase, gigId, userId);
+    queryFn: async (): Promise<MyCandidacyStatus | null> => {
+      if (!supabase || !userId) return null;
+      const status = await fetchMyCandidacy(supabase, gigId, userId);
+      // Withdrawn behaves like never applied (D-039): apply again freely.
+      return status === 'withdrawn' ? null : status;
+    },
+  });
+}
+
+/** Withdraws a pending candidacy (D-039). */
+export function useWithdrawCandidacy(gigId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (): Promise<WithdrawCandidacyResult> => {
+      if (!supabase) return 'withdrawn'; // demo mode: pretend success
+      return withdrawCandidacy(supabase, gigId);
+    },
+    onSuccess: (result) => {
+      if (result === 'withdrawn') {
+        queryClient.invalidateQueries({ queryKey: ['candidacy', gigId] });
+        queryClient.invalidateQueries({ queryKey: ['agenda'] });
+      }
     },
   });
 }

@@ -47,6 +47,9 @@
 - [ ] 3.7 "Plugar" produção quando houver CNPJ: contratar provedor (decisão final MP × Pagar.me), credenciais de produção, revisar taxas vigentes, ativar o adapter
 - [ ] 3.8 (pós-lançamento Pix) Cartões de crédito/débito + cobrança real da multa do prestador sem saldo (D-027); carteiras digitais conforme o provedor
 
+## Melhorias contínuas (fora de fase)
+- [x] Desistência de candidatura + recandidatura + notificação sem duplicata + lista de candidatos por relevância (D-039, 2026-07-09, verificado e2e 9 checks)
+
 ## Fase 4 — Crescimento
 - [ ] Central de suporte no app + agente de IA para dúvidas básicas (pedido do David, 2026-07-09 — começar com um modelo gratuito; fazer "no momento propício", antes da abertura ao público)
 - [ ] Prioridade de usuário como recurso premium (expansão do D-034 — ideia do David)

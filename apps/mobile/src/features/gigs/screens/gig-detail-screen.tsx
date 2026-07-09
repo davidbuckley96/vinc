@@ -19,7 +19,14 @@ import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
 import { useTheme } from '@/hooks/use-theme';
 
-import { useApplyGig, useCategories, useGig, useMyCandidacy, useMyPriority } from '../hooks';
+import {
+  useApplyGig,
+  useCategories,
+  useGig,
+  useMyCandidacy,
+  useMyPriority,
+  useWithdrawCandidacy,
+} from '../hooks';
 
 const RESULT_MESSAGES: Record<Exclude<ApplyGigResult, 'applied'>, string> = {
   already_applied: 'Você já se candidatou a esta vaga.',
@@ -60,6 +67,34 @@ export function GigDetailScreen() {
     null,
   );
   const [applied, setApplied] = useState(false);
+  const withdraw = useWithdrawCandidacy(id);
+  const [withdrawArmed, setWithdrawArmed] = useState(false);
+
+  // Withdraw a pending candidacy (D-039): no penalty, re-apply allowed.
+  const onWithdraw = async () => {
+    setFeedback(null);
+    if (!withdrawArmed) {
+      setWithdrawArmed(true);
+      return;
+    }
+    setWithdrawArmed(false);
+    const result = await withdraw.mutateAsync();
+    if (result === 'withdrawn') {
+      setApplied(false);
+      setFeedback({
+        kind: 'success',
+        text: 'Você desistiu desta vaga. Se mudar de ideia, pode se candidatar de novo enquanto ela estiver aberta.',
+      });
+    } else {
+      setFeedback({
+        kind: 'error',
+        text:
+          result === 'not_pending'
+            ? 'Sua candidatura já foi decidida — veja o serviço na sua agenda.'
+            : 'Não foi possível desistir agora. Tente de novo.',
+      });
+    }
+  };
 
   const onApply = async () => {
     setFeedback(null);
@@ -206,6 +241,29 @@ export function GigDetailScreen() {
                     Ver na minha agenda
                   </Text>
                 </Pressable>
+                {(applied || myCandidacy.data === 'pending') && (
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={withdraw.isPending}
+                    onPress={onWithdraw}
+                    style={[
+                      styles.withdrawLink,
+                      withdrawArmed && {
+                        backgroundColor: theme.dangerSoft,
+                        borderRadius: 10,
+                      },
+                    ]}>
+                    {withdraw.isPending ? (
+                      <ActivityIndicator color={theme.danger} />
+                    ) : (
+                      <Text style={[styles.withdrawLabel, { color: theme.danger }]}>
+                        {withdrawArmed
+                          ? 'Toque de novo para confirmar a desistência'
+                          : 'Desistir da candidatura'}
+                      </Text>
+                    )}
+                  </Pressable>
+                )}
               </>
             ) : myCandidacy.data === 'refused' ? (
               <Text style={[styles.feedback, { color: theme.danger }]}>
@@ -345,6 +403,16 @@ const styles = StyleSheet.create({
   acceptLabel: {
     fontSize: 15.5,
     fontWeight: '800',
+  },
+  withdrawLink: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    marginTop: 2,
+  },
+  withdrawLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
   },
   note: {
     fontSize: 12,

@@ -297,7 +297,7 @@ export async function hasPriorityForPeriod(
   return (data ?? []).length > 0;
 }
 
-export type MyCandidacyStatus = "pending" | "chosen" | "refused" | "not_chosen";
+export type MyCandidacyStatus = "pending" | "chosen" | "refused" | "not_chosen" | "withdrawn";
 
 /** The caller's own candidacy for a gig, if any (RLS: workers read own). */
 export async function fetchMyCandidacy(
@@ -313,6 +313,37 @@ export async function fetchMyCandidacy(
     .maybeSingle();
   if (error) throw new Error(error.message);
   return (data?.status as MyCandidacyStatus | undefined) ?? null;
+}
+
+export type WithdrawCandidacyResult =
+  | "withdrawn"
+  | "not_candidate"
+  | "not_pending"
+  | "unauthorized"
+  | "invalid_request"
+  | "network_error";
+
+/** Withdraws the caller's PENDING candidacy (D-039 — no penalty). */
+export async function withdrawCandidacy(
+  client: SupabaseClient,
+  gigId: string,
+): Promise<WithdrawCandidacyResult> {
+  const { data, error } = await client.functions.invoke("withdraw-candidacy", {
+    body: { gigId },
+  });
+  if (error) {
+    try {
+      const context = (error as { context?: Response }).context;
+      if (context) {
+        const body = (await context.json()) as { code?: WithdrawCandidacyResult };
+        if (body.code) return body.code;
+      }
+    } catch {
+      // fall through
+    }
+    return "network_error";
+  }
+  return (data as { code?: WithdrawCandidacyResult })?.code ?? "network_error";
 }
 
 export type LifecycleAction = "start" | "complete" | "confirm";

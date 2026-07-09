@@ -119,8 +119,16 @@ Deno.serve(async (request) => {
     });
   }
 
-  // Priority first (D-034); inside each group, first-come first-listed.
-  candidates.sort((a, b) => Number(b.priority) - Number(a.priority));
+  // Relevance ordering (D-039): Destaque (D-034) first, then track
+  // record — completed services, then rating. Application TIME is not a
+  // factor, so withdrawing and re-applying can't game the position.
+  candidates.sort(
+    (a, b) =>
+      Number(b.priority) - Number(a.priority) ||
+      b.completedServices - a.completedServices ||
+      (b.avgRating ?? 0) - (a.avgRating ?? 0) ||
+      a.appliedAt.localeCompare(b.appliedAt),
+  );
 
   return respond("ok", 200, { candidates });
 });

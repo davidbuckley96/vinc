@@ -623,3 +623,29 @@ Quem entra **com Google** — ou conta antiga sem chave — cai num **passo
 obrigatório de conclusão** ("Falta só uma coisa") no primeiro acesso,
 com a mesma seção de CPF + chave e a opção de sair da conta. A troca
 posterior continua em perfil → "Receber pagamentos" (3.3/D-036).
+
+## D-039 — Desistência de candidatura, sem spam de notificação e lista por relevância
+**Data:** 2026-07-09 · **Decidido por:** David (proposta do Claude aprovada com regras extras)
+
+1. **Desistir**: o prestador pode cancelar a própria candidatura enquanto
+   ela está `pending` — sem punição (a vaga segue aberta e nada estava
+   bloqueado); a candidatura vira `withdrawn` e some da lista do
+   anunciante. Depois de escolhido, sair do serviço é cancelamento com
+   multa (D-027), nunca por aqui.
+2. **Recandidatura**: permitida enquanto a vaga estiver aberta
+   (`withdrawn` → `pending`, com a data da nova candidatura). Recusado
+   pelo anunciante continua sem volta (D-024).
+3. **Sem spam de notificação** (regra do David): existe no máximo **uma
+   notificação "novo candidato" NÃO LIDA por vaga** — se o anunciante
+   ainda não viu a anterior, candidaturas novas (inclusive
+   recandidaturas) não criam outra. Lida a notificação, o próximo
+   candidato notifica de novo. Desistir não notifica ninguém.
+4. **Lista por relevância** (regra do David, anti-manipulação): a ordem
+   dos candidatos é Destaque (D-034) → **total de serviços concluídos** →
+   **avaliação** → antiguidade só como desempate. A hora da candidatura
+   deixa de ser o critério, então desistir e voltar não melhora posição.
+
+Implementação: migration 0026 (status `withdrawn` + trigger de
+notificação com dedup), function `withdraw-candidacy`, `apply-gig` aceita
+recandidatura, `get-candidates` reordenado, botão "Desistir da
+candidatura" (2 toques) no detalhe da vaga. Verificado e2e (9 checks).

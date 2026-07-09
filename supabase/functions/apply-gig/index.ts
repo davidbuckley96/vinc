@@ -73,11 +73,12 @@ Deno.serve(async (request) => {
 
   const { data: existing } = await admin
     .from("gig_candidacies")
-    .select("status")
+    .select("id, status")
     .eq("gig_id", gigId)
     .eq("worker_id", workerId)
     .maybeSingle();
-  if (existing) {
+  if (existing && existing.status !== "withdrawn") {
+    // Re-applying is only allowed after a withdrawal (D-039).
     return existing.status === "refused"
       ? respond("refused_before", 403)
       : respond("already_applied", 409);
@@ -105,6 +106,18 @@ Deno.serve(async (request) => {
     endsAt: row.ends_at,
   }));
   if (hasScheduleConflict(range, committed)) return respond("schedule_conflict", 409);
+
+  if (existing) {
+    // Withdrawn → pending again (D-039); created_at reflects THIS apply.
+    const { data: reapplied } = await admin
+      .from("gig_candidacies")
+      .update({ status: "pending", created_at: new Date().toISOString() })
+      .eq("id", existing.id)
+      .eq("status", "withdrawn")
+      .select("id");
+    if (!reapplied || reapplied.length === 0) return respond("already_applied", 409);
+    return respond("applied", 200);
+  }
 
   // The unique (gig_id, worker_id) constraint settles races.
   const { error: insertError } = await admin
