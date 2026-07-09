@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 15: chave Pix no ato do cadastro</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --ok:#059669; --ok-soft:#ECFDF5; --warn:#B45309; --warn-soft:#FFFBEB; --cinza:#EDEFF2; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:940px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column;padding:22px 16px;gap:9px}
+  .logo{width:44px;height:44px;border-radius:13px;background:var(--roxo);color:#fff;font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center}
+  .title{font-size:19px;font-weight:800;letter-spacing:-.02em}
+  .lead{font-size:11.5px;color:var(--ink2);line-height:1.45}
+  .field{border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;font-size:12.5px;color:var(--ink2)}
+  .field b{color:var(--ink);font-weight:600}
+  .label{font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--ink2);margin-top:2px}
+  .cta{background:var(--roxo);color:#fff;border-radius:12px;padding:12px;text-align:center;font-size:13.5px;font-weight:800;margin-top:2px}
+  .hint{font-size:10.5px;color:var(--ink2);line-height:1.5}
+  .hint u{color:var(--roxo-deep);font-weight:700}
+  .keybox{border:1.5px solid var(--roxo);background:var(--lilas);border-radius:12px;padding:10px 12px}
+  .keybox .kt{font-size:11.5px;font-weight:800;color:var(--roxo-deep)}
+  .keybox .km{font-size:10.5px;color:var(--ink2);margin-top:2px;line-height:1.45}
+  .check{display:flex;gap:8px;align-items:flex-start;font-size:11px;line-height:1.45;color:var(--ink)}
+  .check .bx{width:16px;height:16px;border-radius:5px;background:var(--roxo);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1.5px solid var(--line);border-radius:99px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--ink2)}
+  .chip.on{background:var(--roxo);border-color:var(--roxo);color:#fff}
+  .steps{display:flex;gap:5px;justify-content:center;margin-bottom:2px}
+  .steps i{width:26px;height:4px;border-radius:99px;background:var(--line)}
+  .steps i.on{background:var(--roxo)}
+  .spacer{flex:1}
+  .mini-note{font-size:10px;color:var(--ink2);text-align:center;line-height:1.5}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 15 de design: chave Pix no ato de criar a conta</h1>
+  <p class="sub">Decisão do David: a pessoa deve informar a chave Pix (ao menos a inicial) <b>ao criar a conta</b>, para nunca existir alguém sem como receber — podendo trocar depois (tela do bloco 3.3, que já existe). Detalhes que as opções resolvem de jeitos diferentes: quem entra <b>com Google</b> não passa pelo formulário de e-mail; e a conta de recebimento precisa da chave <b>+ CPF do titular</b>.</p>
+
+  <div class="row">
+
+    <!-- A -->
+    <div class="option">
+      <div class="phone">
+        <div class="logo">V</div>
+        <div class="title">Criar sua conta</div>
+        <div class="field">Maria da Silva</div>
+        <div class="field">maria@email.com</div>
+        <div class="field">••••••••</div>
+        <div class="label">SEU CPF</div>
+        <div class="field"><b>529.982.247-25</b></div>
+        <div class="keybox">
+          <div class="kt">✓ Receber pelo Pix do seu CPF</div>
+          <div class="km">Seus pagamentos vão para a chave Pix <b>do CPF acima</b>. Não usa o CPF como chave? <u>Escolher outra</u> (celular, e-mail ou aleatória).</div>
+        </div>
+        <div class="cta">Criar conta grátis</div>
+        <div class="spacer"></div>
+        <div class="mini-note">Quem entra com Google responde CPF + chave numa telinha logo depois do primeiro acesso.</div>
+      </div>
+      <h3>Opção A — tudo no formulário de cadastro</h3>
+      <span class="tag">1 campo a mais, chave = CPF por padrão</span>
+      <p>O cadastro ganha só o campo CPF; a chave Pix já vem marcada como "o próprio CPF" (a mais comum no Brasil), com link para escolher outro tipo. Rápido, mas o formulário fica mais alto — e o fluxo Google precisa de uma telinha à parte mesmo assim.</p>
+    </div>
+
+    <!-- B -->
+    <div class="option">
+      <div class="phone">
+        <div class="steps"><i class="on"></i><i class="on"></i></div>
+        <div class="logo">V</div>
+        <div class="title">Como você quer receber?</div>
+        <div class="lead">Falta só isso: diga para onde vão os seus pagamentos. Dá para trocar quando quiser, no seu perfil.</div>
+        <div class="label">TIPO DA CHAVE PIX</div>
+        <div class="chips"><span class="chip on">CPF</span><span class="chip">Celular</span><span class="chip">E-mail</span><span class="chip">Aleatória</span></div>
+        <div class="label">SEU CPF (É A SUA CHAVE)</div>
+        <div class="field"><b>529.982.247-25</b></div>
+        <div class="cta">Salvar e começar</div>
+        <div class="hint">A chave precisa estar registrada no seu banco. Não sabe qual usar? O CPF é a mais comum.</div>
+        <div class="spacer"></div>
+        <div class="mini-note">Aparece uma única vez, logo após criar a conta — por e-mail OU Google. Sem pular.</div>
+      </div>
+      <h3>Opção B — passo único depois de criar a conta</h3>
+      <span class="tag">mesmo fluxo para e-mail e Google</span>
+      <p>O cadastro continua curtinho; criou a conta (por qualquer caminho), aparece UMA tela obrigatória: tipo da chave + chave + CPF do titular — a mesma tela de "Receber pagamentos" que já existe, com texto de boas-vindas. Uma coisa de cada vez, no padrão que o app inteiro segue.</p>
+    </div>
+
+    <!-- C -->
+    <div class="option">
+      <div class="phone">
+        <div class="logo">V</div>
+        <div class="title">Criar sua conta</div>
+        <div class="field">Maria da Silva</div>
+        <div class="field">maria@email.com</div>
+        <div class="field">••••••••</div>
+        <div class="label">SEU CPF</div>
+        <div class="field"><b>529.982.247-25</b></div>
+        <div class="check"><span class="bx">✓</span><span>Declaro que o meu CPF é uma chave Pix ativa no meu banco — os pagamentos do Vinc vão para ela.</span></div>
+        <div class="cta">Criar conta grátis</div>
+        <div class="spacer"></div>
+        <div class="mini-note">Google: mesma confirmação (CPF + declaração) numa telinha após o 1º acesso. Trocar a chave: perfil → Receber pagamentos.</div>
+      </div>
+      <h3>Opção C — só o CPF, chave automática</h3>
+      <span class="tag">mínimo de fricção</span>
+      <p>O cadastro pede apenas o CPF e declara que ele é a chave. Quem usa outra chave troca depois no perfil. É o caminho mais curto — mas se a pessoa marcar sem ler e o CPF não for chave ativa, o 1º saque falha no provedor (justamente o problema que queremos evitar).</p>
+    </div>
+
+  </div>
+</body>
+</html>
