@@ -12,6 +12,7 @@ import {
   fetchGigById,
   fetchGigPayment,
   fetchMyCandidacy,
+  reportGig,
   withdrawCandidacy,
   fetchOpenGigs,
   hasPriorityForPeriod,
@@ -20,7 +21,7 @@ import {
   type CancelGigResult,
   type Candidate,
   type CreateGigOutcome,
-  type DecideCandidacyResult,
+  type DecideCandidacyOutcome,
   type DeleteGigResult,
   type MyCandidacyStatus,
   type WithdrawCandidacyResult,
@@ -112,8 +113,10 @@ export function useDecideCandidacy(gigId: string) {
     mutationFn: async (input: {
       candidacyId: string;
       action: 'choose' | 'refuse';
-    }): Promise<DecideCandidacyResult> => {
-      if (!supabase) return input.action === 'choose' ? 'chosen' : 'refused'; // demo
+    }): Promise<DecideCandidacyOutcome> => {
+      if (!supabase) {
+        return { code: input.action === 'choose' ? 'chosen' : 'refused' }; // demo
+      }
       return decideCandidacy(supabase, input.candidacyId, input.action);
     },
     onSuccess: () => {
@@ -260,5 +263,17 @@ export function useGigPayment(gigId: string) {
     },
     refetchInterval: (query) =>
       query.state.data?.status === 'pending' ? 3000 : false,
+  });
+}
+
+/** Reports a gig for moderation (D-040). */
+export function useReportGig(gigId: string) {
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
+  return useMutation({
+    mutationFn: async (): Promise<'reported' | 'already_reported' | 'error'> => {
+      if (!supabase || !userId) return 'reported'; // demo mode: pretend
+      return reportGig(supabase, gigId, userId, 'Conteúdo suspeito ou anúncio externo');
+    },
   });
 }

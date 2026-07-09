@@ -88,20 +88,24 @@ export function createMercadoPagoProvider(admin: SupabaseClient): PaymentProvide
       };
     },
 
-    async refundPoster({ gigId, amountCents }) {
-      const { data: charge } = await admin
-        .from("gig_payments")
-        .select("charge_id")
-        .eq("gig_id", gigId)
-        .eq("status", "confirmed")
-        .maybeSingle();
-      if (!charge) {
+    async refundPoster({ gigId, amountCents, chargeId }) {
+      let targetCharge = chargeId ?? null;
+      if (!targetCharge) {
+        const { data: charge } = await admin
+          .from("gig_payments")
+          .select("charge_id")
+          .eq("gig_id", gigId)
+          .eq("status", "confirmed")
+          .maybeSingle();
+        targetCharge = charge?.charge_id ?? null;
+      }
+      if (!targetCharge) {
         // Gig paid before gateway mode (or simulated era): nothing external.
         console.warn(`[mercadopago] no confirmed charge for gig ${gigId}; refund skipped`);
         return;
       }
       const response = await fetch(
-        `${baseUrl()}/v1/payments/${charge.charge_id}/refunds`,
+        `${baseUrl()}/v1/payments/${targetCharge}/refunds`,
         {
           method: "POST",
           headers: headers(`${gigId}-refund-${amountCents}`),

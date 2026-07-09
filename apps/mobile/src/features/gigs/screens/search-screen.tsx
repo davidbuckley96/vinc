@@ -290,12 +290,24 @@ export function SearchScreen() {
                     Aumentar o raio ou mudar o local ›
                   </Text>
                 </Pressable>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/post')}>
+                  <Text style={[styles.emptyRegionLink, { color: theme.primary }]}>
+                    Precisa de um serviço? Seja o primeiro a anunciar aqui — é grátis ›
+                  </Text>
+                </Pressable>
               </View>
             ) : (
-              <Text style={[styles.feedback, { color: theme.textSecondary }]}>
-                Nenhuma vaga aberta{category ? ' nesta categoria' : ''}
-                {dayIndex !== null ? ' nesse horário' : ''}. Volte mais tarde!
-              </Text>
+              <View style={styles.emptyRegion}>
+                <Text style={[styles.feedback, { color: theme.textSecondary }]}>
+                  Nenhuma vaga aberta{category ? ' nesta categoria' : ''}
+                  {dayIndex !== null ? ' nesse horário' : ''}. Volte mais tarde!
+                </Text>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/post')}>
+                  <Text style={[styles.emptyRegionLink, { color: theme.primary }]}>
+                    Precisa de um serviço? Anunciar é grátis ›
+                  </Text>
+                </Pressable>
+              </View>
             ))}
           {gigs.data?.map((gig) => (
             <GigCard

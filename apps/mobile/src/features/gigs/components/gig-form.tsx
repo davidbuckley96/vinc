@@ -295,8 +295,8 @@ export function GigForm({
               </Text>
             </View>
             <Text style={[styles.feeNote, { color: theme.primarySoftMeta }]}>
-              O valor não pode ser alterado. Para pagar outro valor, exclua esta vaga (o valor
-              do prestador volta para você) e crie uma nova.
+              O valor não pode ser alterado. Para combinar outro valor, exclua esta vaga (nada
+              foi pago ainda) e crie uma nova.
             </Text>
           </View>
         </>
@@ -338,6 +338,9 @@ export function GigForm({
                   {formatBRL(pricing.totalCents)}
                 </Text>
               </View>
+              <Text style={[styles.feeNote, { color: theme.primarySoftMeta }]}>
+                💡 Publicar é grátis — você só paga quando escolher um candidato, por Pix.
+              </Text>
             </View>
           )}
         </>

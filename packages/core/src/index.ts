@@ -1,6 +1,7 @@
 export * from "./gig";
 export * from "./gig-draft";
 export * from "./location";
+export * from "./moderation";
 export * from "./money";
 export * from "./payout";
 export * from "./pricing";

@@ -1,9 +1,9 @@
 // Edge Function: create-gig
-// Publishes a gig with the upfront payment (docs/02 §5.1 — D-013/D-014):
-// the poster chooses the exact amount the WORKER receives
-// (draft.priceCents) and pays that amount + the platform service fee (non
-// refundable) at creation. Runs with the service role because money moves
-// here; the client INSERT policy was removed in migration 0006.
+// Publishing is FREE (D-040): the gig is born OPEN and the Pix (worker
+// amount + platform fee) happens only when the poster CHOOSES a
+// candidate (decide-candidacy). With no money at the door, the spam
+// defenses are: no contact info in the ad text, a cap on simultaneous
+// open gigs for accounts without history, and 1 CPF = 1 account (D-038).
 //
 // Deploy: Management API multipart (see docs/05 roadmap).
 
@@ -11,13 +11,13 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 import { validateGigDraft, type GigDraft } from "../../../packages/core/src/gig-draft.ts";
 import { approximateLocation, deriveAreaLabel } from "../../../packages/core/src/location.ts";
+import { containsContactInfo } from "../../../packages/core/src/moderation.ts";
 import { computeGigPricing } from "../../../packages/core/src/pricing.ts";
-import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 type ResultCode =
   | "created"
-  | "created_pending_payment"
-  | "payment_failed"
+  | "contact_in_text"
+  | "too_many_open_gigs"
   | "unauthorized"
   | "invalid_draft"
   | "invalid_request";
@@ -53,6 +53,11 @@ Deno.serve(async (request) => {
   const errors = validateGigDraft(draft, new Date());
   if (errors.length > 0) return respond("invalid_draft", 400, { errors });
 
+  // Contact happens inside the app, after the paid choice (D-040).
+  if (containsContactInfo(`${draft.title} ${draft.description}`)) {
+    return respond("contact_in_text", 400);
+  }
+
   const admin = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -62,7 +67,27 @@ Deno.serve(async (request) => {
   if (userError || !userData.user) return respond("unauthorized", 401);
   const posterId = userData.user.id;
 
-  // draft.priceCents is what the WORKER receives; the fee goes on top.
+  // Cap on simultaneous open gigs: 3 without completed history as a
+  // poster, 10 with (free posting must not mean free flooding — D-040).
+  const [{ count: openCount }, { count: doneCount }] = await Promise.all([
+    admin
+      .from("gigs")
+      .select("id", { count: "exact", head: true })
+      .eq("poster_id", posterId)
+      .in("status", ["open", "pending_payment"]),
+    admin
+      .from("gigs")
+      .select("id", { count: "exact", head: true })
+      .eq("poster_id", posterId)
+      .eq("status", "completed"),
+  ]);
+  const limit = (doneCount ?? 0) > 0 ? 10 : 3;
+  if ((openCount ?? 0) >= limit) {
+    return respond("too_many_open_gigs", 409, { limit });
+  }
+
+  // draft.priceCents is what the WORKER receives; the fee goes on top and
+  // is charged at the choice (fee_cents stored now, used then).
   const pricing = computeGigPricing(draft.priceCents);
 
   // Candidates see only the area + fuzzed pin (D-028); the exact address
@@ -72,10 +97,6 @@ Deno.serve(async (request) => {
     ? approximateLocation(draft.lat, draft.lng)
     : null;
 
-  // Two-phase publication (D-035, 3.2): the gig is born PENDING_PAYMENT;
-  // the simulated provider confirms instantly (MVP behaviour unchanged),
-  // while the gateway returns a Pix QR and the payment-webhook publishes
-  // the gig — and writes the ledger — once the payment lands.
   const { data: gig, error: insertError } = await admin
     .from("gigs")
     .insert({
@@ -90,7 +111,7 @@ Deno.serve(async (request) => {
       area: deriveAreaLabel(address),
       approx_lat: approx?.lat ?? null,
       approx_lng: approx?.lng ?? null,
-      status: "pending_payment",
+      status: "open",
     })
     .select("id")
     .single();
@@ -103,42 +124,5 @@ Deno.serve(async (request) => {
     lng: draft.lng ?? null,
   });
 
-  let charge;
-  try {
-    charge = await getPaymentProvider(admin).chargePoster({
-      posterId,
-      gigId: gig.id,
-      netCents: pricing.netCents,
-      feeCents: pricing.feeCents,
-    });
-  } catch (error) {
-    console.error(`charge failed for gig ${gig.id}:`, error);
-    await admin.from("gigs").delete().eq("id", gig.id).eq("status", "pending_payment");
-    return respond("payment_failed", 502);
-  }
-
-  if (charge.status === "confirmed") {
-    // Upfront payment (total = net + fee): non-refundable fee + escrowed
-    // worker amount (docs/02 §5.1 — D-014).
-    await admin
-      .from("gigs")
-      .update({ status: "open" })
-      .eq("id", gig.id)
-      .eq("status", "pending_payment");
-    await admin.from("ledger_entries").insert([
-      { user_id: posterId, gig_id: gig.id, type: "fee", amount_cents: -pricing.feeCents },
-      { user_id: posterId, gig_id: gig.id, type: "escrow_hold", amount_cents: -pricing.netCents },
-    ]);
-    return respond("created", 200, { gigId: gig.id });
-  }
-
-  return respond("created_pending_payment", 200, {
-    gigId: gig.id,
-    payment: {
-      chargeId: charge.chargeId,
-      qrCode: charge.qrCode,
-      qrCodeBase64: charge.qrCodeBase64,
-      totalCents: pricing.totalCents,
-    },
-  });
+  return respond("created", 200, { gigId: gig.id });
 });

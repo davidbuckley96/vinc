@@ -24,7 +24,7 @@ import { useGigPayment } from '../hooks';
 const STEPS = [
   { bold: 'Copie o código Pix', rest: 'toque no botão roxo abaixo' },
   { bold: 'Abra o app do seu banco', rest: 'e escolha Pix → copia e cola' },
-  { bold: 'Cole e pague', rest: 'sua vaga publica sozinha na hora' },
+  { bold: 'Cole e pague', rest: 'seu candidato é confirmado na hora' },
 ];
 
 /**
@@ -73,7 +73,7 @@ export function PayGigScreen() {
               <Ionicons name="chevron-back" size={22} color={theme.onPrimary} />
               <View>
                 <Text style={[styles.headerTitle, { color: theme.onPrimary }]}>
-                  Pagar e publicar
+                  Confirmar o candidato
                 </Text>
                 {service.data && payment.data && (
                   <Text
@@ -91,7 +91,7 @@ export function PayGigScreen() {
           {payment.isLoading && <ActivityIndicator color={theme.primary} />}
           {payment.isSuccess && !payment.data && (
             <Text style={[styles.note, { color: theme.textSecondary }]}>
-              Esta vaga não tem pagamento pendente.
+              Este serviço não tem pagamento pendente.
             </Text>
           )}
 
@@ -135,13 +135,13 @@ export function PayGigScreen() {
                 <View style={[styles.status, { backgroundColor: '#ECFDF5' }]}>
                   <Ionicons name="checkmark-circle" size={16} color={theme.success} />
                   <Text style={[styles.statusLabel, { color: theme.success }]}>
-                    Pagamento confirmado — publicando sua vaga…
+                    Pagamento confirmado — fechando com o candidato…
                   </Text>
                 </View>
               ) : payment.data.status === 'expired' ? (
                 <View style={[styles.status, { backgroundColor: theme.dangerSoft }]}>
                   <Text style={[styles.statusLabel, { color: theme.danger }]}>
-                    O prazo de pagamento passou e o anúncio foi descartado sem custo.
+                    O prazo de pagamento passou e a escolha foi desfeita sem custo — a vaga continua aberta.
                   </Text>
                 </View>
               ) : (
@@ -172,7 +172,7 @@ export function PayGigScreen() {
                       </Text>
                     ))}
                   <Text style={[styles.note, { color: theme.textSecondary }]}>
-                    Sem pagamento em 1 hora, o anúncio é descartado sem custo.
+                    Sem pagamento em 30 minutos, a escolha é desfeita sem custo e a vaga continua aberta. O candidato só é avisado depois que o Pix cai.
                   </Text>
                 </>
               )}

@@ -34,21 +34,17 @@ export function PostScreen() {
     }
     try {
       const outcome = await createGig.mutateAsync(draft);
-      // Gateway mode (D-035): the gig waits for the Pix — go pay it.
-      if (outcome.code === 'created_pending_payment' && outcome.gigId) {
-        setFormKey((key) => key + 1);
-        router.push(`/pay/${outcome.gigId}`);
-        return;
-      }
       if (outcome.code !== 'created') {
         setFeedback({
           kind: 'error',
           text:
             outcome.code === 'unauthorized'
               ? 'Entre na sua conta para anunciar.'
-              : outcome.code === 'payment_failed'
-                ? 'Não foi possível gerar a cobrança Pix. Tente de novo.'
-                : 'Não foi possível publicar. Verifique os dados e tente de novo.',
+              : outcome.code === 'contact_in_text'
+                ? 'Não coloque telefone, e-mail ou links no anúncio — o contato acontece pelo app depois da escolha.'
+                : outcome.code === 'too_many_open_gigs'
+                  ? `Você já tem ${outcome.limit ?? 3} vagas abertas. Conclua ou exclua uma para anunciar outra.`
+                  : 'Não foi possível publicar. Verifique os dados e tente de novo.',
         });
         return;
       }
@@ -58,7 +54,7 @@ export function PostScreen() {
         text:
           status === 'unconfigured'
             ? 'Modo demonstração: a vaga seria publicada agora.'
-            : `Vaga publicada! ${formatBRL(pricing.totalCents)} saíram da sua carteira (${formatBRL(pricing.netCents)} reservados para o prestador).`,
+            : `Vaga publicada de graça! Você só paga os ${formatBRL(pricing.totalCents)} quando escolher um candidato.`,
       });
       setFormKey((key) => key + 1);
     } catch {

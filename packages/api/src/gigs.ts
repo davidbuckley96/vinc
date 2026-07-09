@@ -242,8 +242,10 @@ export async function fetchCandidates(
 
 export type DecideCandidacyResult =
   | "chosen"
+  | "chosen_pending_payment"
   | "refused"
   | "candidate_unavailable"
+  | "payment_failed"
   | "unauthorized"
   | "not_found"
   | "forbidden"
@@ -252,12 +254,24 @@ export type DecideCandidacyResult =
   | "invalid_request"
   | "network_error";
 
-/** Poster chooses/refuses one candidacy (decide-candidacy — D-024). */
+export interface DecideCandidacyOutcome {
+  code: DecideCandidacyResult;
+  /** Present when code is chosen_pending_payment (D-040). */
+  gigId?: string;
+  payment?: PendingPixPayment;
+}
+
+/**
+ * Poster chooses/refuses one candidacy (decide-candidacy — D-024). Since
+ * D-040 choosing charges the Pix: the simulated provider confirms on the
+ * spot (chosen); the gateway returns chosen_pending_payment + QR and the
+ * app routes the poster to the payment screen.
+ */
 export async function decideCandidacy(
   client: SupabaseClient,
   candidacyId: string,
   action: "choose" | "refuse",
-): Promise<DecideCandidacyResult> {
+): Promise<DecideCandidacyOutcome> {
   const { data, error } = await client.functions.invoke("decide-candidacy", {
     body: { candidacyId, action },
   });
@@ -265,15 +279,15 @@ export async function decideCandidacy(
     try {
       const context = (error as { context?: Response }).context;
       if (context) {
-        const body = (await context.json()) as { code?: DecideCandidacyResult };
-        if (body.code) return body.code;
+        const body = (await context.json()) as DecideCandidacyOutcome;
+        if (body.code) return body;
       }
     } catch {
       // fall through
     }
-    return "network_error";
+    return { code: "network_error" };
   }
-  return (data as { code?: DecideCandidacyResult })?.code ?? "network_error";
+  return (data as DecideCandidacyOutcome | null) ?? { code: "network_error" };
 }
 
 /**
@@ -537,8 +551,8 @@ export async function cancelGig(
 
 export type CreateGigResult =
   | "created"
-  | "created_pending_payment"
-  | "payment_failed"
+  | "contact_in_text"
+  | "too_many_open_gigs"
   | "unauthorized"
   | "invalid_draft"
   | "invalid_request"
@@ -555,15 +569,14 @@ export interface PendingPixPayment {
 export interface CreateGigOutcome {
   code: CreateGigResult;
   gigId?: string;
-  /** Present when code is created_pending_payment. */
-  payment?: PendingPixPayment;
+  /** Cap that was hit when code is too_many_open_gigs. */
+  limit?: number;
 }
 
 /**
- * Publishes via the create-gig Edge Function: the poster pays upfront
- * (escrowed worker amount + platform fee on top — docs/02 §5.1,
- * D-013/D-014). draft.priceCents is what the WORKER receives. In gateway
- * mode the gig waits for the Pix payment (created_pending_payment).
+ * Publishes via the create-gig Edge Function. Publishing is free (D-040):
+ * the Pix (worker amount + fee) happens when the poster CHOOSES a
+ * candidate. draft.priceCents is what the WORKER receives.
  */
 export async function createGig(
   client: SupabaseClient,
@@ -591,7 +604,7 @@ export async function createGig(
 export async function fetchGigPayment(
   client: SupabaseClient,
   gigId: string,
-): Promise<(PendingPixPayment & { status: "pending" | "confirmed" | "expired" }) | null> {
+): Promise<(PendingPixPayment & { status: "pending" | "confirmed" | "expired" | "refunded" }) | null> {
   const { data, error } = await client
     .from("gig_payments")
     .select("charge_id, status, amount_total_cents, qr_code, qr_code_base64")
@@ -606,4 +619,18 @@ export async function fetchGigPayment(
     qrCode: (data.qr_code as string | null) ?? null,
     qrCodeBase64: (data.qr_code_base64 as string | null) ?? null,
   };
+}
+
+/** Reports a gig for moderation (D-040); one report per user per gig. */
+export async function reportGig(
+  client: SupabaseClient,
+  gigId: string,
+  reporterId: string,
+  reason: string,
+): Promise<"reported" | "already_reported" | "error"> {
+  const { error } = await client
+    .from("gig_reports")
+    .insert({ gig_id: gigId, reporter_id: reporterId, reason });
+  if (!error) return "reported";
+  return error.code === "23505" ? "already_reported" : "error";
 }

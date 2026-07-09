@@ -1,17 +1,24 @@
-// Edge Function: payment-webhook (Fase 3.2 — D-035)
-// Receives the provider's payment notification and PUBLISHES the gig:
-// pending_payment → open + the upfront ledger entries (fee + escrow).
+// Edge Function: payment-webhook (Fase 3.2 — D-035; reshaped by D-040)
+// Receives the provider's payment notification and FINALIZES the choice:
+// the gig holding a paid candidacy becomes accepted (worker set, ledger
+// fee + escrow written, check-in code, "chosen" notification — all only
+// now, after the money landed).
+//
+// If the choice is gone (expired after 30 min, candidate withdrew or got
+// busy) the payment is refunded in full — the service didn't happen, so
+// the platform keeps nothing (D-040). The refund is claimed atomically
+// on the charge row, so replayed webhooks can't double-refund.
 //
 // Security: the notification body is NEVER trusted — only the payment id
 // is read from it; the payment status and gig id come from re-fetching
-// the payment at the provider with our own credentials. Publishing is
-// idempotent (atomic conditional status update), so replayed webhooks
-// can't double-write the ledger. Deployed with verify_jwt=false — the
-// provider cannot send Supabase JWTs.
+// the payment at the provider with our own credentials. Deployed with
+// verify_jwt=false — the provider cannot send Supabase JWTs.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+import { finalizeChosenCandidacy } from "../_shared/choice.ts";
 import { fetchPaymentStatus } from "../_shared/mercadopago.ts";
+import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -62,26 +69,34 @@ Deno.serve(async (request) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  // Idempotent publish: only the first approval wins this transition and
-  // therefore only one ledger write can ever happen.
-  const { data: published } = await admin
-    .from("gigs")
-    .update({ status: "open" })
-    .eq("id", payment.gigId)
-    .eq("status", "pending_payment")
-    .select("id, poster_id, price_cents, fee_cents");
-  if (!published || published.length === 0) return ok({ ignored: "already published" });
-  const gig = published[0];
+  const result = await finalizeChosenCandidacy(admin, payment.gigId);
+  if (result === "finalized") return ok({ accepted: payment.gigId });
 
-  await admin.from("ledger_entries").insert([
-    { user_id: gig.poster_id, gig_id: gig.id, type: "fee", amount_cents: -gig.fee_cents },
-    { user_id: gig.poster_id, gig_id: gig.id, type: "escrow_hold", amount_cents: -gig.price_cents },
-  ]);
-  await admin
+  // Choice gone (or replayed webhook): refund once — the atomic pending →
+  // refunded claim on the charge row settles races and replays.
+  const { data: refundable } = await admin
     .from("gig_payments")
-    .update({ status: "confirmed", confirmed_at: new Date().toISOString() })
-    .eq("gig_id", gig.id)
-    .eq("status", "pending");
+    .update({ status: "refunded" })
+    .eq("charge_id", chargeId)
+    .eq("status", "pending")
+    .select("gig_id, amount_total_cents");
+  if (!refundable || refundable.length === 0) return ok({ ignored: "already settled" });
 
-  return ok({ published: gig.id });
+  const { data: gig } = await admin
+    .from("gigs")
+    .select("poster_id")
+    .eq("id", payment.gigId)
+    .maybeSingle();
+  try {
+    await getPaymentProvider(admin).refundPoster({
+      posterId: gig?.poster_id ?? "",
+      gigId: payment.gigId,
+      amountCents: refundable[0].amount_total_cents,
+      chargeId,
+    });
+  } catch (error) {
+    // The row is already marked refunded — surface loudly for the admin.
+    console.error(`webhook: refund of stale charge ${chargeId} FAILED:`, error);
+  }
+  return ok({ refunded: payment.gigId });
 });

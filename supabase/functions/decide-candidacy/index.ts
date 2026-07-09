@@ -1,12 +1,14 @@
 // Edge Function: decide-candidacy
 // The poster CHOOSES one candidate or REFUSES one, by candidacy id
-// (docs/02 §3, D-024):
-//   - choose: re-checks the candidate's schedule (they may have been
-//     chosen elsewhere while waiting; conflict → auto-refuse), then
-//     open → accepted atomically; other pending candidacies of the gig
-//     become not_chosen (free to apply elsewhere, no penalty).
+// (docs/02 §3, D-024). Since D-040 the CHOICE is where the money enters:
 //   - refuse: permanent for THIS gig only; the gig stays open.
-// No money moves here — the escrow was held at creation (D-013).
+//   - choose: re-checks the candidate's schedule, then moves the gig to
+//     pending_payment holding the candidacy and charges worker amount +
+//     fee via the PaymentProvider. Simulated provider confirms instantly
+//     (choice finalizes here); the gateway returns a Pix QR and the
+//     payment-webhook finalizes when it lands. The candidate is only
+//     notified AFTER the payment confirms — an unpaid choice reopens in
+//     30 minutes and nobody ever knew.
 //
 // Deploy: Management API multipart (see docs/05 roadmap).
 
@@ -14,11 +16,15 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 import { ACTIVE_WORKER_STATUSES } from "../../../packages/core/src/gig.ts";
 import { hasScheduleConflict } from "../../../packages/core/src/schedule.ts";
+import { finalizeChosenCandidacy } from "../_shared/choice.ts";
+import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 type ResultCode =
   | "chosen"
+  | "chosen_pending_payment"
   | "refused"
   | "candidate_unavailable"
+  | "payment_failed"
   | "unauthorized"
   | "not_found"
   | "forbidden"
@@ -31,8 +37,8 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function respond(code: ResultCode, status: number): Response {
-  return new Response(JSON.stringify({ code }), {
+function respond(code: ResultCode, status: number, extra: object = {}): Response {
+  return new Response(JSON.stringify({ code, ...extra }), {
     status,
     headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
   });
@@ -74,7 +80,7 @@ Deno.serve(async (request) => {
 
   const { data: gig } = await admin
     .from("gigs")
-    .select("id, poster_id, status, starts_at, ends_at")
+    .select("id, poster_id, status, starts_at, ends_at, price_cents, fee_cents")
     .eq("id", candidacy.gig_id)
     .maybeSingle();
   if (!gig) return respond("not_found", 404);
@@ -115,32 +121,54 @@ Deno.serve(async (request) => {
     return respond("candidate_unavailable", 409);
   }
 
-  // Atomic: only one choice can win the open → accepted transition.
-  const { data: accepted } = await admin
+  // Atomic: only one choice can hold the gig for payment (D-040). The
+  // candidacy stays pending — the candidate learns nothing until the
+  // payment confirms.
+  const { data: held } = await admin
     .from("gigs")
     .update({
-      status: "accepted",
-      worker_id: candidacy.worker_id,
-      accepted_at: new Date().toISOString(),
+      status: "pending_payment",
+      pending_candidacy_id: candidacy.id,
+      choice_pending_since: new Date().toISOString(),
     })
     .eq("id", gig.id)
     .eq("status", "open")
     .select("id");
-  if (!accepted || accepted.length === 0) return respond("state_changed", 409);
+  if (!held || held.length === 0) return respond("state_changed", 409);
 
-  await admin
-    .from("gig_candidacies")
-    .update({ status: "chosen" })
-    .eq("id", candidacy.id);
-  // Check-in code (D-028): shown to the poster, typed by the worker on
-  // arrival to start the service — proof of presence for disputes.
-  const code = String(Math.floor(1000 + Math.random() * 9000));
-  await admin.from("gig_checkin_codes").upsert({ gig_id: gig.id, code });
-  await admin
-    .from("gig_candidacies")
-    .update({ status: "not_chosen" })
-    .eq("gig_id", gig.id)
-    .eq("status", "pending");
+  let charge;
+  try {
+    charge = await getPaymentProvider(admin).chargePoster({
+      posterId: userId,
+      gigId: gig.id,
+      netCents: gig.price_cents,
+      feeCents: gig.fee_cents,
+    });
+  } catch (error) {
+    console.error(`choice charge failed for gig ${gig.id}:`, error);
+    await admin
+      .from("gigs")
+      .update({ status: "open", pending_candidacy_id: null, choice_pending_since: null })
+      .eq("id", gig.id)
+      .eq("status", "pending_payment");
+    return respond("payment_failed", 502);
+  }
 
-  return respond("chosen", 200);
+  if (charge.status === "confirmed") {
+    // Simulated provider (default until the CNPJ): finalize right away.
+    const result = await finalizeChosenCandidacy(admin, gig.id);
+    return result === "finalized"
+      ? respond("chosen", 200)
+      : respond("state_changed", 409);
+  }
+
+  return respond("chosen_pending_payment", 200, {
+    gigId: gig.id,
+    payment: {
+      chargeId: charge.chargeId,
+      qrCode: charge.qrCode,
+      qrCodeBase64: charge.qrCodeBase64,
+      totalCents: gig.price_cents + gig.fee_cents,
+    },
+  });
 });

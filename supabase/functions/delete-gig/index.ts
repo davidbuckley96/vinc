@@ -1,16 +1,15 @@
 // Edge Function: delete-gig
 // The poster deletes their own gig BEFORE approving anyone (docs/02 §5.1,
-// D-013): open/pending_approval → cancelled_by_poster, the escrowed worker
-// amount is refunded to the poster and the service fee stays with the
-// platform. Deleting after approval is a cancellation with a fine — a
-// separate flow, not this function (docs/07 #1).
+// D-013/D-040): open/pending_approval → cancelled_by_poster. Since D-040
+// nothing was paid before the choice, so there is no money to move here.
+// Deleting after approval is a cancellation with a fine — a separate
+// flow, not this function.
 //
 // Deploy: Management API multipart (see docs/05 roadmap).
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 import { posterCanDelete, type GigStatus } from "../../../packages/core/src/gig.ts";
-import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 type ResultCode =
   | "deleted"
@@ -60,16 +59,16 @@ Deno.serve(async (request) => {
 
   const { data: gig } = await admin
     .from("gigs")
-    .select("id, poster_id, status, price_cents")
+    .select("id, poster_id, status")
     .eq("id", gigId)
     .maybeSingle();
   if (!gig) return respond("not_found", 404);
   if (gig.poster_id !== userId) return respond("forbidden", 403);
   if (!posterCanDelete(gig.status as GigStatus)) return respond("not_deletable", 409);
 
-  // Atomic: only the caller that wins this conditional UPDATE refunds, so
-  // the escrow can never be refunded twice. A pending candidate's id is
-  // kept for history (migration 0008 allows either).
+  // Atomic conditional UPDATE: races with a concurrent choice/expiry
+  // resolve to state_changed. A pending candidate's id is kept for
+  // history (migration 0008 allows either).
   const { data: cancelled } = await admin
     .from("gigs")
     .update({ status: "cancelled_by_poster" })
@@ -78,18 +77,6 @@ Deno.serve(async (request) => {
     .select("id");
   if (!cancelled || cancelled.length === 0) return respond("state_changed", 409);
 
-  // Refund only the worker amount; the fee is non-refundable (docs/02 §5.1).
-  await admin.from("ledger_entries").insert({
-    user_id: userId,
-    gig_id: gig.id,
-    type: "refund",
-    amount_cents: gig.price_cents,
-  });
-  await getPaymentProvider(admin).refundPoster({
-    posterId: userId,
-    gigId: gig.id,
-    amountCents: gig.price_cents,
-  });
-
+  // No refund and no ledger: nothing was paid before the choice (D-040).
   return respond("deleted", 200);
 });

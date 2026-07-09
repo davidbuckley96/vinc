@@ -25,6 +25,7 @@ import {
   useGig,
   useMyCandidacy,
   useMyPriority,
+  useReportGig,
   useWithdrawCandidacy,
 } from '../hooks';
 
@@ -69,6 +70,20 @@ export function GigDetailScreen() {
   const [applied, setApplied] = useState(false);
   const withdraw = useWithdrawCandidacy(id);
   const [withdrawArmed, setWithdrawArmed] = useState(false);
+  const report = useReportGig(id);
+  const [reportArmed, setReportArmed] = useState(false);
+  const [reported, setReported] = useState(false);
+
+  // Report for moderation (D-040): two taps, once per user per gig.
+  const onReport = async () => {
+    if (!reportArmed) {
+      setReportArmed(true);
+      return;
+    }
+    setReportArmed(false);
+    const result = await report.mutateAsync();
+    if (result !== 'error') setReported(true);
+  };
 
   // Withdraw a pending candidacy (D-039): no penalty, re-apply allowed.
   const onWithdraw = async () => {
@@ -301,6 +316,22 @@ export function GigDetailScreen() {
                 </Text>
               </>
             )}
+
+            {status === 'signedIn' && (
+              <Pressable
+                accessibilityRole="button"
+                disabled={report.isPending || reported}
+                onPress={onReport}
+                style={styles.reportLink}>
+                <Text style={[styles.reportLabel, { color: theme.textSecondary }]}>
+                  {reported
+                    ? 'Denúncia enviada. Obrigado por ajudar a manter o Vinc seguro.'
+                    : reportArmed
+                      ? 'Toque de novo para confirmar a denúncia'
+                      : '🚩 Denunciar esta vaga'}
+                </Text>
+              </Pressable>
+            )}
           </ScrollView>
         )}
       </View>
@@ -413,6 +444,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     textDecorationLine: 'underline',
+  },
+  reportLink: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginTop: 4,
+  },
+  reportLabel: {
+    fontSize: 11.5,
   },
   note: {
     fontSize: 12,

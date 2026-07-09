@@ -47,6 +47,9 @@ export interface RefundPosterInput {
   posterId: string;
   gigId: string;
   amountCents: number;
+  /** Refund THIS charge (stale-choice refunds — D-040); defaults to the
+   * gig's confirmed charge. */
+  chargeId?: string;
 }
 
 /** Fine share paid to the harmed party (D-018/D-027). */

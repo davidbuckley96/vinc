@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { Candidate, DecideCandidacyResult } from '@vinc/api';
+import type { Candidate, DecideCandidacyOutcome } from '@vinc/api';
 
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -23,6 +24,7 @@ interface CandidateListProps {
  */
 export function CandidateList({ gigId, enabled }: CandidateListProps) {
   const theme = useTheme();
+  const router = useRouter();
   const candidates = useCandidates(gigId, enabled);
   const decision = useDecideCandidacy(gigId);
 
@@ -40,10 +42,16 @@ export function CandidateList({ gigId, enabled }: CandidateListProps) {
     }
     setRefuseArmedId(null);
     setFeedback(null);
-    const result: DecideCandidacyResult = await decision.mutateAsync({
+    const outcome: DecideCandidacyOutcome = await decision.mutateAsync({
       candidacyId: candidate.candidacyId,
       action,
     });
+    const result = outcome.code;
+    if (result === 'chosen_pending_payment' && outcome.gigId) {
+      // D-040: the choice holds for 30 min — pay the Pix to confirm it.
+      router.push(`/pay/${outcome.gigId}`);
+      return;
+    }
     if (result === 'chosen') {
       setFeedback({
         kind: 'success',

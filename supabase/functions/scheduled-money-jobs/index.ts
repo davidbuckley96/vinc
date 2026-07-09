@@ -1,10 +1,11 @@
-// Edge Function: scheduled-money-jobs (Fase 3.4 — D-035)
-// The two maintenance jobs that MOVE MONEY, moved out of SQL so they can
-// call the PaymentProvider port:
-//   1. Expiration (D-022): gigs that reached their start time with
-//      nobody approved expire and the NET is refunded (the fee stays).
+// Edge Function: scheduled-money-jobs (Fase 3.4 — D-035; D-040)
+// Maintenance jobs on a schedule:
+//   1. Expiration (D-022/D-040): gigs that reached their start time with
+//      nobody approved expire. Nothing was paid before the choice, so no
+//      money moves — a choice still awaiting payment at start time also
+//      expires, and its late Pix (if any) is refunded by the webhook.
 //   2. 48h auto-release (D-028): unanswered completions release the
-//      escrow to the worker.
+//      escrow to the worker (money — via the PaymentProvider port).
 // Invoked by pg_cron via pg_net every 15 min (migration 0025); gated by
 // the x-cron-secret header. Both loops use atomic conditional updates —
 // only the caller that wins the transition moves money, so overlapping
@@ -34,32 +35,27 @@ Deno.serve(async (request) => {
   const provider = getPaymentProvider(admin);
 
   // ---- 1. Expire gigs past their start with nobody approved (D-022).
+  // No money moves here since D-040: nothing is paid before the choice.
   let expired = 0;
   const { data: dueGigs } = await admin
     .from("gigs")
-    .select("id, poster_id, price_cents, status")
-    .in("status", ["open", "pending_approval"])
+    .select("id, status")
+    .in("status", ["open", "pending_approval", "pending_payment"])
     .lte("starts_at", new Date().toISOString())
     .limit(100);
   for (const gig of dueGigs ?? []) {
     const { data: won } = await admin
       .from("gigs")
-      .update({ status: "expired", worker_id: null })
+      .update({
+        status: "expired",
+        worker_id: null,
+        pending_candidacy_id: null,
+        choice_pending_since: null,
+      })
       .eq("id", gig.id)
       .eq("status", gig.status)
       .select("id");
     if (!won || won.length === 0) continue;
-    await admin.from("ledger_entries").insert({
-      user_id: gig.poster_id,
-      gig_id: gig.id,
-      type: "refund",
-      amount_cents: gig.price_cents,
-    });
-    await provider.refundPoster({
-      posterId: gig.poster_id,
-      gigId: gig.id,
-      amountCents: gig.price_cents,
-    });
     expired += 1;
   }
 
