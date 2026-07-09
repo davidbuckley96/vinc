@@ -18,6 +18,7 @@ import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 import { signInWithEmail, signInWithGoogle, signUpWithEmail } from '../auth-actions';
+import { PixKeySection, usePixKeyState } from '../components/pix-key-section';
 import { useSession } from '../session-context';
 
 type Mode = 'signIn' | 'signUp';
@@ -36,6 +37,7 @@ export function AuthScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const pixKey = usePixKeyState();
 
   if (status === 'signedIn') {
     return <Redirect href="/" />;
@@ -54,10 +56,21 @@ export function AuthScreen() {
       setError('Preencha e-mail e senha.');
       return;
     }
+    // Receiving key required at sign-up (D-038).
+    let payout = null;
+    if (signUp) {
+      const validation = pixKey.validate();
+      if (!validation.payload) {
+        setError(validation.error ?? 'Confira seu CPF e sua chave Pix.');
+        return;
+      }
+      payout = validation.payload;
+    }
     setBusy(true);
-    const result = signUp
-      ? await signUpWithEmail(name.trim(), email.trim(), password)
-      : await signInWithEmail(email.trim(), password);
+    const result =
+      signUp && payout
+        ? await signUpWithEmail(name.trim(), email.trim(), password, payout)
+        : await signInWithEmail(email.trim(), password);
     setBusy(false);
     if (!result.ok) {
       setError(result.error ?? 'Algo deu errado. Tente de novo.');
@@ -141,6 +154,8 @@ export function AuthScreen() {
               value={password}
               onChangeText={setPassword}
             />
+
+            {signUp && <PixKeySection state={pixKey} />}
 
             {error && <Text style={[styles.feedback, { color: theme.danger }]}>{error}</Text>}
             {notice && <Text style={[styles.feedback, { color: theme.success }]}>{notice}</Text>}

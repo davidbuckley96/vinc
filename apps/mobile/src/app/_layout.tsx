@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
+import { PayoutOnboardingGate } from '@/features/auth/components/payout-onboarding-gate';
 import { SessionProvider } from '@/features/auth/session-context';
 
 SplashScreen.preventAutoHideAsync();
@@ -33,6 +34,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
         <ThemeProvider value={navigationTheme}>
+          <PayoutOnboardingGate />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="auth" />

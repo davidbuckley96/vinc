@@ -8,6 +8,13 @@
 - **Conta única com dois papéis** (decisão D-004): qualquer usuário pode, com a
   mesma conta, **anunciar vagas** (papel *anunciante*) e **aceitar serviços**
   (papel *prestador*). Não há cadastro separado por papel.
+- **Criar a conta exige CPF + chave Pix de recebimento** (D-038): o
+  formulário pede o CPF com a caixa "usar meu CPF como chave Pix" marcada
+  por padrão; desmarcando, a pessoa informa outra chave válida (celular,
+  e-mail ou aleatória). Quem entra **com Google** (ou uma conta antiga sem
+  chave) passa por um **passo obrigatório de conclusão** no primeiro
+  acesso. A chave pode ser trocada depois (perfil → "Receber pagamentos").
+  Objetivo: nunca existir usuário sem como sacar.
 - A **reputação é unificada por pessoa**, mas exibida com contexto: avaliações
   recebidas como anunciante e como prestador, total de serviços concluídos
   (prestados e ofertados).
@@ -221,11 +228,17 @@ iniciadas e a candidatura a elas é recusada.
 - Multas são cobradas do saldo/forma de pagamento do anunciante infrator.
 - Todo movimento financeiro gera **registro imutável em ledger** (auditoria).
 
-### 5.2 Carteira (D-015/D-021 — implementada; design: rodada 6, opção C)
+### 5.2 Carteira (D-015/D-021/D-037 — implementada; design: rodada 6, opção C)
 
 Duas abas ("Disponível" / "Em processamento"), saldo único em destaque,
 saque fixo embaixo e extrato na tela "Histórico". Regras:
 
+- A carteira guarda **só o dinheiro que o usuário RECEBEU** (pagamentos de
+  serviços e compensações), menos multas cobradas e saques (D-037). Os
+  custos de anunciar (valor + taxa) são pagos **fora da carteira** — Pix
+  na publicação — e as devoluções (expiração, exclusão, cancelamento,
+  disputa) voltam **por Pix**; esses lançamentos aparecem apenas no
+  extrato. Assim a lista "Disponível" sempre soma o saldo exibido.
 - A carteira destaca **um único saldo: o disponível para saque** — o total
   recebido desde o último saque. Serviços **ainda não prestados não
   aparecem** na carteira (compromissos futuros vivem na agenda).
@@ -236,15 +249,12 @@ saque fixo embaixo e extrato na tela "Histórico". Regras:
   passa por análise e é **aceito ou negado** (processo de disputas, §6).
 - Vencido o prazo sem contestação (ou com a contestação negada), o valor
   migra automaticamente para o **saldo disponível**.
-- O saldo disponível pode ser:
-  - **sacado para a conta bancária do usuário** — via **Pix** no
-    lançamento; demais opções (cartões, carteiras digitais como Mercado
-    Pago/PicPay) seguem a direção de D-016 e a escolha do gateway (⚠️
-    dúvida #17);
-  - **usado, integral ou parcialmente, para criar vagas**: a opção aparece
-    **na hora do pagamento do anúncio** (quadro da taxa), não como botão na
-    carteira (D-021). No MVP simulado o saldo é a própria forma de
-    pagamento; a escolha saldo × outro meio chega com o gateway (Fase 3).
+- O saldo disponível é **sacado para a chave Pix cadastrada** (D-035/
+  D-036); demais opções (cartões, carteiras digitais) seguem a direção de
+  D-016 e a escolha do gateway (⚠️ dúvida #17). O saldo **não paga
+  anúncios** (D-037 revê essa parte de D-021): pagar com o saldo exigiria
+  transferências internas no provedor — pode voltar como melhoria depois
+  do lançamento.
 - O **extrato completo** (todos os pagamentos e recebimentos) sai da tela
   principal e fica atrás de um botão **"Ver histórico"**.
 

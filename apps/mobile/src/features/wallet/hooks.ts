@@ -74,7 +74,16 @@ export function useSavePayoutAccount() {
       if (!supabase || !userId) return; // demo mode: pretend success
       await savePayoutAccount(supabase, userId, input);
     },
-    onSuccess: () => {
+    onSuccess: (_, input) => {
+      // Write the fresh account into the cache BEFORE any navigation:
+      // the onboarding gate (D-038) reads this query and would bounce
+      // the user back while a refetch is still in flight.
+      queryClient.setQueryData<PayoutAccount>(['payout-account', userId ?? 'anonymous'], {
+        pixKeyType: input.pixKeyType,
+        pixKey: input.pixKey,
+        holderCpf: input.holderCpf,
+        status: 'pending',
+      });
       queryClient.invalidateQueries({ queryKey: ['payout-account'] });
     },
   });

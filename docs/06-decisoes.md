@@ -589,3 +589,37 @@ Alternativas descartadas: cartão de destino no topo (B, roubava espaço da
 lista) e destino só na confirmação do saque (C, quem nunca saca não
 descobre a pendência). A máscara é função pura no domínio
 (`maskPixKey` em `packages/core/src/payout.ts`).
+
+## D-037 — Carteira separada dos custos de anúncio (revê parte de D-021)
+**Data:** 2026-07-09 · **Decidido por:** David
+
+Gatilho: David notou que a lista "Disponível" (R$ 20 + R$ 150) não somava
+o saldo exibido (R$ 165) — a diferença era uma taxa de −R$ 5 de uma vaga
+anunciada pela própria pessoa, que debitava o saldo sem aparecer na lista.
+Com o pagamento real (Fase 3), o anúncio é pago **por Pix na publicação**;
+manter o débito na carteira cobraria a pessoa duas vezes.
+
+Decisão: **a carteira guarda só o dinheiro que o usuário recebeu**
+(`escrow_release`, `fine` ±) menos saques (`withdrawal`). Os lançamentos
+do lado do anúncio (`fee`, `escrow_hold`, `refund`) acontecem fora da
+carteira — Pix na ida e na volta — e aparecem apenas no extrato. Com isso
+a lista "Disponível" **sempre soma o saldo exibido** (multas do prestador
+aparecem como débito na lista). Fica revogada a parte de D-021 em que o
+saldo abatia o pagamento do anúncio (exigiria cobrança parcial +
+transferência interna no provedor; pode voltar como melhoria futura).
+Alternativa descartada: manter o abatimento (complexidade alta no modelo
+A de subcontas para um ganho pequeno no MVP).
+
+## D-038 — Chave Pix obrigatória na criação da conta
+**Data:** 2026-07-09 · **Decidido por:** David
+
+"A pessoa deve informar a chave Pix (ao menos a inicial) no ato de
+criação de conta, para não haver quem não consiga sacar; a chave segue
+alterável depois." Formato definido pelo David na rodada 15 (variante
+própria): o cadastro pede o **CPF** com uma caixa **"usar meu CPF como
+chave Pix" marcada por padrão**; ao desmarcar, aparecem o tipo (celular /
+e-mail / aleatória) e o campo da chave, validados antes de criar a conta.
+Quem entra **com Google** — ou conta antiga sem chave — cai num **passo
+obrigatório de conclusão** ("Falta só uma coisa") no primeiro acesso,
+com a mesma seção de CPF + chave e a opção de sair da conta. A troca
+posterior continua em perfil → "Receber pagamentos" (3.3/D-036).

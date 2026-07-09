@@ -2,6 +2,9 @@ import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { Platform } from 'react-native';
 
+import { savePayoutAccount } from '@vinc/api';
+import type { PixKeyType } from '@vinc/core';
+
 import { supabase } from '@/lib/supabase';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -35,14 +38,27 @@ export async function signUpWithEmail(
   name: string,
   email: string,
   password: string,
+  payout: { pixKeyType: PixKeyType; pixKey: string; holderCpf: string },
 ): Promise<AuthResult> {
   if (!supabase) return { ok: false, error: 'O servidor ainda não foi configurado.' };
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { name } },
   });
-  return error ? { ok: false, error: translateAuthError(error.message) } : { ok: true };
+  if (error) return { ok: false, error: translateAuthError(error.message) };
+  // Receiving key collected at sign-up (D-038). With email confirmation
+  // off the session is live and we save right away; with it on there is
+  // no session yet — the mandatory completion screen catches the account
+  // on the first sign-in.
+  if (data.session && data.user) {
+    try {
+      await savePayoutAccount(supabase, data.user.id, payout);
+    } catch {
+      // Non-fatal: the completion screen will ask again.
+    }
+  }
+  return { ok: true };
 }
 
 /**
