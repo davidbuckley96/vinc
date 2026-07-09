@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 14: Destino do saque na carteira</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --ok:#059669; --ok-soft:#ECFDF5; --warn:#B45309; --warn-soft:#FFFBEB; --cinza:#EDEFF2; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:920px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .head{background:var(--roxo);color:#fff;padding:26px 14px 14px;border-radius:0 0 22px 22px;display:flex;justify-content:space-between;align-items:center}
+  .head .t{font-size:16px;font-weight:800}
+  .head .hist{font-size:10.5px;font-weight:700;background:rgba(255,255,255,.18);border-radius:99px;padding:4px 10px}
+  .saldo{text-align:center;padding:16px 0 10px}
+  .saldo .l{font-size:10.5px;font-weight:800;letter-spacing:.5px;color:var(--roxo)}
+  .saldo .v{font-size:32px;font-weight:800;letter-spacing:-1px}
+  .saldo .c{font-size:10.5px;color:var(--ink2)}
+  .tabs{display:flex;background:var(--cinza);border-radius:11px;margin:0 14px;padding:3px}
+  .tabs div{flex:1;text-align:center;font-size:11.5px;font-weight:700;color:var(--ink2);padding:7px 0;border-radius:8px}
+  .tabs .on{background:#fff;color:var(--roxo-deep);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .list{flex:1;padding:8px 14px;display:flex;flex-direction:column}
+  .item{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+  .item .in .t{font-size:12.5px;font-weight:700}
+  .item .in .m{font-size:10.5px;color:var(--ink2);margin-top:1px}
+  .item .val{font-size:13px;font-weight:800;color:var(--ok)}
+  .foot{padding:12px 14px 16px;display:flex;flex-direction:column;gap:8px}
+  .cta{background:var(--roxo);color:#fff;border-radius:12px;padding:13px;text-align:center;font-size:13.5px;font-weight:800}
+  .cta.off{background:var(--cinza);color:var(--ink2)}
+  /* opção A — linha discreta no rodapé */
+  .dest-line{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;color:var(--ink2)}
+  .dest-line b{color:var(--ink);font-weight:700}
+  .dest-line .alt{color:var(--roxo-deep);font-weight:700;text-decoration:underline}
+  /* opção B — cartão de destino */
+  .dest-card{margin:10px 14px 0;border:1.5px solid var(--line);border-radius:13px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+  .dest-card .ic{width:34px;height:34px;border-radius:10px;background:var(--lilas);display:flex;align-items:center;justify-content:center;font-size:16px}
+  .dest-card .in{flex:1}
+  .dest-card .in .t{font-size:12px;font-weight:800}
+  .dest-card .in .m{font-size:10.5px;color:var(--ink2);margin-top:1px}
+  .dest-card .go{font-size:11px;font-weight:800;color:var(--roxo-deep)}
+  .chip-ok{display:inline-block;font-size:9px;font-weight:800;background:var(--ok-soft);color:var(--ok);border-radius:99px;padding:1.5px 7px;vertical-align:1px}
+  /* opção C — confirmação com destino */
+  .confirm{border:1.5px solid var(--roxo);border-radius:13px;padding:11px 12px;background:var(--lilas)}
+  .confirm .q{font-size:12.5px;font-weight:800;color:var(--roxo-deep);text-align:center}
+  .confirm .d{font-size:11px;color:var(--ink2);text-align:center;margin-top:3px;line-height:1.45}
+  .confirm .d b{color:var(--ink)}
+  /* variantes sem chave */
+  .variant{margin-top:12px;border:1.5px dashed #cdd2da;border-radius:16px;padding:10px 12px;background:#fff}
+  .variant .vt{font-size:10.5px;font-weight:800;color:var(--ink2);letter-spacing:.4px;margin-bottom:8px}
+  .warn-line{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--warn);font-weight:700;justify-content:center}
+  .warn-card{border:1.5px solid #F3E4C2;background:var(--warn-soft);border-radius:13px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+  .warn-card .ic{width:34px;height:34px;border-radius:10px;background:#FDF0D7;display:flex;align-items:center;justify-content:center;font-size:16px}
+  .warn-card .in{flex:1}
+  .warn-card .in .t{font-size:12px;font-weight:800;color:var(--warn)}
+  .warn-card .in .m{font-size:10.5px;color:var(--ink2);margin-top:1px}
+  .warn-card .go{font-size:11px;font-weight:800;color:var(--warn)}
+  .cta.mini{padding:11px;font-size:12.5px;margin-top:8px}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 14 de design: para onde vai o saque</h1>
+  <p class="sub">Com o pagamento real (Fase 3), o saque sai como <b>Pix para a chave cadastrada</b> (bloco 3.3). Hoje a carteira só descobre que falta a chave <b>depois</b> do toque em "Sacar", e quem já cadastrou não vê para onde o dinheiro vai. As 3 opções mostram o destino na carteira e convidam a cadastrar quando falta — cada uma com a variante "sem chave" logo abaixo do telefone.</p>
+
+  <div class="row">
+
+    <!-- A -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Carteira</div><div class="hist">Ver histórico</div></div>
+        <div class="saldo"><div class="l">DISPONÍVEL PARA SACAR</div><div class="v">R$ 100,00</div><div class="c">recebido desde o seu último saque</div></div>
+        <div class="tabs"><div class="on">Disponível</div><div>Em processamento</div></div>
+        <div class="list">
+          <div class="item"><div class="in"><div class="t">Faxina apartamento 60m²</div><div class="m">recebido ontem</div></div><div class="val">+ R$ 100,00</div></div>
+        </div>
+        <div class="foot">
+          <div class="dest-line">🔑 Vai para sua chave Pix <b>b•••@email.com</b> · <span class="alt">alterar</span></div>
+          <div class="cta">Sacar via Pix</div>
+        </div>
+      </div>
+      <div class="variant">
+        <div class="vt">SEM CHAVE CADASTRADA</div>
+        <div class="warn-line">⚠️ Cadastre sua chave Pix para poder sacar</div>
+        <div class="cta mini">Cadastrar chave Pix</div>
+      </div>
+      <h3>Opção A — linha discreta no rodapé</h3>
+      <span class="tag">mínima, zero ruído</span>
+      <p>Uma linha pequena acima do botão diz para onde o Pix vai, com "alterar" do lado. Sem chave, a linha vira aviso e o botão principal passa a levar direto ao cadastro. Não ocupa espaço da lista, mas a chave fica em letra miúda.</p>
+    </div>
+
+    <!-- B -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Carteira</div><div class="hist">Ver histórico</div></div>
+        <div class="saldo"><div class="l">DISPONÍVEL PARA SACAR</div><div class="v">R$ 100,00</div><div class="c">recebido desde o seu último saque</div></div>
+        <div class="dest-card">
+          <div class="ic">🔑</div>
+          <div class="in"><div class="t">Saques vão para b•••@email.com <span class="chip-ok">CHAVE SALVA</span></div><div class="m">chave Pix de e-mail · toque para trocar</div></div>
+          <div class="go">Trocar</div>
+        </div>
+        <div class="tabs" style="margin-top:10px"><div class="on">Disponível</div><div>Em processamento</div></div>
+        <div class="list">
+          <div class="item"><div class="in"><div class="t">Faxina apartamento 60m²</div><div class="m">recebido ontem</div></div><div class="val">+ R$ 100,00</div></div>
+        </div>
+        <div class="foot"><div class="cta">Sacar via Pix</div></div>
+      </div>
+      <div class="variant">
+        <div class="vt">SEM CHAVE CADASTRADA</div>
+        <div class="warn-card">
+          <div class="ic">🔑</div>
+          <div class="in"><div class="t">Falta sua chave Pix</div><div class="m">cadastre para receber seus saques</div></div>
+          <div class="go">Cadastrar</div>
+        </div>
+      </div>
+      <h3>Opção B — cartão de destino no topo</h3>
+      <span class="tag">visível, educa o usuário</span>
+      <p>Um cartão entre o saldo e as abas mostra a chave, o selo de status (vira "verificada" quando o provedor real validar, bloco 3.6) e o atalho para trocar. Sem chave, o cartão fica âmbar convidando a cadastrar. Mais visível — porém rouba uma linha da lista.</p>
+    </div>
+
+    <!-- C -->
+    <div class="option">
+      <div class="phone">
+        <div class="head"><div class="t">Carteira</div><div class="hist">Ver histórico</div></div>
+        <div class="saldo"><div class="l">DISPONÍVEL PARA SACAR</div><div class="v">R$ 100,00</div><div class="c">recebido desde o seu último saque</div></div>
+        <div class="tabs"><div class="on">Disponível</div><div>Em processamento</div></div>
+        <div class="list">
+          <div class="item"><div class="in"><div class="t">Faxina apartamento 60m²</div><div class="m">recebido ontem</div></div><div class="val">+ R$ 100,00</div></div>
+        </div>
+        <div class="foot">
+          <div class="confirm">
+            <div class="q">Confirmar saque de R$ 100,00?</div>
+            <div class="d">O Pix vai para <b>b•••@email.com</b> (sua chave) · <u>trocar chave</u></div>
+          </div>
+          <div class="cta">Confirmar saque</div>
+        </div>
+      </div>
+      <div class="variant">
+        <div class="vt">SEM CHAVE CADASTRADA (APÓS TOCAR EM SACAR)</div>
+        <div class="warn-card">
+          <div class="ic">🔑</div>
+          <div class="in"><div class="t">Antes do 1º saque, cadastre sua chave</div><div class="m">leva menos de 1 minuto</div></div>
+          <div class="go">Cadastrar</div>
+        </div>
+      </div>
+      <h3>Opção C — destino na confirmação</h3>
+      <span class="tag">no momento da decisão</span>
+      <p>A carteira fica como está; o destino aparece no 2º toque (que já existe), dentro do quadro de confirmação: valor + chave + atalho para trocar. Sem chave, o 1º toque abre o convite de cadastro. Nada muda no dia a dia — mas quem nunca saca não descobre que falta a chave até tentar.</p>
+    </div>
+
+  </div>
+</body>
+</html>
