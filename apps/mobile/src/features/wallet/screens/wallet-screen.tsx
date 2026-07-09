@@ -10,13 +10,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { formatBRL, PROCESSING_HOLD_DAYS } from '@vinc/core';
+import { Ionicons } from '@expo/vector-icons';
+
+import { formatBRL, maskPixKey, PROCESSING_HOLD_DAYS } from '@vinc/core';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
 import { useTheme } from '@/hooks/use-theme';
 
-import { useWallet, useWithdraw } from '../hooks';
+import { usePayoutAccount, useWallet, useWithdraw } from '../hooks';
 import { entryLabel, receivedLabel, releaseLabel } from '../labels';
 
 type Tab = 'available' | 'processing';
@@ -33,6 +35,7 @@ export function WalletScreen() {
   const { status } = useSession();
   const wallet = useWallet();
   const withdrawal = useWithdraw();
+  const payout = usePayoutAccount();
 
   const [tab, setTab] = useState<Tab>('available');
   const [withdrawArmed, setWithdrawArmed] = useState(false);
@@ -42,6 +45,12 @@ export function WalletScreen() {
 
   const data = wallet.data;
   const canWithdraw = (data?.availableCents ?? 0) > 0 && status !== 'signedOut';
+  // Round 14 (option A): the destination line only renders once the
+  // account query settles, so "cadastre" never flashes for who has a key.
+  const pixKeyLabel = payout.data
+    ? maskPixKey(payout.data.pixKeyType, payout.data.pixKey)
+    : null;
+  const needsPixKey = status === 'signedIn' && payout.isSuccess && !payout.data;
 
   const doWithdraw = async () => {
     if (!data) return;
@@ -59,7 +68,9 @@ export function WalletScreen() {
         text:
           status === 'unconfigured'
             ? 'Modo demonstração: o saque seria feito agora.'
-            : `Saque de ${formatBRL(amount)} realizado (simulado — o Pix real chega com os pagamentos de verdade).`,
+            : `Saque de ${formatBRL(amount)} realizado${
+                pixKeyLabel ? ` — Pix a caminho de ${pixKeyLabel}` : ''
+              } (simulado até os pagamentos de verdade).`,
       });
     } else if (result === 'nothing_to_withdraw') {
       setFeedback({ kind: 'error', text: 'Nada para sacar ainda.' });
@@ -222,33 +233,70 @@ export function WalletScreen() {
 
             {status !== 'signedOut' && (
               <View style={styles.footer}>
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={!canWithdraw || withdrawal.isPending}
-                  onPress={doWithdraw}
-                  style={[
-                    styles.withdraw,
-                    {
-                      backgroundColor: canWithdraw ? theme.primary : theme.backgroundSelected,
-                      opacity: withdrawal.isPending ? 0.7 : 1,
-                    },
-                  ]}>
-                  {withdrawal.isPending ? (
-                    <ActivityIndicator color={theme.onPrimary} />
-                  ) : (
-                    <Text
-                      style={[
-                        styles.withdrawLabel,
-                        { color: canWithdraw ? theme.onPrimary : theme.textSecondary },
-                      ]}>
-                      {!canWithdraw
-                        ? 'Nada para sacar ainda'
-                        : withdrawArmed
-                          ? `Confirmar saque de ${formatBRL(data.availableCents)}`
-                          : 'Sacar via Pix'}
+                {pixKeyLabel && (
+                  <View style={styles.destination}>
+                    <Ionicons name="key" size={13} color={theme.textSecondary} />
+                    <Text style={[styles.destinationText, { color: theme.textSecondary }]}>
+                      Vai para sua chave Pix{' '}
+                      <Text style={{ fontWeight: '700', color: theme.text }}>{pixKeyLabel}</Text>
                     </Text>
-                  )}
-                </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Alterar chave Pix"
+                      onPress={() => router.push('/payout')}
+                      hitSlop={8}>
+                      <Text style={[styles.destinationLink, { color: theme.primarySoftText }]}>
+                        alterar
+                      </Text>
+                    </Pressable>
+                  </View>
+                )}
+                {needsPixKey && (
+                  <View style={styles.destination}>
+                    <Ionicons name="alert-circle" size={14} color={theme.warning} />
+                    <Text style={[styles.destinationText, { color: theme.warning }]}>
+                      Cadastre sua chave Pix para poder sacar
+                    </Text>
+                  </View>
+                )}
+                {needsPixKey ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => router.push('/payout')}
+                    style={[styles.withdraw, { backgroundColor: theme.primary }]}>
+                    <Text style={[styles.withdrawLabel, { color: theme.onPrimary }]}>
+                      Cadastrar chave Pix
+                    </Text>
+                  </Pressable>
+                ) : (
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={!canWithdraw || withdrawal.isPending}
+                    onPress={doWithdraw}
+                    style={[
+                      styles.withdraw,
+                      {
+                        backgroundColor: canWithdraw ? theme.primary : theme.backgroundSelected,
+                        opacity: withdrawal.isPending ? 0.7 : 1,
+                      },
+                    ]}>
+                    {withdrawal.isPending ? (
+                      <ActivityIndicator color={theme.onPrimary} />
+                    ) : (
+                      <Text
+                        style={[
+                          styles.withdrawLabel,
+                          { color: canWithdraw ? theme.onPrimary : theme.textSecondary },
+                        ]}>
+                        {!canWithdraw
+                          ? 'Nada para sacar ainda'
+                          : withdrawArmed
+                            ? `Confirmar saque de ${formatBRL(data.availableCents)}`
+                            : 'Sacar via Pix'}
+                      </Text>
+                    )}
+                  </Pressable>
+                )}
               </View>
             )}
           </>
@@ -394,6 +442,21 @@ const styles = StyleSheet.create({
   footer: {
     padding: Spacing.three,
     paddingTop: Spacing.one,
+    gap: Spacing.one + 2,
+  },
+  destination: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+  },
+  destinationText: {
+    fontSize: 12,
+  },
+  destinationLink: {
+    fontSize: 12,
+    fontWeight: '800',
+    textDecorationLine: 'underline',
   },
   withdraw: {
     borderRadius: Radius.large - 2,

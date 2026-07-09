@@ -575,3 +575,17 @@ horários que não sobrepõem, RLS de janelas só para o próprio).
    atual) e `gateway` (sandbox), trocáveis por configuração. Quando o
    CNPJ existir, "plugar" é: contratar o provedor, trocar credenciais e
    ativar o adapter em produção.
+
+## D-036 — Destino do saque na carteira: rodada 14, opção A (linha discreta no rodapé)
+**Data:** 2026-07-09 · **Decidido por:** David
+
+Da rodada 14 (`docs/design/rodada-14-destino-saque.html`), David escolheu
+a **Opção A**: uma linha discreta acima do botão "Sacar via Pix" mostra a
+chave Pix cadastrada **mascarada** (ex.: `b•••@email.com`) com o atalho
+"alterar"; sem chave cadastrada, a linha vira aviso e o botão principal
+passa a ser "Cadastrar chave Pix", levando direto à tela do bloco 3.3 —
+o prestador descobre a pendência ANTES de tentar sacar, não depois.
+Alternativas descartadas: cartão de destino no topo (B, roubava espaço da
+lista) e destino só na confirmação do saque (C, quem nunca saca não
+descobre a pendência). A máscara é função pura no domínio
+(`maskPixKey` em `packages/core/src/payout.ts`).

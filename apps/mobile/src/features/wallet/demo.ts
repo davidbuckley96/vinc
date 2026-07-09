@@ -1,4 +1,4 @@
-import { buildWallet, type LedgerEntry, type Wallet } from '@vinc/api';
+import { buildWallet, type LedgerEntry, type PayoutAccount, type Wallet } from '@vinc/api';
 
 function daysAgo(days: number): string {
   const date = new Date();
@@ -70,3 +70,10 @@ const DEMO_ENTRIES: LedgerEntry[] = [
 export function demoWallet(): Wallet {
   return buildWallet(DEMO_ENTRIES, new Date());
 }
+
+export const DEMO_PAYOUT_ACCOUNT: PayoutAccount = {
+  pixKeyType: 'email',
+  pixKey: 'maria@email.com',
+  holderCpf: '52998224725',
+  status: 'pending',
+};

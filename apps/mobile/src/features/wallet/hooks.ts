@@ -15,7 +15,7 @@ import type { PixKeyType } from '@vinc/core';
 import { useSession } from '@/features/auth/session-context';
 import { supabase } from '@/lib/supabase';
 
-import { demoWallet } from './demo';
+import { DEMO_PAYOUT_ACCOUNT, demoWallet } from './demo';
 
 export function useWallet() {
   const { status, session } = useSession();
@@ -54,7 +54,8 @@ export function usePayoutAccount() {
   return useQuery({
     queryKey: ['payout-account', userId ?? 'anonymous'],
     queryFn: async (): Promise<PayoutAccount | null> => {
-      if (!supabase || !userId) return null;
+      if (!supabase) return DEMO_PAYOUT_ACCOUNT;
+      if (!userId) return null;
       return fetchPayoutAccount(supabase, userId);
     },
   });

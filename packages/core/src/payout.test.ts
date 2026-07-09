@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isValidCpf, validatePixKey } from "./payout";
+import { isValidCpf, maskPixKey, validatePixKey } from "./payout";
 
 describe("isValidCpf", () => {
   it("accepts a valid CPF and rejects typos/fakes", () => {
@@ -38,5 +38,14 @@ describe("validatePixKey", () => {
     expect(validatePixKey("email", "sem-arroba").error).toBe("key_invalid");
     expect(validatePixKey("random", "abc").error).toBe("key_invalid");
     expect(validatePixKey("email", "  ").error).toBe("key_required");
+  });
+});
+
+describe("maskPixKey", () => {
+  it("keeps just enough to be recognizable", () => {
+    expect(maskPixKey("cpf", "52998224725")).toBe("•••.•••.•••-25");
+    expect(maskPixKey("phone", "+5581999991234")).toBe("(81) •••••-1234");
+    expect(maskPixKey("email", "beto@email.com")).toBe("b•••@email.com");
+    expect(maskPixKey("random", "123e4567e89b12d3a456426614174000")).toBe("123e•••");
   });
 });

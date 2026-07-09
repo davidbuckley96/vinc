@@ -35,6 +35,28 @@ export function isValidCpf(raw: string): boolean {
   return true;
 }
 
+/**
+ * Masks a (normalized) Pix key for on-screen display — enough to be
+ * recognizable by the owner, useless to shoulder-surfers (round 14 A).
+ */
+export function maskPixKey(type: PixKeyType, key: string): string {
+  if (type === "cpf") {
+    const digits = key.replace(/\D/g, "");
+    return `•••.•••.•••-${digits.slice(-2)}`;
+  }
+  if (type === "phone") {
+    const digits = key.replace(/\D/g, "");
+    const national = digits.startsWith("55") && digits.length > 11 ? digits.slice(2) : digits;
+    return `(${national.slice(0, 2)}) •••••-${national.slice(-4)}`;
+  }
+  if (type === "email") {
+    const at = key.indexOf("@");
+    if (at <= 0) return key;
+    return `${key[0]}•••${key.slice(at)}`;
+  }
+  return `${key.slice(0, 4)}•••`;
+}
+
 export function validatePixKey(type: PixKeyType, raw: string): PixKeyValidation {
   const value = raw.trim();
   if (!value) return { ok: false, error: "key_required" };
