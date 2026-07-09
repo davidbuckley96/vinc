@@ -109,6 +109,7 @@ export function buildWallet(
 export type WithdrawResult =
   | "withdrawn"
   | "nothing_to_withdraw"
+  | "payout_account_missing"
   | "unauthorized"
   | "invalid_request"
   | "network_error";

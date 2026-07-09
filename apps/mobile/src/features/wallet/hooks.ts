@@ -1,6 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { buildWallet, fetchWallet, withdraw, type Wallet, type WithdrawResult } from '@vinc/api';
+import {
+  buildWallet,
+  fetchPayoutAccount,
+  fetchWallet,
+  savePayoutAccount,
+  withdraw,
+  type PayoutAccount,
+  type Wallet,
+  type WithdrawResult,
+} from '@vinc/api';
+import type { PixKeyType } from '@vinc/core';
 
 import { useSession } from '@/features/auth/session-context';
 import { supabase } from '@/lib/supabase';
@@ -33,6 +43,38 @@ export function useWithdraw() {
       if (result === 'withdrawn') {
         queryClient.invalidateQueries({ queryKey: ['wallet'] });
       }
+    },
+  });
+}
+
+/** The caller's payout destination (Fase 3.3 — D-035). */
+export function usePayoutAccount() {
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
+  return useQuery({
+    queryKey: ['payout-account', userId ?? 'anonymous'],
+    queryFn: async (): Promise<PayoutAccount | null> => {
+      if (!supabase || !userId) return null;
+      return fetchPayoutAccount(supabase, userId);
+    },
+  });
+}
+
+export function useSavePayoutAccount() {
+  const queryClient = useQueryClient();
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
+  return useMutation({
+    mutationFn: async (input: {
+      pixKeyType: PixKeyType;
+      pixKey: string;
+      holderCpf: string;
+    }): Promise<void> => {
+      if (!supabase || !userId) return; // demo mode: pretend success
+      await savePayoutAccount(supabase, userId, input);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payout-account'] });
     },
   });
 }

@@ -63,6 +63,9 @@ export function WalletScreen() {
       });
     } else if (result === 'nothing_to_withdraw') {
       setFeedback({ kind: 'error', text: 'Nada para sacar ainda.' });
+    } else if (result === 'payout_account_missing') {
+      // Receiver onboarding gate (3.3): register the Pix key first.
+      router.push('/payout');
     } else {
       setFeedback({ kind: 'error', text: 'Não foi possível sacar agora. Tente de novo.' });
     }

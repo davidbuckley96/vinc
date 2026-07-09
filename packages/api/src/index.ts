@@ -6,5 +6,6 @@ export * from "./disputes";
 export * from "./gigs";
 export * from "./messages";
 export * from "./notifications";
+export * from "./payout";
 export * from "./reviews";
 export * from "./wallet";

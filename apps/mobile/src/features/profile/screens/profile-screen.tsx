@@ -75,6 +75,18 @@ export function ProfileScreen() {
               {status === 'signedIn' && (
                 <Pressable
                   accessibilityRole="button"
+                  onPress={() => router.push('/payout')}
+                  style={[styles.payoutEntry, { borderColor: theme.line }]}>
+                  <Ionicons name="key-outline" size={17} color={theme.primary} />
+                  <Text style={[styles.payoutEntryLabel, { color: theme.text }]}>
+                    Receber pagamentos (chave Pix)
+                  </Text>
+                  <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
+                </Pressable>
+              )}
+              {status === 'signedIn' && (
+                <Pressable
+                  accessibilityRole="button"
                   onPress={() => signOut()}
                   style={[styles.signOut, { borderColor: theme.danger }]}>
                   <Ionicons name="log-out-outline" size={16} color={theme.danger} />
@@ -152,6 +164,20 @@ const styles = StyleSheet.create({
   },
   primaryButtonLabel: {
     fontSize: 14.5,
+    fontWeight: '700',
+  },
+  payoutEntry: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  payoutEntryLabel: {
+    flex: 1,
+    fontSize: 13.5,
     fontWeight: '700',
   },
   signOut: {

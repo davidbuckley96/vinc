@@ -13,7 +13,12 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { deriveWalletBalances } from "../../../packages/core/src/wallet.ts";
 import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
-type ResultCode = "withdrawn" | "nothing_to_withdraw" | "unauthorized" | "invalid_request";
+type ResultCode =
+  | "withdrawn"
+  | "nothing_to_withdraw"
+  | "payout_account_missing"
+  | "unauthorized"
+  | "invalid_request";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -70,6 +75,14 @@ Deno.serve(async (request) => {
     frozenGigIds,
   );
   if (availableCents <= 0) return respond("nothing_to_withdraw", 409);
+
+  // Receiver onboarding gate (3.3): no payout without a destination.
+  const { data: payoutAccount } = await admin
+    .from("payout_accounts")
+    .select("user_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!payoutAccount) return respond("payout_account_missing", 409);
 
   // MVP note: a double-tap race could in theory insert two withdrawals;
   // the second would drive the balance negative and the discrepancy is
