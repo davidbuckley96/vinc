@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { deriveWalletBalances, isProcessing, releasesAt } from "@vinc/core";
+import { deriveWalletBalances, isProcessing, isWalletEntry, releasesAt } from "@vinc/core";
 
 export interface LedgerEntry {
   id: string;
@@ -23,7 +23,8 @@ export interface Wallet {
   availableCents: number;
   /** Sum of service payments still in the 7-day hold. */
   processingCents: number;
-  /** Credits that make up the available balance (since last withdrawal). */
+  /** Wallet movements that make up the available balance (since last
+   * withdrawal) — the list always sums to availableCents (D-037). */
   availableEntries: LedgerEntry[];
   /** Service payments waiting for the hold to end. */
   processingEntries: ProcessingEntry[];
@@ -88,9 +89,11 @@ export function buildWallet(
     .filter((entry) => isProcessing(entry, now, frozenGigIds))
     .map((entry) => ({ ...entry, releasesAt: releasesAt(entry.createdAt), frozen: frozen(entry) }));
 
-  // A credit joins the available list when it becomes money the user can
-  // touch: service payments only AFTER the hold ends (they were not part
-  // of any earlier withdrawal), everything else when it lands.
+  // A movement joins the available list when it touches money the user
+  // can withdraw: service payments only AFTER the hold ends (they were
+  // not part of any earlier withdrawal), compensations and fines when
+  // they land. Announcement entries (fee/hold/refund) are statement-only
+  // (D-037), so the list always adds up to the displayed balance.
   const effectiveAt = (entry: LedgerEntry) =>
     new Date(
       entry.type === "escrow_release" ? releasesAt(entry.createdAt) : entry.createdAt,
@@ -98,7 +101,8 @@ export function buildWallet(
   const withdrawnAt = lastWithdrawal ? new Date(lastWithdrawal.createdAt).getTime() : null;
   const availableEntries = entries.filter(
     (entry) =>
-      entry.amountCents > 0 &&
+      isWalletEntry(entry) &&
+      entry.type !== "withdrawal" &&
       !isProcessing(entry, now, frozenGigIds) &&
       (withdrawnAt === null || effectiveAt(entry) > withdrawnAt),
   );

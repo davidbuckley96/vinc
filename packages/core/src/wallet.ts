@@ -1,20 +1,39 @@
 /**
- * Wallet derivation (docs/02 §5.2 — D-015/D-016/D-021). Pure and
+ * Wallet derivation (docs/02 §5.2 — D-015/D-016/D-021/D-037). Pure and
  * self-contained (Deno-safe): balances are ALWAYS derived from the
  * immutable ledger, never stored.
  *
  * Rules:
+ * - The wallet holds only money the user RECEIVED — service payments and
+ *   cancellation compensations — minus fines charged and withdrawals
+ *   (D-037). Announcement-side entries (fee, escrow_hold, refund) are
+ *   paid and returned OUTSIDE the wallet (Pix at publication, Pix back
+ *   on refunds) and appear only in the statement.
  * - A service payment (escrow_release) stays "EM PROCESSAMENTO" for 7 days
  *   after it lands — the window for the poster to open a refund request
  *   (Fase 2). After that it becomes withdrawable automatically — no job
  *   needed, the release time is derived from created_at.
- * - Everything else (refunds, cancellation compensation, fees, holds,
- *   withdrawals) hits the available balance immediately.
+ * - Compensations and fines hit the available balance immediately.
  * - A withdrawal zeroes the available balance, so "available" always reads
  *   as "received since your last withdrawal".
  */
 
 export const PROCESSING_HOLD_DAYS = 7;
+
+/**
+ * Entry types that move the WALLET (withdrawable money). Everything else
+ * (fee, escrow_hold, refund) belongs to the announcement payment, which
+ * happens outside the wallet — statement only (D-037).
+ */
+const WALLET_ENTRY_TYPES: ReadonlySet<string> = new Set([
+  "escrow_release",
+  "fine",
+  "withdrawal",
+]);
+
+export function isWalletEntry(entry: { type: string }): boolean {
+  return WALLET_ENTRY_TYPES.has(entry.type);
+}
 
 const HOLD_MS = PROCESSING_HOLD_DAYS * 24 * 60 * 60 * 1000;
 
@@ -61,6 +80,7 @@ export function deriveWalletBalances(
   let availableCents = 0;
   let processingCents = 0;
   for (const entry of entries) {
+    if (!isWalletEntry(entry)) continue;
     if (isProcessing(entry, now, frozenGigIds)) processingCents += entry.amountCents;
     else availableCents += entry.amountCents;
   }

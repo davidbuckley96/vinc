@@ -51,11 +51,27 @@ describe("deriveWalletBalances", () => {
     expect(balances).toEqual({ availableCents: 5000, processingCents: 0 });
   });
 
-  it("keeps poster debits (fee/hold) in the available balance", () => {
+  it("ignores announcement-side entries — paid outside the wallet (D-037)", () => {
     const balances = deriveWalletBalances(
-      [entry("fee", -1000, "2026-07-09T00:00:00Z"), entry("escrow_hold", -10000, "2026-07-09T00:00:00Z")],
+      [
+        entry("fee", -1000, "2026-07-09T00:00:00Z"),
+        entry("escrow_hold", -10000, "2026-07-09T00:00:00Z"),
+        entry("refund", 10000, "2026-07-09T00:00:00Z"),
+        entry("escrow_release", 15000, "2026-07-01T00:00:00Z"),
+      ],
       NOW,
     );
-    expect(balances).toEqual({ availableCents: -11000, processingCents: 0 });
+    expect(balances).toEqual({ availableCents: 15000, processingCents: 0 });
+  });
+
+  it("charges a worker fine against the received balance (D-027)", () => {
+    const balances = deriveWalletBalances(
+      [
+        entry("escrow_release", 15000, "2026-07-01T00:00:00Z"),
+        entry("fine", -2500, "2026-07-09T00:00:00Z"),
+      ],
+      NOW,
+    );
+    expect(balances).toEqual({ availableCents: 12500, processingCents: 0 });
   });
 });

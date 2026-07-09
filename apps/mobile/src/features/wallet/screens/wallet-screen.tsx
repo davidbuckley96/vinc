@@ -19,7 +19,7 @@ import { useSession } from '@/features/auth/session-context';
 import { useTheme } from '@/hooks/use-theme';
 
 import { usePayoutAccount, useWallet, useWithdraw } from '../hooks';
-import { entryLabel, receivedLabel, releaseLabel } from '../labels';
+import { chargedLabel, entryLabel, receivedLabel, releaseLabel } from '../labels';
 
 type Tab = 'available' | 'processing';
 
@@ -165,27 +165,39 @@ export function WalletScreen() {
                     Nada por aqui desde o seu último saque. Conclua um serviço para receber.
                   </Text>
                 ) : (
-                  data.availableEntries.map((entry) => (
-                    <View
-                      key={entry.id}
-                      style={[styles.entry, { borderBottomColor: theme.line }]}>
-                      <View style={styles.entryInfo}>
+                  data.availableEntries.map((entry) => {
+                    const debit = entry.amountCents < 0;
+                    return (
+                      <View
+                        key={entry.id}
+                        style={[styles.entry, { borderBottomColor: theme.line }]}>
+                        <View style={styles.entryInfo}>
+                          <Text
+                            style={[styles.entryTitle, { color: theme.text }]}
+                            numberOfLines={1}>
+                            {entry.gigTitle ?? 'Movimentação'}
+                          </Text>
+                          <Text style={[styles.entryMeta, { color: theme.textSecondary }]}>
+                            {entry.type === 'escrow_release'
+                              ? receivedLabel(entry.createdAt, true)
+                              : `${entryLabel(entry)} · ${
+                                  debit
+                                    ? chargedLabel(entry.createdAt)
+                                    : receivedLabel(entry.createdAt, false)
+                                }`}
+                          </Text>
+                        </View>
                         <Text
-                          style={[styles.entryTitle, { color: theme.text }]}
-                          numberOfLines={1}>
-                          {entry.gigTitle ?? 'Movimentação'}
-                        </Text>
-                        <Text style={[styles.entryMeta, { color: theme.textSecondary }]}>
-                          {entry.type === 'escrow_release'
-                            ? receivedLabel(entry.createdAt, true)
-                            : `${entryLabel(entry)} · ${receivedLabel(entry.createdAt, false)}`}
+                          style={[
+                            styles.entryValue,
+                            { color: debit ? theme.danger : theme.success },
+                          ]}>
+                          {debit ? '− ' : '+ '}
+                          {formatBRL(Math.abs(entry.amountCents))}
                         </Text>
                       </View>
-                      <Text style={[styles.entryValue, { color: theme.success }]}>
-                        + {formatBRL(entry.amountCents)}
-                      </Text>
-                    </View>
-                  ))
+                    );
+                  })
                 )
               ) : data.processingEntries.length === 0 ? (
                 <Text style={[styles.feedback, { color: theme.textSecondary }]}>

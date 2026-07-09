@@ -59,3 +59,11 @@ export function receivedLabel(iso: string, released: boolean): string {
   if (distance === -1) return `${verb} ontem`;
   return `${verb} ${shortDate(iso)}`;
 }
+
+/** "cobrada hoje" / "cobrada ontem" / "cobrada seg., 29" — debits (fine). */
+export function chargedLabel(iso: string): string {
+  const distance = dayDistance(iso);
+  if (distance === 0) return 'cobrada hoje';
+  if (distance === -1) return 'cobrada ontem';
+  return `cobrada ${shortDate(iso)}`;
+}
