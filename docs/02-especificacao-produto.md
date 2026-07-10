@@ -68,8 +68,16 @@ Campos essenciais:
   OpenFreeMap (sem chave; trocar por MapTiler com chave própria no
   pré-lançamento) + Nominatim para busca/leitura de endereço.
 
-Categorias iniciais: saúde, entretenimento, serviços domésticos (lista completa
-⚠️ em aberto — expansível, cadastrada no banco e não no código).
+Categorias iniciais (D-041, aprovadas em 2026-07-09; árvore no banco,
+expansível sem código): **Serviços domésticos** (Faxina, Passadeira,
+Cozinha), **Cuidados** (Babá, Acompanhante de idosos, Pet), **Eventos**
+(Garçom, DJ, Fotógrafo, Montagem), **Reparos e montagem** (Montador de
+móveis, Pintura, Jardim), **Mudanças e fretes** (Carreto, Ajudante),
+**Aulas** (Reforço, Música, Idiomas), **Beleza** (Cabelo, Unhas,
+Maquiagem), **Tecnologia** (Instalações, Suporte) e **Outros**. O anúncio
+escolhe a categoria e, opcionalmente, o tipo; a busca pela categoria
+inclui os tipos. Profissões regulamentadas ficam fora do MVP
+(responsabilidade legal — revisão jurídica no pré-lançamento).
 
 ### Ciclo de vida da vaga
 

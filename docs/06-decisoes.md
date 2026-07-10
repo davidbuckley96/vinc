@@ -688,3 +688,29 @@ o serviço acontece**.
 
 Detalhe técnico: `gig_payments` passou a aceitar várias cobranças por
 vaga (id próprio; a mais recente é a ativa) e ganhou o status `refunded`.
+
+## D-041 — Fechamento de dúvidas: agenda bloqueia, avaliações sem texto, categorias iniciais, Vinc definitivo
+**Data:** 2026-07-09 · **Decidido por:** David ("3A, 10A, 9 Aprovado, 12 Sim, rodada agora")
+
+1. **Conflito de agenda (dúvida #3): BLOQUEIO confirmado.** O prestador
+   não consegue se candidatar a vaga que conflita com compromisso
+   confirmado, e a escolha re-checa e auto-recusa quem ficou ocupado
+   (já implementado assim; candidaturas pendentes não travam nada).
+2. **Avaliações (dúvida #10): sem texto livre.** Ficam as estrelas 1–5 +
+   elogios pré-prontos de um toque; o perfil mostra a média por papel e
+   os elogios mais frequentes. Comentários (públicos ou para o admin)
+   podem ser reavaliados pós-lançamento.
+3. **Categorias iniciais (dúvida #9): lista aprovada** — Serviços
+   domésticos (Faxina, Passadeira, Cozinha), Cuidados (Babá,
+   Acompanhante de idosos, Pet), Eventos (Garçom, DJ, Fotógrafo,
+   Montagem), Reparos e montagem (Montador de móveis, Pintura, Jardim),
+   Mudanças e fretes (Carreto, Ajudante), Aulas (Reforço, Música,
+   Idiomas), Beleza (Cabelo, Unhas, Maquiagem), Tecnologia (Instalações,
+   Suporte) + "Outros" como guarda-chuva. Profissões regulamentadas
+   (enfermagem, elétrica etc.) fora do MVP por responsabilidade legal —
+   revisitar na revisão jurídica. Implementação: árvore no banco
+   (parent_id + sort_order, migration 0028); anúncio escolhe o pai e,
+   opcionalmente, o tipo ("Geral" = só o pai); a busca pelo pai inclui
+   os filhos; o nome exibe "Pai › Filho".
+4. **Marca (dúvida #12): "Vinc" é DEFINITIVO.** Rodada de design de logo
+   (rodada 16) preparada em seguida para o David escolher.

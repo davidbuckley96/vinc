@@ -45,20 +45,21 @@ export function useCategories() {
   });
 }
 
-export function useOpenGigs(categoryId?: string, slot?: TimeSlotFilter, region?: RegionFilter) {
+/** categoryIds: the selected category expanded to [parent, ...children] (D-041). */
+export function useOpenGigs(categoryIds?: string[], slot?: TimeSlotFilter, region?: RegionFilter) {
   return useQuery({
     queryKey: [
       'gigs',
       'open',
-      categoryId ?? 'all',
+      categoryIds?.join(',') ?? 'all',
       slot?.startsAt ?? '-',
       slot?.endsAt ?? '-',
       region ? `${region.lat.toFixed(4)},${region.lng.toFixed(4)},${region.radiusKm}` : '-',
     ],
     queryFn: () => {
-      if (supabase) return fetchOpenGigs(supabase, { categoryId, slot, region });
-      let gigs = categoryId
-        ? DEMO_GIGS.filter((gig) => gig.categoryId === categoryId)
+      if (supabase) return fetchOpenGigs(supabase, { categoryIds, slot, region });
+      let gigs = categoryIds && categoryIds.length > 0
+        ? DEMO_GIGS.filter((gig) => categoryIds.includes(gig.categoryId))
         : DEMO_GIGS;
       if (slot) {
         gigs = gigs.filter((gig) => gig.startsAt < slot.endsAt && gig.endsAt > slot.startsAt);

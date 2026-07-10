@@ -86,16 +86,31 @@ export function SearchScreen() {
   // Region-scoped search (D-029): persisted; nearest gigs first.
   const { region, setRegion, loaded: regionLoaded } = useRegion();
   const [regionOpen, setRegionOpen] = useState(false);
+  // D-041: selecting a parent category includes its subcategories.
+  const selectedCategoryIds = category
+    ? [
+        category.id,
+        ...(categories.data ?? [])
+          .filter((item) => item.parentId === category.id)
+          .map((item) => item.id),
+      ]
+    : undefined;
   const gigs = useOpenGigs(
-    category?.id,
+    selectedCategoryIds,
     slot,
     regionLoaded && region
       ? { lat: region.lat, lng: region.lng, radiusKm: region.radiusKm }
       : undefined,
   );
 
-  const categoryName = (id: string) =>
-    categories.data?.find((item) => item.id === id)?.name;
+  const categoryName = (id: string) => {
+    const item = categories.data?.find((entry) => entry.id === id);
+    if (!item) return undefined;
+    const parent = item.parentId
+      ? categories.data?.find((entry) => entry.id === item.parentId)
+      : null;
+    return parent ? `${parent.name} › ${item.name}` : item.name;
+  };
 
   return (
     <View style={[styles.root, { backgroundColor: theme.background }]}>
@@ -248,7 +263,7 @@ export function SearchScreen() {
                 </Text>
               )}
               <View style={styles.grid}>
-                {categories.data?.map((item) => (
+                {categories.data?.filter((item) => !item.parentId).map((item) => (
                   <Pressable
                     key={item.id}
                     accessibilityRole="button"

@@ -114,6 +114,13 @@ export function GigForm({
   }, [initial, days]);
 
   const [categoryId, setCategoryId] = useState(initial?.categoryId ?? '');
+  // Category tree (D-041): the top row picks the parent; a second row of
+  // subcategories appears when the parent has children ("Geral" = parent).
+  const allCategories = categories.data ?? [];
+  const parents = allCategories.filter((item) => !item.parentId);
+  const selectedEntry = allCategories.find((item) => item.id === categoryId);
+  const selectedParentId = selectedEntry?.parentId ?? selectedEntry?.id ?? null;
+  const subcategories = allCategories.filter((item) => item.parentId === selectedParentId);
   const [title, setTitle] = useState(initial?.title ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [dayIndex, setDayIndex] = useState(initialDayIndex);
@@ -204,17 +211,42 @@ export function GigForm({
       {label('CATEGORIA')}
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.chipRow}>
-          {categories.data?.map((item) => (
+          {parents.map((item) => (
             <Pressable
               key={item.id}
               accessibilityRole="button"
               onPress={() => setCategoryId(item.id)}
-              style={chip(categoryId === item.id)}>
-              <Text style={chipLabel(categoryId === item.id)}>{item.name}</Text>
+              style={chip(selectedParentId === item.id)}>
+              <Text style={chipLabel(selectedParentId === item.id)}>{item.name}</Text>
             </Pressable>
           ))}
         </View>
       </ScrollView>
+
+      {subcategories.length > 0 && (
+        <>
+          {label('TIPO (OPCIONAL)')}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.chipRow}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setCategoryId(selectedParentId!)}
+                style={chip(categoryId === selectedParentId)}>
+                <Text style={chipLabel(categoryId === selectedParentId)}>Geral</Text>
+              </Pressable>
+              {subcategories.map((item) => (
+                <Pressable
+                  key={item.id}
+                  accessibilityRole="button"
+                  onPress={() => setCategoryId(item.id)}
+                  style={chip(categoryId === item.id)}>
+                  <Text style={chipLabel(categoryId === item.id)}>{item.name}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
+        </>
+      )}
 
       {label('O QUE PRECISA SER FEITO?')}
       <TextInput
@@ -382,7 +414,13 @@ export function GigForm({
       </Text>
       <GigCard
         gig={previewGig}
-        categoryName={categories.data?.find((item) => item.id === categoryId)?.name}
+        categoryName={
+          selectedEntry
+            ? selectedEntry.parentId
+              ? `${parents.find((item) => item.id === selectedEntry.parentId)?.name} › ${selectedEntry.name}`
+              : selectedEntry.name
+            : undefined
+        }
         highlighted
       />
 

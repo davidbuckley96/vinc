@@ -7,12 +7,17 @@
 import type { Candidate, Category, GigDetail } from '@vinc/api';
 
 export const DEMO_CATEGORIES: Category[] = [
-  { id: 'demo-domesticos', name: 'Serviços domésticos', icon: 'home' },
-  { id: 'demo-saude', name: 'Saúde', icon: 'medkit' },
-  { id: 'demo-entretenimento', name: 'Entretenimento', icon: 'musical-notes' },
-  { id: 'demo-criancas', name: 'Cuidado de crianças', icon: 'happy' },
-  { id: 'demo-eventos', name: 'Eventos', icon: 'restaurant' },
-  { id: 'demo-outros', name: 'Outros', icon: 'ellipsis-horizontal' },
+  { id: 'demo-domesticos', name: 'Serviços domésticos', icon: 'home', parentId: null },
+  { id: 'demo-faxina', name: 'Faxina', icon: null, parentId: 'demo-domesticos' },
+  { id: 'demo-cuidados', name: 'Cuidados', icon: 'heart', parentId: null },
+  { id: 'demo-baba', name: 'Babá', icon: null, parentId: 'demo-cuidados' },
+  { id: 'demo-eventos', name: 'Eventos', icon: 'balloon', parentId: null },
+  { id: 'demo-reparos', name: 'Reparos e montagem', icon: 'construct', parentId: null },
+  { id: 'demo-fretes', name: 'Mudanças e fretes', icon: 'car', parentId: null },
+  { id: 'demo-aulas', name: 'Aulas', icon: 'book', parentId: null },
+  { id: 'demo-beleza', name: 'Beleza', icon: 'cut', parentId: null },
+  { id: 'demo-tecnologia', name: 'Tecnologia', icon: 'laptop', parentId: null },
+  { id: 'demo-outros', name: 'Outros', icon: 'ellipsis-horizontal', parentId: null },
 ];
 
 function inDays(days: number, hour: number): string {
@@ -53,7 +58,7 @@ export const DEMO_GIGS: GigDetail[] = [
     exactAddress: null,
     exactLat: null,
     exactLng: null,
-    categoryId: 'demo-criancas',
+    categoryId: 'demo-baba',
     posterId: 'demo-ana',
     posterName: 'Ana Souza',
   },
@@ -70,7 +75,7 @@ export const DEMO_GIGS: GigDetail[] = [
     exactAddress: null,
     exactLat: null,
     exactLng: null,
-    categoryId: 'demo-saude',
+    categoryId: 'demo-cuidados',
     posterId: 'demo-marta',
     posterName: 'Marta Reis',
   },

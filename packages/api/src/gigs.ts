@@ -6,6 +6,8 @@ export interface Category {
   id: string;
   name: string;
   icon: string | null;
+  /** Non-null for subcategories (D-041): a gig may point at either level. */
+  parentId: string | null;
 }
 
 export interface OpenGig {
@@ -54,10 +56,13 @@ interface GigRow {
 export async function fetchCategories(client: SupabaseClient): Promise<Category[]> {
   const { data, error } = await client
     .from("categories")
-    .select("id, name, icon")
-    .order("created_at");
+    .select("id, name, icon, parent_id, sort_order")
+    .order("sort_order")
+    .order("name");
   if (error) throw new Error(error.message);
-  return data;
+  return (data as Array<{ id: string; name: string; icon: string | null; parent_id: string | null }>).map(
+    (row) => ({ id: row.id, name: row.name, icon: row.icon, parentId: row.parent_id }),
+  );
 }
 
 /**
@@ -96,14 +101,16 @@ export function applyRegion<T extends OpenGig>(gigs: T[], region: RegionFilter):
 
 export async function fetchOpenGigs(
   client: SupabaseClient,
-  filter: { categoryId?: string; slot?: TimeSlotFilter; region?: RegionFilter } = {},
+  filter: { categoryIds?: string[]; slot?: TimeSlotFilter; region?: RegionFilter } = {},
 ): Promise<OpenGig[]> {
   let query = client
     .from("visible_open_gigs")
     .select("id, title, description, starts_at, ends_at, price_cents, area, approx_lat, approx_lng, category_id, poster_id, poster_name")
     .order("starts_at")
     .limit(50);
-  if (filter.categoryId) query = query.eq("category_id", filter.categoryId);
+  if (filter.categoryIds && filter.categoryIds.length > 0) {
+    query = query.in("category_id", filter.categoryIds);
+  }
   if (filter.slot) {
     query = query.lt("starts_at", filter.slot.endsAt).gt("ends_at", filter.slot.startsAt);
   }

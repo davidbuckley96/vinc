@@ -12,8 +12,8 @@
 2. ~~🟡 **Taxa da plataforma**~~ ✅ Respondida em 2026-07-06: **10%
    oficial** (D-035; modelo já vinha de D-013 — paga pelo anunciante na
    criação, não reembolsável, prestador vê o líquido).
-3. 🔴 **Conflito de agenda no aceite:** bloquear de vez o aceite conflitante ou
-   apenas alertar fortemente?
+3. ~~🔴 **Conflito de agenda no aceite**~~ ✅ Respondida em 2026-07-09:
+   **bloquear** (D-041; já era o comportamento implementado).
 4. ~~🔴 **Confirmação de conclusão**~~ ✅ Respondida em 2026-07-06:
    auto-liberação após **48h** (D-028).
 5. ~~🟡 **Cancelamento pelo prestador**~~ ✅ Respondida em 2026-07-06:
@@ -28,10 +28,12 @@
 8. ~~🟢 **Endereço da vaga**~~ ✅ Respondida em 2026-07-06: só
    bairro/região (e pino aproximado) antes da escolha; completo para o
    prestador escolhido (D-028).
-9. 🟢 **Lista inicial de categorias** e subcategorias (além de saúde,
-   entretenimento e serviços domésticos).
-10. 🟢 **Avaliações:** comentário textual além da nota? Avaliação é pública no
-    perfil ou só a média?
+9. ~~🟢 **Lista inicial de categorias**~~ ✅ Aprovada em 2026-07-09:
+   8 categorias + subcategorias + "Outros" (D-041; migration 0028,
+   busca pelo pai inclui filhos).
+10. ~~🟢 **Avaliações**~~ ✅ Respondida em 2026-07-09: **sem texto
+    livre** — estrelas + elogios prontos, média pública por papel
+    (D-041); comentários reavaliados pós-lançamento.
 18. ~~🟢 **Edição de vaga sem mudar o valor**~~ ✅ Confirmada em
     2026-07-06 pelo David: o valor NÃO pode ser alterado (D-017/D-027).
 16. ~~🔴 **Prazo de processamento na carteira**~~ ✅ Respondida em
@@ -63,7 +65,8 @@
 
 11. ~~🔴 **Direção visual**~~ ✅ Respondida em 2026-07-02: Opção C, roxo
     "fintech" (ver `06-decisoes.md` D-005).
-12. 🟢 **Nome/marca:** "Vinc" é definitivo? Há logo?
+12. ~~🟢 **Nome/marca**~~ ✅ Respondida em 2026-07-09: **"Vinc" é
+    definitivo** (D-041); logo em escolha na rodada 16.
 
 ## Técnico / negócio
 
