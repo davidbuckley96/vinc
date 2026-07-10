@@ -15,16 +15,20 @@ import { supabase } from '@/lib/supabase';
 import { DEMO_SERVICES } from './demo';
 
 export function useServiceDetail(gigId: string) {
-  const { session } = useSession();
+  const { status, session } = useSession();
   const userId = session?.user.id ?? null;
 
   return useQuery({
-    queryKey: ['service', gigId],
+    // userId in the key + the loading gate: a deep link boots the app
+    // BEFORE the session hydrates — without these the query caches null
+    // under the session-less key and the screen shows an error forever.
+    queryKey: ['service', gigId, userId ?? 'anonymous'],
     queryFn: async (): Promise<ServiceDetail | null> => {
       if (!supabase) return DEMO_SERVICES[gigId] ?? null;
       if (!userId) return null;
       return fetchServiceDetail(supabase, gigId, userId);
     },
+    enabled: status !== 'loading',
   });
 }
 

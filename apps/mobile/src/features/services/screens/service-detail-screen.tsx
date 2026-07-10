@@ -16,6 +16,7 @@ import type { ServiceDetail } from '@vinc/api';
 import {
   allowedLifecycleAction,
   computeCancellationFine,
+  computeGigPricing,
   formatBRL,
   posterCanEdit,
   posterCancellationIncursFine,
@@ -54,7 +55,7 @@ function statusCard(service: ServiceDetail): StatusCard {
       return {
         icon: 'qr-code',
         title: 'Aguardando pagamento',
-        body: `Pague ${price} via Pix para publicar a vaga. Sem pagamento em 1 hora, o anúncio é descartado sem custo.`,
+        body: `Pague ${formatBRL(computeGigPricing(service.priceCents).totalCents)} via Pix para confirmar o candidato escolhido. Sem pagamento em 30 minutos, a escolha é desfeita e a vaga continua aberta — sem custo.`,
       };
     case 'open':
       return {
