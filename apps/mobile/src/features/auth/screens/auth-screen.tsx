@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GoogleLogo } from '@/components/google-logo';
+import { VincLogo } from '@/components/vinc-logo';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -106,9 +107,7 @@ export function AuthScreen() {
           style={styles.flex}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            <View style={[styles.logo, { backgroundColor: theme.primary }]}>
-              <Text style={[styles.logoLabel, { color: theme.onPrimary }]}>V</Text>
-            </View>
+            <VincLogo size={56} />
             <Text style={[styles.title, { color: theme.text }]}>
               {signUp ? 'Criar sua conta' : 'Bem-vindo ao Vinc'}
             </Text>

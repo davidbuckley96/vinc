@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210" height="52" viewBox="0 0 210 52">
+  <!-- Assinatura completa (D-042): ícone + wordmark. -->
+  <rect x="0" y="2" width="48" height="48" rx="13" fill="#6D28D9"/>
+  <g fill="none" stroke="#fff" stroke-width="5.4" stroke-linecap="round">
+    <path d="M 12.8 15.5 L 24 38"/>
+    <path d="M 35.2 15.5 L 24 38"/>
+  </g>
+  <circle cx="24" cy="17.5" r="5.2" fill="#A78BFA"/>
+  <text x="58" y="40" font-family="-apple-system,Segoe UI,Roboto,Inter,sans-serif" font-size="38" font-weight="800" letter-spacing="-1.5" fill="#17141F">vinc</text>
+</svg>

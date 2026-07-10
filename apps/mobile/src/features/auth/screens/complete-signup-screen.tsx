@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { VincLogo } from '@/components/vinc-logo';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSavePayoutAccount } from '@/features/wallet/hooks';
 import { useTheme } from '@/hooks/use-theme';
@@ -58,9 +59,7 @@ export function CompleteSignupScreen() {
           style={styles.flex}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            <View style={[styles.logo, { backgroundColor: theme.primary }]}>
-              <Text style={[styles.logoLabel, { color: theme.onPrimary }]}>V</Text>
-            </View>
+            <VincLogo size={56} />
             <Text style={[styles.title, { color: theme.text }]}>Falta só uma coisa</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               Diga para onde vão os seus pagamentos. Dá para trocar quando quiser, no seu perfil.

@@ -714,3 +714,23 @@ vaga (id próprio; a mais recente é a ativa) e ganhou o status `refunded`.
    os filhos; o nome exibe "Pai › Filho".
 4. **Marca (dúvida #12): "Vinc" é DEFINITIVO.** Rodada de design de logo
    (rodada 16) preparada em seguida para o David escolher.
+
+## D-042 — Logo oficial: rodada 16b, opção A5 ("a pessoa no centro")
+**Data:** 2026-07-09 · **Decidido por:** David
+
+Da rodada 16 (conceitos A/B/C) o David escolheu o ESTILO A (duas linhas
+que se encontram + ponto lilás do vínculo); da rodada 16b (variações
+A1–A5) escolheu a **A5**: o V fecha num vértice único e o ponto sobe
+para a abertura — quase uma pessoa de braços abertos. Leitura dupla:
+a letra V e o vínculo com gente no centro.
+
+Especificação: quadrado arredondado roxo `#6D28D9` (raio 18/72), traços
+brancos de espessura 7 com pontas redondas (`M21 22 L36 52` e
+`M51 22 L36 52` no viewBox 72), ponto lilás `#A78BFA` (r=7) em (36, 25).
+Variante clara: caixa branca, traços roxos, ponto lilás.
+
+Arquivos-fonte em `docs/design/logo/` (vinc-icon.svg, vinc-icon-light.svg,
+vinc-mark.svg, vinc-assinatura.svg). Aplicação: componente `VincLogo`
+(react-native-svg) nas telas de entrada e de conclusão de cadastro;
+ícones do app regenerados (icon, android foreground/monochrome/
+background, favicon, splash) a partir do SVG.

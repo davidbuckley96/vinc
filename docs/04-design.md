@@ -47,3 +47,17 @@ Rodada 1 (`docs/design/rodada-01-direcao-visual.html`): David escolheu a
 - Componentes base reutilizáveis em `apps/mobile/src/components/`
   (a biblioteca cresce conforme as features: Button, Card, Avatar,
   RatingStars, MoneyText, TimeSlot, EmptyState, ...).
+
+## Identidade / logo (D-042)
+
+- **Símbolo**: o "V da pessoa no centro" — duas linhas que fecham num
+  vértice único e o ponto lilás na abertura, como uma pessoa de braços
+  abertos. Conceito: *Vinc = vínculo*, com gente no meio.
+- **Cores**: caixa roxa `#6D28D9`, traços brancos, ponto lilás `#A78BFA`
+  (variante clara: caixa branca + traços roxos).
+- **Arquivos-fonte**: `docs/design/logo/` (ícone, variante clara, símbolo
+  solto e assinatura completa com o wordmark "vinc").
+- **No app**: componente `VincLogo` (`apps/mobile/src/components/
+  vinc-logo.tsx`); ícones/favicon/splash gerados do mesmo SVG.
+- Wordmark: "vinc" minúsculo, peso 800, tracking apertado (system font
+  por enquanto; fonte própria pode entrar perto do lançamento).

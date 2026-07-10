@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72">
+  <!-- Só o símbolo, sem o quadrado (D-042) — para foreground Android,
+       monocromático e usos sobre qualquer fundo (trocar as cores). -->
+  <g fill="none" stroke="#6D28D9" stroke-width="7" stroke-linecap="round">
+    <path d="M 21 22 L 36 52"/>
+    <path d="M 51 22 L 36 52"/>
+  </g>
+  <circle cx="36" cy="25" r="7" fill="#A78BFA"/>
+</svg>
