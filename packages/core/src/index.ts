@@ -4,7 +4,6 @@ export * from "./location";
 export * from "./moderation";
 export * from "./money";
 export * from "./payout";
-export * from "./profile";
 export * from "./pricing";
 export * from "./schedule";
 export * from "./wallet";

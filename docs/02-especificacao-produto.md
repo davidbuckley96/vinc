@@ -24,10 +24,10 @@
 - Nota média (1–5) e quantidade de avaliações, como prestador e como anunciante.
 - Total de serviços concluídos (prestados / ofertados).
 - Categorias em que atua.
-- **Gênero (opcional — D-043):** só aparece se a pessoa preencheu e
-  manteve o switch "Mostrar meu gênero" ligado (perfil → Editar perfil).
-  Quando exibido, também entra no cartão anonimizado do candidato
-  (D-024) — que continua sem nome completo, foto ou id.
+
+> Gênero NÃO é coletado (D-044): o primeiro nome já sinaliza, e evitar o
+> campo reduz desconforto e discriminação; preferências específicas vão
+> na descrição da vaga e no chat após a escolha.
 
 ## 2. Vaga (anúncio de serviço)
 

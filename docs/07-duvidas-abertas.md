@@ -46,10 +46,10 @@
     anunciante escolhe um, vendo só dados anonimizados (ver
     `06-decisoes.md` D-024; spec docs/02 §3). Backend implementado e
     verificado e2e; UI na rodada 8.
-20. ~~🟢 **Gênero no cartão do candidato**~~ ✅ Respondida em 2026-07-09:
-    **opcional**, **aparece por padrão com switch para ocultar** (ver
-    `06-decisoes.md` D-043; tela Editar perfil criada, verificado e2e).
-    Correção de segurança junto: grant de UPDATE do perfil agora é por
+20. ~~🟢 **Gênero no cartão do candidato**~~ ✅ Encerrada em 2026-07-09:
+    o campo foi **removido** (D-044 revoga D-043) — o nome sinaliza e
+    evita desconforto/discriminação; dúvidas via chat. Ficam a tela
+    Editar perfil (nome + bio) e a correção de segurança do grant por
     coluna (fecha escalonamento para is_admin).
 23. ~~🟡 **Desistir da candidatura**~~ ✅ Respondida em 2026-07-09:
     aprovada a proposta + recandidatura permitida + dedup de notificação

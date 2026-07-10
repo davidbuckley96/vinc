@@ -760,3 +760,22 @@ para a tabela inteira, permitindo a um usuário setar `is_admin = true`
 na própria linha (escalonamento de privilégio). Agora o grant é por
 COLUNA (name, avatar_url, bio, gender, show_gender) — testado: `PATCH`
 com `is_admin` retorna 42501.
+
+## D-044 — Remover o campo de gênero (revoga D-043)
+**Data:** 2026-07-09 · **Decidido por:** David
+
+O David reavaliou o gênero (introduzido opcional em D-043) e decidiu
+**remover o campo por completo**. Racional (endossado pelo Claude):
+- O **primeiro nome já sinaliza** o gênero na prática, então o campo
+  explícito agrega pouca descoberta.
+- **Evita desconforto** (pessoas trans/não-binárias, ou quem não quer
+  declarar) e reduz a superfície de dado sensível/discriminação — mais
+  coerente com o cartão anonimizado (D-024) e a LGPD.
+- Casos legítimos de preferência se resolvem pela **descrição da vaga**
+  e pelo **chat** após o match.
+
+Mantidos: a tela **Editar perfil** (agora nome + bio) e a **correção de
+segurança** do grant de UPDATE por coluna (name/avatar_url/bio) — o
+escalonamento para `is_admin` segue fechado. Migration 0030 remove as
+colunas `gender`/`show_gender`. Verificado: cartão do candidato sem
+gênero, bio editável, `PATCH is_admin` → 42501.

@@ -127,7 +127,6 @@ export const DEMO_CANDIDATES: Candidate[] = [
     reviewCount: 61,
     completedServices: 64,
     topTags: ['Pontual', 'Caprichou no serviço', 'Educado e gentil'],
-    gender: 'male',
     priority: true,
   },
   {
@@ -138,7 +137,6 @@ export const DEMO_CANDIDATES: Candidate[] = [
     reviewCount: 23,
     completedServices: 25,
     topTags: ['Boa comunicação', 'Pontual'],
-    gender: 'female',
     priority: false,
   },
   {
@@ -149,7 +147,6 @@ export const DEMO_CANDIDATES: Candidate[] = [
     reviewCount: 0,
     completedServices: 0,
     topTags: [],
-    gender: null,
     priority: false,
   },
 ];

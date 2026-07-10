@@ -79,7 +79,7 @@ Deno.serve(async (request) => {
   const candidates = [];
   for (const candidacy of candidacies ?? []) {
     const [{ data: profile }, { data: stats }, { data: reviews }] = await Promise.all([
-      admin.from("profiles").select("name, gender, show_gender").eq("id", candidacy.worker_id).maybeSingle(),
+      admin.from("profiles").select("name").eq("id", candidacy.worker_id).maybeSingle(),
       admin
         .from("profile_stats")
         .select("worker_avg_rating, worker_review_count, completed_as_worker")
@@ -115,7 +115,6 @@ Deno.serve(async (request) => {
       reviewCount: stats?.worker_review_count ?? 0,
       completedServices: stats?.completed_as_worker ?? 0,
       topTags,
-      gender: profile?.show_gender ? (profile?.gender ?? null) : null,
       priority: priorityWorkers.has(candidacy.worker_id),
     });
   }

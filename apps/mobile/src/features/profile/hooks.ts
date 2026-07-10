@@ -1,12 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import {
-  fetchMyProfile,
-  fetchPublicGender,
-  updateMyProfile,
-  type EditableProfile,
-} from '@vinc/api';
-import type { Gender } from '@vinc/core';
+import { fetchMyProfile, updateMyProfile, type EditableProfile } from '@vinc/api';
 
 import { useSession } from '@/features/auth/session-context';
 import { supabase } from '@/lib/supabase';
@@ -36,17 +30,6 @@ export function useUpdateProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-profile'] });
       queryClient.invalidateQueries({ queryKey: ['profile-stats'] });
-    },
-  });
-}
-
-/** A worker's gender for their PUBLIC profile — null unless opted in (D-043). */
-export function usePublicGender(userId: string | null) {
-  return useQuery({
-    queryKey: ['public-gender', userId ?? 'anonymous'],
-    queryFn: async (): Promise<Gender | null> => {
-      if (!supabase || !userId) return null;
-      return fetchPublicGender(supabase, userId);
     },
   });
 }
