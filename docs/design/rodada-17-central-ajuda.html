@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Rodada 17: Central de Ajuda + Vi</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --ok:#059669; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:940px;line-height:1.5}
+  .row{display:flex;gap:32px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .option{width:300px}
+  .option h3{font-size:14.5px;margin:16px 2px 4px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 2px}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-bottom:6px;background:var(--lilas);color:var(--roxo)}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .head{background:var(--roxo);color:#fff;padding:24px 16px 14px;border-radius:0 0 22px 22px;display:flex;align-items:center;gap:10px}
+  .avatar{width:34px;height:34px;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .avatar svg{display:block}
+  .head .t{font-size:16px;font-weight:800}
+  .head .st{font-size:10.5px;opacity:.85}
+  .body{flex:1;padding:13px;display:flex;flex-direction:column;gap:9px;overflow:hidden}
+  .card{border:1.5px solid var(--line);border-radius:13px;padding:11px 12px}
+  .card .q{font-size:12.5px;font-weight:700}
+  .card .a{font-size:11px;color:var(--ink2);margin-top:2px;line-height:1.4}
+  .sectlabel{font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--ink2);margin-top:4px}
+  .vibox{background:var(--lilas);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:9px}
+  .vibox .r{display:flex;gap:9px;align-items:flex-start}
+  .bubble{background:#fff;border-radius:12px;border-top-left-radius:3px;padding:9px 11px;font-size:11.5px;line-height:1.45;max-width:80%}
+  .bubble.me{background:var(--roxo);color:#fff;border-radius:12px;border-top-right-radius:3px;align-self:flex-end}
+  .viav{width:26px;height:26px;border-radius:8px;background:var(--roxo);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .input{display:flex;gap:7px;align-items:center;border:1.5px solid var(--line);border-radius:12px;padding:9px 11px}
+  .input .ph{flex:1;font-size:11.5px;color:var(--ink2)}
+  .input .snd{width:26px;height:26px;border-radius:8px;background:var(--roxo);display:flex;align-items:center;justify-content:center}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:1.5px solid var(--line);border-radius:99px;padding:6px 11px;font-size:10.5px;font-weight:700;color:var(--roxo-deep)}
+  .others{border-top:1px solid var(--line);padding-top:9px;font-size:11.5px;font-weight:700;color:var(--ink);display:flex;justify-content:space-between}
+  .human{background:#fff;border:1.5px solid var(--roxo);border-radius:12px;padding:10px;text-align:center;font-size:11.5px;font-weight:800;color:var(--roxo-deep)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .tile{border:1.5px solid var(--line);border-radius:13px;padding:12px 10px;display:flex;flex-direction:column;gap:5px}
+  .tile .ic{font-size:18px}
+  .tile .tl{font-size:11.5px;font-weight:700;line-height:1.3}
+  .spacer{flex:1}
+</style>
+</head>
+<body>
+  <h1>Vinc — Rodada 17 de design: Central de Ajuda + a "Vi"</h1>
+  <p class="sub">Fluxo pedido pelo David: a <b>Vi</b> (assistente de IA) resolve o simples por texto; <b>cards de perguntas frequentes</b>; um <b>"Outros"</b> com opções menos comuns; e, por último, <b>falar com o suporte</b> (humano) — para o time só receber o que a IA não deu conta. As três variam a <b>ordem e o peso</b> de cada parte.</p>
+
+  <div class="row">
+
+    <!-- A: chat-first -->
+    <div class="option">
+      <div class="phone">
+        <div class="head">
+          <div class="avatar"><svg width="22" height="22" viewBox="0 0 72 72"><g fill="none" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"><path d="M 21 22 L 36 52"/><path d="M 51 22 L 36 52"/></g><circle cx="36" cy="25" r="8" fill="#A78BFA"/></svg></div>
+          <div><div class="t">Falar com a Vi</div><div class="st">assistente do Vinc · responde na hora</div></div>
+        </div>
+        <div class="body">
+          <div class="vibox" style="flex:1">
+            <div class="r"><div class="viav"><svg width="15" height="15" viewBox="0 0 72 72"><g fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"><path d="M 21 22 L 36 52"/><path d="M 51 22 L 36 52"/></g><circle cx="36" cy="25" r="8" fill="#A78BFA"/></svg></div><div class="bubble">Oi! Sou a Vi 💜 Como posso te ajudar? Você pode perguntar sobre pagamentos, vagas, saques…</div></div>
+            <div class="bubble me">Como eu saco meu dinheiro?</div>
+            <div class="r"><div class="viav"><svg width="15" height="15" viewBox="0 0 72 72"><g fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"><path d="M 21 22 L 36 52"/><path d="M 51 22 L 36 52"/></g><circle cx="36" cy="25" r="8" fill="#A78BFA"/></svg></div><div class="bubble">Na aba Carteira, toque em "Sacar via Pix". O dinheiro vai para a chave Pix do seu perfil. Quer que eu te leve lá?</div></div>
+          </div>
+          <div class="chips"><span class="chip">Pagamentos</span><span class="chip">Vagas</span><span class="chip">Saque</span></div>
+          <div class="input"><div class="ph">Escreva sua dúvida…</div><div class="snd"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div></div>
+          <div style="text-align:center;font-size:10.5px;color:var(--ink2)">Não resolveu? <b style="color:var(--roxo-deep)">Falar com o suporte</b></div>
+        </div>
+      </div>
+      <h3>Opção A — conversa em primeiro lugar</h3>
+      <span class="tag">a Vi abre já conversando</span>
+      <p>A tela É o chat com a Vi. Chips de tema e o link discreto "Falar com o suporte" no rodapé. Máxima deflexão (todo mundo tenta a IA antes), mas empurra as perguntas frequentes para dentro da conversa.</p>
+    </div>
+
+    <!-- C: híbrido (destaque) -->
+    <div class="option">
+      <div class="phone">
+        <div class="head">
+          <div class="avatar"><svg width="22" height="22" viewBox="0 0 72 72"><g fill="none" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"><path d="M 21 22 L 36 52"/><path d="M 51 22 L 36 52"/></g><circle cx="36" cy="25" r="8" fill="#A78BFA"/></svg></div>
+          <div><div class="t">Central de Ajuda</div><div class="st">a Vi resolve na hora · ou fale com a equipe</div></div>
+        </div>
+        <div class="body">
+          <div class="vibox">
+            <div class="r"><div class="viav"><svg width="15" height="15" viewBox="0 0 72 72"><g fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"><path d="M 21 22 L 36 52"/><path d="M 51 22 L 36 52"/></g><circle cx="36" cy="25" r="8" fill="#A78BFA"/></svg></div><div class="bubble">Oi! Sou a Vi 💜 Me conta sua dúvida que eu tento resolver na hora.</div></div>
+            <div class="input" style="background:#fff"><div class="ph">Como posso ajudar?</div><div class="snd"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div></div>
+          </div>
+          <div class="sectlabel">PERGUNTAS FREQUENTES</div>
+          <div class="card"><div class="q">Como funciona o pagamento de uma vaga?</div></div>
+          <div class="card"><div class="q">Quando recebo pelo serviço que fiz?</div></div>
+          <div class="card"><div class="q">Posso cancelar uma vaga?</div></div>
+          <div class="spacer"></div>
+          <div class="others">Outros assuntos <span style="color:var(--ink2)">›</span></div>
+          <div class="human">Falar com alguém do suporte</div>
+        </div>
+      </div>
+      <h3>Opção C — híbrido (recomendada)</h3>
+      <span class="tag">Vi em destaque + FAQ + Outros + humano no fim</span>
+      <p>Bate exatamente com o pedido: a Vi no topo (campo "Como posso ajudar?"), os cards de perguntas frequentes logo abaixo, "Outros assuntos" que expande as opções menos comuns e, por último, "Falar com o suporte". Equilíbrio entre auto-atendimento e deflexão.</p>
+    </div>
+
+    <!-- B: menu-first -->
+    <div class="option">
+      <div class="phone">
+        <div class="head">
+          <div class="avatar"><svg width="22" height="22" viewBox="0 0 72 72"><g fill="none" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"><path d="M 21 22 L 36 52"/><path d="M 51 22 L 36 52"/></g><circle cx="36" cy="25" r="8" fill="#A78BFA"/></svg></div>
+          <div><div class="t">Central de Ajuda</div><div class="st">escolha um tema</div></div>
+        </div>
+        <div class="body">
+          <div class="grid">
+            <div class="tile" style="background:var(--lilas);border-color:var(--roxo)"><div class="ic">💬</div><div class="tl" style="color:var(--roxo-deep)">Conversar com a Vi</div></div>
+            <div class="tile"><div class="ic">💳</div><div class="tl">Pagamentos e saque</div></div>
+            <div class="tile"><div class="ic">📋</div><div class="tl">Vagas e candidaturas</div></div>
+            <div class="tile"><div class="ic">🤝</div><div class="tl">Serviços e disputas</div></div>
+            <div class="tile"><div class="ic">🔒</div><div class="tl">Conta e segurança</div></div>
+            <div class="tile"><div class="ic">⋯</div><div class="tl">Outros assuntos</div></div>
+          </div>
+          <div class="spacer"></div>
+          <div class="human">Falar com alguém do suporte</div>
+        </div>
+      </div>
+      <h3>Opção B — menu por temas</h3>
+      <span class="tag">clássico, tudo organizado</span>
+      <p>Grade de temas (o primeiro card é a Vi). Toca num tema → abre os cards de FAQ daquele assunto → dentro deles a Vi e, no fim, o humano. Mais familiar e navegável, mas coloca a IA como "mais um card" em vez de protagonista — deflexão menor.</p>
+    </div>
+
+  </div>
+</body>
+</html>

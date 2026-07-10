@@ -12,7 +12,7 @@ import {
   fetchGigById,
   fetchGigPayment,
   fetchMyCandidacy,
-  reportGig,
+  report,
   withdrawCandidacy,
   fetchOpenGigs,
   hasPriorityForPeriod,
@@ -274,7 +274,13 @@ export function useReportGig(gigId: string) {
   return useMutation({
     mutationFn: async (): Promise<'reported' | 'already_reported' | 'error'> => {
       if (!supabase || !userId) return 'reported'; // demo mode: pretend
-      return reportGig(supabase, gigId, userId, 'Conteúdo suspeito ou anúncio externo');
+      return report(supabase, {
+        targetType: 'gig',
+        targetId: gigId,
+        reporterId: userId,
+        category: 'conteudo',
+        reason: 'Conteúdo suspeito ou anúncio externo',
+      });
     },
   });
 }

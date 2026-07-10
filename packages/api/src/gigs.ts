@@ -632,16 +632,21 @@ export async function fetchGigPayment(
   };
 }
 
-/** Reports a gig for moderation (D-040); one report per user per gig. */
-export async function reportGig(
+export type ReportTarget = "gig" | "message" | "profile";
+export type ReportResult = "reported" | "already_reported" | "error";
+
+/** Reports any target for moderation (D-040/S1); one report per user per target. */
+export async function report(
   client: SupabaseClient,
-  gigId: string,
-  reporterId: string,
-  reason: string,
-): Promise<"reported" | "already_reported" | "error"> {
-  const { error } = await client
-    .from("gig_reports")
-    .insert({ gig_id: gigId, reporter_id: reporterId, reason });
+  input: { targetType: ReportTarget; targetId: string; reporterId: string; category: string; reason: string },
+): Promise<ReportResult> {
+  const { error } = await client.from("reports").insert({
+    target_type: input.targetType,
+    target_id: input.targetId,
+    reporter_id: input.reporterId,
+    category: input.category,
+    reason: input.reason,
+  });
   if (!error) return "reported";
   return error.code === "23505" ? "already_reported" : "error";
 }

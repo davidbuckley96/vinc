@@ -16,6 +16,7 @@ conversas.
 | 06 | [decisoes.md](06-decisoes.md) | Registro de decisões (ADR) | Ao tomar ou consultar decisões |
 | 07 | [duvidas-abertas.md](07-duvidas-abertas.md) | Questões pendentes do David | Antes de perguntar algo (pode já estar registrado) |
 | 08 | [pesquisa-cobranca-taxa.md](08-pesquisa-cobranca-taxa.md) | Pesquisa: quando cobrar a taxa (cold start × ads externos) | Ao decidir o modelo de cobrança (dúvida #24) |
+| 09 | [suporte-e-moderacao.md](09-suporte-e-moderacao.md) | Suporte, assistente Vi e moderação (arquitetura + fases) | Ao trabalhar em suporte/denúncias |
 
 ## Regras de manutenção
 
