@@ -734,3 +734,29 @@ vinc-mark.svg, vinc-assinatura.svg). Aplicação: componente `VincLogo`
 (react-native-svg) nas telas de entrada e de conclusão de cadastro;
 ícones do app regenerados (icon, android foreground/monochrome/
 background, favicon, splash) a partir do SVG.
+
+## D-043 — Gênero opcional no perfil e no cartão do candidato (dúvida #20)
+**Data:** 2026-07-09 · **Decidido por:** David (resolvidas as duas sub-questões com os defaults recomendados pelo Claude)
+
+O David citou gênero como informação relevante na escolha (D-024). Como
+não havia edição de perfil, ficou pendente. Decisões:
+1. **Opcional** — obrigar brigaria com a LGPD e com o cartão anonimizado;
+   valores `female`/`male`/`other` (rótulos Mulher/Homem/Outro), mais
+   "nenhum".
+2. **Aparece por padrão, com controle para ocultar** — quando o gênero
+   está preenchido, um switch "Mostrar meu gênero" (ligado por padrão)
+   decide se ele vai para o cartão do candidato e para o perfil público.
+   O consentimento é de quem exibe.
+
+Implementação (migration 0029): colunas `gender` + `show_gender` em
+profiles; nova tela **Editar perfil** (nome, bio, gênero + switch);
+`get-candidates` só devolve o gênero quando `show_gender` (o cartão
+segue sem worker_id/nome/foto — D-024 intacto); perfil público mostra o
+gênero sob o nome quando exibido; helper puro `genderLabel` no domínio.
+Verificado e2e (opt-in/opt-out ao vivo + anonimato preservado).
+
+**Correção de segurança embutida:** o grant de UPDATE em `profiles` era
+para a tabela inteira, permitindo a um usuário setar `is_admin = true`
+na própria linha (escalonamento de privilégio). Agora o grant é por
+COLUNA (name, avatar_url, bio, gender, show_gender) — testado: `PATCH`
+com `is_admin` retorna 42501.

@@ -228,6 +228,8 @@ export interface Candidate {
   reviewCount: number;
   completedServices: number;
   topTags: string[];
+  /** Shown only when the worker opted in (D-043); null otherwise. */
+  gender: import("@vinc/core").Gender | null;
   /** Had a service cancelled in this same period (D-034) — listed first. */
   priority: boolean;
 }

@@ -48,6 +48,8 @@
 - [ ] 3.8 (pós-lançamento Pix) Cartões de crédito/débito + cobrança real da multa do prestador sem saldo (D-027); carteiras digitais conforme o provedor
 
 ## Melhorias contínuas (fora de fase)
+- [x] Gênero opcional no perfil + cartão do candidato (D-043, dúvida #20, 2026-07-09): tela **Editar perfil** (nome, bio, gênero + switch "mostrar"), `get-candidates` só devolve o gênero com opt-in (cartão segue anonimizado), perfil público exibe quando permitido; verificado e2e. Correção de segurança junto: grant de UPDATE de `profiles` por coluna (fecha escalonamento para `is_admin`)
+- [x] Logo oficial (D-042, rodada 16b A5): componente VincLogo + ícones/favicon/splash do app regenerados
 - [x] Modelo de cobrança D-040 (aprovado pelo David em 2026-07-09; pesquisa em docs/08): **publicar é grátis**; o Pix (valor+taxa) acontece na ESCOLHA (janela de 30 min; candidato só sabe após confirmação; escolha não paga reabre a vaga e Pix atrasado é devolvido integralmente pelo webhook); taxa só é ganha em serviço realizado; anti-spam: filtro de contato no anúncio, limite de vagas simultâneas (3/10), denúncia de vaga (`gig_reports`), CTAs "anunciar é grátis" nos empty states. Verificado e2e nos DOIS modos (simulado e gateway/dublê, 13 checks)
 - [x] Desistência de candidatura + recandidatura + notificação sem duplicata + lista de candidatos por relevância (D-039, 2026-07-09, verificado e2e 9 checks)
 

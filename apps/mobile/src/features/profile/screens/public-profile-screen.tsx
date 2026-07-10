@@ -10,7 +10,10 @@ import { useProfileStats } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
 import { useBlockStatus, useToggleBlock } from '../block-hooks';
+import { genderLabel } from '@vinc/core';
+
 import { ProfileView, type ProfileRole } from '../components/profile-view';
+import { usePublicGender } from '../hooks';
 
 /**
  * Public profile of another user. The role shown comes from the navigation
@@ -23,6 +26,7 @@ export function PublicProfileScreen() {
   const params = useLocalSearchParams<{ id: string; role?: string; name?: string }>();
   const role: ProfileRole = params.role === 'worker' ? 'worker' : 'poster';
   const stats = useProfileStats(params.id);
+  const gender = usePublicGender(params.id);
   const blockStatus = useBlockStatus(params.id);
   const toggleBlock = useToggleBlock(params.id);
   const [blockNote, setBlockNote] = useState<string | null>(null);
@@ -71,6 +75,11 @@ export function PublicProfileScreen() {
               </Text>
             </View>
             <Text style={[styles.name, { color: theme.text }]}>{name}</Text>
+            {gender.data && (
+              <Text style={[styles.genderLine, { color: theme.textSecondary }]}>
+                {genderLabel(gender.data)}
+              </Text>
+            )}
           </View>
           <ProfileView userId={params.id} role={role} fallbackName={name} />
 
@@ -147,6 +156,10 @@ const styles = StyleSheet.create({
   avatarLabel: {
     fontSize: 28,
     fontWeight: '800',
+  },
+  genderLine: {
+    fontSize: 13,
+    marginTop: 2,
   },
   name: {
     fontSize: 18,

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { Candidate, DecideCandidacyOutcome } from '@vinc/api';
+import { genderLabel } from '@vinc/core';
 
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -110,6 +111,11 @@ export function CandidateList({ gigId, enabled }: CandidateListProps) {
               <View style={styles.cardInfo}>
                 <View style={styles.nameRow}>
                   <Text style={[styles.name, { color: theme.text }]}>{candidate.firstName}</Text>
+                  {candidate.gender && (
+                    <Text style={[styles.genderTag, { color: theme.textSecondary }]}>
+                      {genderLabel(candidate.gender)}
+                    </Text>
+                  )}
                   {candidate.priority && (
                     <View style={[styles.priorityBadge, { backgroundColor: theme.primarySoft }]}>
                       <Text style={[styles.priorityLabel, { color: theme.primarySoftText }]}>
@@ -250,6 +256,10 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '800',
+  },
+  genderTag: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   priorityBadge: {
     borderRadius: Radius.pill,

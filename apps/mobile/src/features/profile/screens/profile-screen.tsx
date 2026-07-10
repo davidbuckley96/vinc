@@ -75,6 +75,18 @@ export function ProfileScreen() {
               {status === 'signedIn' && (
                 <Pressable
                   accessibilityRole="button"
+                  onPress={() => router.push('/edit-profile')}
+                  style={[styles.payoutEntry, { borderColor: theme.line }]}>
+                  <Ionicons name="person-outline" size={17} color={theme.primary} />
+                  <Text style={[styles.payoutEntryLabel, { color: theme.text }]}>
+                    Editar perfil
+                  </Text>
+                  <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
+                </Pressable>
+              )}
+              {status === 'signedIn' && (
+                <Pressable
+                  accessibilityRole="button"
                   onPress={() => router.push('/payout')}
                   style={[styles.payoutEntry, { borderColor: theme.line }]}>
                   <Ionicons name="key-outline" size={17} color={theme.primary} />

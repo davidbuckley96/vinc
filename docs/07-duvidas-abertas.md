@@ -46,11 +46,11 @@
     anunciante escolhe um, vendo só dados anonimizados (ver
     `06-decisoes.md` D-024; spec docs/02 §3). Backend implementado e
     verificado e2e; UI na rodada 8.
-20. 🟢 **Gênero no cartão do candidato** (D-024): David citou gênero como
-    informação relevante na escolha, mas o cadastro ainda não coleta esse
-    dado (não existe edição de perfil). Entra quando o perfil tiver o
-    campo — decidir junto: obrigatório ou opcional? aparece sempre ou só
-    quando o prestador quiser exibir?
+20. ~~🟢 **Gênero no cartão do candidato**~~ ✅ Respondida em 2026-07-09:
+    **opcional**, **aparece por padrão com switch para ocultar** (ver
+    `06-decisoes.md` D-043; tela Editar perfil criada, verificado e2e).
+    Correção de segurança junto: grant de UPDATE do perfil agora é por
+    coluna (fecha escalonamento para is_admin).
 23. ~~🟡 **Desistir da candidatura**~~ ✅ Respondida em 2026-07-09:
     aprovada a proposta + recandidatura permitida + dedup de notificação
     não lida + lista por relevância (ver `06-decisoes.md` D-039;
