@@ -40,7 +40,15 @@ export function CompleteSignupScreen() {
       return;
     }
     try {
-      await save.mutateAsync(validation.payload);
+      const result = await save.mutateAsync(validation.payload);
+      if (result === 'cpf_taken') {
+        setError('Este CPF já está em uso em outra conta. Cada pessoa pode ter só uma conta.');
+        return;
+      }
+      if (result === 'cpf_banned') {
+        setError('Este CPF não pode ser usado no Vinc.');
+        return;
+      }
       router.replace('/');
     } catch {
       setError('Não foi possível salvar agora. Tente de novo.');

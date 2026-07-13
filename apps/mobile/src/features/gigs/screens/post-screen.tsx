@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { computeGigPricing, formatBRL, type GigDraft } from '@vinc/core';
+import { computeGigPricing, formatBRL, suspensionUntilLabel, type GigDraft } from '@vinc/core';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
@@ -41,10 +41,14 @@ export function PostScreen() {
             outcome.code === 'unauthorized'
               ? 'Entre na sua conta para anunciar.'
               : outcome.code === 'contact_in_text'
-                ? 'Não coloque telefone, e-mail ou links no anúncio — o contato acontece pelo app depois da escolha.'
-                : outcome.code === 'too_many_open_gigs'
-                  ? `Você já tem ${outcome.limit ?? 3} vagas abertas. Conclua ou exclua uma para anunciar outra.`
-                  : 'Não foi possível publicar. Verifique os dados e tente de novo.',
+                ? 'Não coloque telefone, e-mail, redes sociais ou links no anúncio — o contato acontece pelo app depois da escolha.'
+                : outcome.code === 'prohibited_content'
+                  ? 'Este anúncio tem conteúdo proibido e não pode ser publicado.'
+                  : outcome.code === 'suspended'
+                    ? `Sua conta está suspensa temporariamente${suspensionUntilLabel(outcome.until)}. Você poderá anunciar quando a suspensão terminar.`
+                    : outcome.code === 'too_many_open_gigs'
+                      ? `Você já tem ${outcome.limit ?? 3} vagas abertas. Conclua ou exclua uma para anunciar outra.`
+                      : 'Não foi possível publicar. Verifique os dados e tente de novo.',
         });
         return;
       }

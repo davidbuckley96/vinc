@@ -809,3 +809,53 @@ com dois adapters selecionados por env `ASSISTANT_PROVIDER`:
 com LLM de verdade, o David precisa criar uma **chave da API da Anthropic**
 e enviá-la para virar o secret `ANTHROPIC_API_KEY`. Até lá, a Vi responde
 pelo provedor `local` (recuperação da FAQ), que já resolve o comum.
+
+## D-046 — Anti-abuso: bloqueio de contato reforçado, CPF único, suspensão e termos proibidos
+**Data:** 2026-07-13 · **Decidido por:** David
+
+David pediu defesas contra abuso (começando pelo exemplo de telefone/links
+na vaga). O Claude propôs uma leva e o David aprovou **A+B+C+D**:
+
+**A) Bloqueio de contato reforçado.** O `containsContactInfo` (D-040, que já
+barrava telefone/e-mail/link no anúncio) agora também pega **número por
+extenso** ("nove nove nove…"), **dígitos espaçados** ("9 9 9 9 9…"),
+**handles sociais** (`@fulano`, "instagram/telegram: fulano", "arroba
+fulano"). Passou a rodar também na **bio e no nome do perfil** (Edge
+Function `update-profile`; o UPDATE direto de name/bio saiu do cliente —
+migration 0035, só `avatar_url` fica direto). E um **aviso anti-golpe fixo
+no chat** ("Combine e pague sempre pelo Vinc"). Textos legítimos (horários,
+preços, quantidades) seguem passando — coberto por testes.
+
+**B) CPF obrigatório e ÚNICO, à prova de recriação.** O CPF (já coletado no
+onboarding — D-038) passa a ser **único por conta ativa** (índice único em
+`payout_accounts.holder_cpf`) e ganha um **registro que sobrevive à exclusão
+da conta** (`cpf_registry`, guardando só o **hash** do CPF + suspensão/ban).
+Um trigger no cadastro do CPF: veta CPF banido, registra o hash e faz a
+conta **herdar a suspensão vigente do CPF** — assim **deletar e recriar não
+burla** a penalidade. CPF já usado por outra conta ativa → erro amigável
+("este CPF já está em uso").
+
+**C) Suspensão automática por reincidência.** `integrity_events` +
+`profiles.suspended_until`. Limiares (validados pelo David, **a rever no
+pré-lançamento** — checklist item 10): **3 cancelamentos de última hora**
+(≤24h do início) em 30 dias **OU 2 denúncias procedentes** em 30 dias →
+**7 dias** sem publicar nem se candidatar. Registrado por
+`cancel-gig` (late_cancel) e pelo painel ao confirmar uma denúncia
+(`support-panel-action` → upheld_report). A suspensão também vai para o
+`cpf_registry` (via `apply_suspension`), fechando o ciclo com B. Prazos e
+limiares centralizados em `packages/core/src/suspension.ts`.
+
+**D) Termos proibidos na vaga.** `prohibitedContentCategory` (core) bloqueia
+conteúdo claramente ilegal — **drogas, armas, sexual explícito** — na
+criação/edição da vaga (`prohibited_content`). Lista **conservadora**
+(palavra-inteira, sem acento) para não pegar anúncio legítimo ("programa de
+reforma", "acompanhante de idoso" passam). Casos **ambíguos** (ex.:
+discriminação) ficam para as **denúncias** (revisão humana no painel), não
+para bloqueio automático.
+
+**Fora desta leva** (registrado em docs/07 #10 e no checklist): anti
+auto-negócio/Sybil (mais complexo), verificação por SMS no cadastro
+(custo — junto do gateway) e OCR em imagens (pesado). Verificado e2e:
+contato disfarçado, conteúdo proibido, CPF único (colisão → erro),
+suspensão após 3 ofensas (publicar/candidatar → bloqueado) e herança da
+suspensão numa conta nova com o mesmo CPF. Migrations 0034–0037.

@@ -11,11 +11,15 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 import { posterCanEdit, type GigStatus } from "../../../packages/core/src/gig.ts";
 import { validateGigDraft, type GigDraft } from "../../../packages/core/src/gig-draft.ts";
-import { containsContactInfo } from "../../../packages/core/src/moderation.ts";
+import {
+  containsContactInfo,
+  prohibitedContentCategory,
+} from "../../../packages/core/src/moderation.ts";
 import { approximateLocation, deriveAreaLabel } from "../../../packages/core/src/location.ts";
 
 type ResultCode =
   | "contact_in_text"
+  | "prohibited_content"
   | "updated"
   | "unauthorized"
   | "not_found"
@@ -76,8 +80,13 @@ Deno.serve(async (request) => {
   // The price is not editable: validate the draft against the price that
   // was paid at creation, ignoring whatever the client sent.
   const errors = validateGigDraft({ ...draft, priceCents: gig.price_cents }, new Date());
-  if (containsContactInfo(`${draft.title} ${draft.description}`)) {
+  const adText = `${draft.title} ${draft.description}`;
+  if (containsContactInfo(adText)) {
     return respond("contact_in_text", 400);
+  }
+  const prohibited = prohibitedContentCategory(adText);
+  if (prohibited) {
+    return respond("prohibited_content", 400, { category: prohibited });
   }
   if (errors.length > 0) return respond("invalid_draft", 400, { errors });
 

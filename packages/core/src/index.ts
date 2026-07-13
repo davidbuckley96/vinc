@@ -6,4 +6,5 @@ export * from "./money";
 export * from "./payout";
 export * from "./pricing";
 export * from "./schedule";
+export * from "./suspension";
 export * from "./wallet";

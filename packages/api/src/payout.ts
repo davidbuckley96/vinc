@@ -30,12 +30,18 @@ export async function fetchPayoutAccount(
   };
 }
 
-/** Creates/updates the caller's own account (RLS + column grants). */
+export type SavePayoutResult = "saved" | "cpf_taken" | "cpf_banned" | "error";
+
+/**
+ * Creates/updates the caller's own account (RLS + column grants). CPF is
+ * unique per account and survives deletion (D-046): a CPF already used by
+ * another active account → cpf_taken; a banned CPF → cpf_banned.
+ */
 export async function savePayoutAccount(
   client: SupabaseClient,
   userId: string,
   input: { pixKeyType: PixKeyType; pixKey: string; holderCpf: string },
-): Promise<void> {
+): Promise<SavePayoutResult> {
   const { error } = await client.from("payout_accounts").upsert(
     {
       user_id: userId,
@@ -45,5 +51,9 @@ export async function savePayoutAccount(
     },
     { onConflict: "user_id" },
   );
-  if (error) throw new Error(error.message);
+  if (!error) return "saved";
+  // 23505 = unique index on holder_cpf (another active account has it).
+  if (error.code === "23505") return "cpf_taken";
+  if (/CPF_BANNED/.test(error.message)) return "cpf_banned";
+  throw new Error(error.message);
 }

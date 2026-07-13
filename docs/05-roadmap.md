@@ -108,6 +108,12 @@ revisados antes de abrir o app ao público:
    `MAP_STYLE_URL` em `apps/mobile/src/components/location-map/config.ts`;
    revisar também o volume de geocodificação no Nominatim (política de uso
    justo — considerar um serviço pago se o volume crescer).
+10. **Rever o prazo da suspensão automática** (D-046, pedido do David
+    2026-07-13): hoje 7 dias ao cruzar 3 cancelamentos de última hora em
+    30 dias OU 2 denúncias procedentes em 30 dias (limiares e prazo em
+    `packages/core/src/suspension.ts`). Antes do lançamento, avaliar com
+    dados reais se o prazo/limiares devem ser ajustados (mais brandos no
+    começo, escalonamento por reincidência, etc.).
 
 ## Estado atual
 

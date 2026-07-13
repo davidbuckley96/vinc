@@ -146,6 +146,15 @@ export function ChatScreen() {
           contentContainerStyle={styles.content}
           onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}>
           {messages.isLoading && <ActivityIndicator color={theme.primary} />}
+
+          {/* Anti-golpe (D-046): keep the deal inside the app. */}
+          <View style={[styles.safetyTip, { backgroundColor: theme.primarySoft }]}>
+            <Ionicons name="shield-checkmark" size={15} color={theme.primarySoftText} />
+            <Text style={[styles.safetyTipText, { color: theme.primarySoftText }]}>
+              Combine e pague sempre pelo Vinc. Fora do app você perde a proteção da plataforma.
+            </Text>
+          </View>
+
           {messages.isSuccess && count === 0 && (
             <Text style={[styles.empty, { color: theme.textSecondary }]}>
               Combine os detalhes do serviço por aqui. As mensagens ficam guardadas e só vocês
@@ -308,6 +317,18 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.four,
+  },
+  safetyTip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    padding: Spacing.two + 2,
+    borderRadius: Radius.medium,
+  },
+  safetyTipText: {
+    flex: 1,
+    fontSize: 11.5,
+    lineHeight: 16,
   },
   group: {
     gap: Spacing.one,

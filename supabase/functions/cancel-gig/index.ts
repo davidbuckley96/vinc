@@ -73,7 +73,7 @@ Deno.serve(async (request) => {
 
   const { data: gig } = await admin
     .from("gigs")
-    .select("id, poster_id, worker_id, status, price_cents")
+    .select("id, poster_id, worker_id, status, price_cents, starts_at")
     .eq("id", gigId)
     .maybeSingle();
   if (!gig) return respond("not_found", 404);
@@ -95,6 +95,18 @@ Deno.serve(async (request) => {
     .in("status", ["accepted", "in_progress"])
     .select("id");
   if (!cancelled || cancelled.length === 0) return respond("state_changed", 409);
+
+  // Integrity (D-046): a cancellation within 24h of the start is a
+  // last-minute bail — counts against the canceller and can trigger an
+  // automatic suspension. Never blocks the cancellation itself.
+  const hoursToStart = (new Date(gig.starts_at).getTime() - Date.now()) / 3_600_000;
+  if (hoursToStart <= 24) {
+    await admin.rpc("record_offense", {
+      p_user: userId,
+      p_type: "late_cancel",
+      p_gig: gig.id,
+    });
+  }
 
   const fine = computeCancellationFine(gig.price_cents);
 

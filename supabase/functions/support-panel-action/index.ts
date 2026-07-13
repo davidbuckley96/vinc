@@ -93,8 +93,33 @@ Deno.serve(async (request) => {
       .update({ status: decision, resolved_by: adminId, resolved_at: new Date().toISOString() })
       .eq("id", reportId)
       .eq("status", "pending")
-      .select("id");
+      .select("id, target_type, target_id");
     if (!updated || updated.length === 0) return respond("not_found", 404);
+
+    // An UPHELD report is an integrity offense against whoever owns the
+    // reported content (D-046) — may trigger an automatic suspension.
+    if (decision === "actioned") {
+      const row = updated[0] as { target_type: string; target_id: string };
+      let offenderId: string | null = null;
+      if (row.target_type === "profile") {
+        offenderId = row.target_id;
+      } else if (row.target_type === "gig") {
+        const { data: g } = await admin
+          .from("gigs").select("poster_id").eq("id", row.target_id).maybeSingle();
+        offenderId = (g?.poster_id as string | undefined) ?? null;
+      } else if (row.target_type === "message") {
+        const { data: msg } = await admin
+          .from("gig_messages").select("sender_id").eq("id", row.target_id).maybeSingle();
+        offenderId = (msg?.sender_id as string | undefined) ?? null;
+      }
+      if (offenderId) {
+        await admin.rpc("record_offense", {
+          p_user: offenderId,
+          p_type: "upheld_report",
+          p_gig: row.target_type === "gig" ? row.target_id : null,
+        });
+      }
+    }
     await log("resolve_report", "report", reportId, `${decision}${note ? `: ${note}` : ""}`);
     return respond("ok", 200);
   }

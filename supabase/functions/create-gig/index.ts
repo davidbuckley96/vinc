@@ -11,13 +11,18 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 import { validateGigDraft, type GigDraft } from "../../../packages/core/src/gig-draft.ts";
 import { approximateLocation, deriveAreaLabel } from "../../../packages/core/src/location.ts";
-import { containsContactInfo } from "../../../packages/core/src/moderation.ts";
+import {
+  containsContactInfo,
+  prohibitedContentCategory,
+} from "../../../packages/core/src/moderation.ts";
 import { computeGigPricing } from "../../../packages/core/src/pricing.ts";
 
 type ResultCode =
   | "created"
   | "contact_in_text"
+  | "prohibited_content"
   | "too_many_open_gigs"
+  | "suspended"
   | "unauthorized"
   | "invalid_draft"
   | "invalid_request";
@@ -54,8 +59,15 @@ Deno.serve(async (request) => {
   if (errors.length > 0) return respond("invalid_draft", 400, { errors });
 
   // Contact happens inside the app, after the paid choice (D-040).
-  if (containsContactInfo(`${draft.title} ${draft.description}`)) {
+  const adText = `${draft.title} ${draft.description}`;
+  if (containsContactInfo(adText)) {
     return respond("contact_in_text", 400);
+  }
+  // Clearly-illegal content is refused outright (D-046); nuanced cases go
+  // to the human report queue instead.
+  const prohibited = prohibitedContentCategory(adText);
+  if (prohibited) {
+    return respond("prohibited_content", 400, { category: prohibited });
   }
 
   const admin = createClient(
@@ -66,6 +78,13 @@ Deno.serve(async (request) => {
   const { data: userData, error: userError } = await admin.auth.getUser(jwt);
   if (userError || !userData.user) return respond("unauthorized", 401);
   const posterId = userData.user.id;
+
+  // Suspended accounts can't publish (D-046).
+  const { data: me } = await admin
+    .from("profiles").select("suspended_until").eq("id", posterId).maybeSingle();
+  if (me?.suspended_until && new Date(me.suspended_until).getTime() > Date.now()) {
+    return respond("suspended", 403, { until: me.suspended_until });
+  }
 
   // Cap on simultaneous open gigs: 3 without completed history as a
   // poster, 10 with (free posting must not mean free flooding — D-040).

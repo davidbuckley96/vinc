@@ -38,6 +38,7 @@ const RESULT_MESSAGES: Record<Exclude<ApplyGigResult, 'applied'>, string> = {
   refused_before: 'O anunciante recusou sua candidatura para esta vaga.',
   blocked: 'Não é possível se candidatar a vagas deste anunciante.',
   schedule_conflict: 'Você já tem um compromisso nesse horário.',
+  suspended: 'Sua conta está suspensa temporariamente e não pode se candidatar agora.',
   invalid_request: 'Algo deu errado. Tente de novo.',
   network_error: 'Sem conexão. Verifique sua internet e tente de novo.',
 };

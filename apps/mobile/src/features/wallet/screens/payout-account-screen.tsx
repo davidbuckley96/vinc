@@ -69,11 +69,19 @@ export function PayoutAccountScreen() {
       return;
     }
     try {
-      await save.mutateAsync({
+      const result = await save.mutateAsync({
         pixKeyType: keyType,
         pixKey: validation.normalized!,
         holderCpf: cpf.replace(/\D/g, ''),
       });
+      if (result === 'cpf_taken') {
+        setFeedback({ kind: 'error', text: 'Este CPF já está em uso em outra conta.' });
+        return;
+      }
+      if (result === 'cpf_banned') {
+        setFeedback({ kind: 'error', text: 'Este CPF não pode ser usado no Vinc.' });
+        return;
+      }
       setFeedback({
         kind: 'success',
         text: 'Chave Pix salva! Seus saques vão para ela.',

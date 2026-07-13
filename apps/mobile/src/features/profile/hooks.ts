@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { fetchMyProfile, updateMyProfile, type EditableProfile } from '@vinc/api';
+import {
+  fetchMyProfile,
+  updateMyProfile,
+  type EditableProfile,
+  type UpdateProfileResult,
+} from '@vinc/api';
 
 import { useSession } from '@/features/auth/session-context';
 import { supabase } from '@/lib/supabase';
@@ -23,11 +28,12 @@ export function useUpdateProfile() {
   const { session } = useSession();
   const userId = session?.user.id ?? null;
   return useMutation({
-    mutationFn: async (input: EditableProfile): Promise<void> => {
-      if (!supabase || !userId) return; // demo mode: pretend success
-      await updateMyProfile(supabase, userId, input);
+    mutationFn: async (input: EditableProfile): Promise<UpdateProfileResult> => {
+      if (!supabase || !userId) return 'updated'; // demo mode: pretend success
+      return updateMyProfile(supabase, userId, input);
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result !== 'updated') return;
       queryClient.invalidateQueries({ queryKey: ['my-profile'] });
       queryClient.invalidateQueries({ queryKey: ['profile-stats'] });
     },

@@ -21,6 +21,7 @@ type ResultCode =
   | "refused_before"
   | "blocked"
   | "schedule_conflict"
+  | "suspended"
   | "invalid_request";
 
 const CORS_HEADERS = {
@@ -59,6 +60,13 @@ Deno.serve(async (request) => {
   const { data: userData, error: userError } = await admin.auth.getUser(jwt);
   if (userError || !userData.user) return respond("unauthorized", 401);
   const workerId = userData.user.id;
+
+  // Suspended accounts can't apply to gigs (D-046).
+  const { data: me } = await admin
+    .from("profiles").select("suspended_until").eq("id", workerId).maybeSingle();
+  if (me?.suspended_until && new Date(me.suspended_until).getTime() > Date.now()) {
+    return respond("suspended", 403);
+  }
 
   const { data: gig } = await admin
     .from("gigs")

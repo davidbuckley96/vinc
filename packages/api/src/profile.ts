@@ -23,15 +23,32 @@ export async function fetchMyProfile(
   };
 }
 
-/** Saves the self-editable fields; column grants block anything else. */
+export type UpdateProfileResult = "updated" | "contact_in_text" | "error";
+
+/**
+ * Saves the self-editable fields through the update-profile Edge Function,
+ * which moderates the name/bio for contact info (D-046). Direct client
+ * UPDATE on name/bio was revoked (migration 0035).
+ */
 export async function updateMyProfile(
   client: SupabaseClient,
-  userId: string,
+  _userId: string,
   input: EditableProfile,
-): Promise<void> {
-  const { error } = await client
-    .from("profiles")
-    .update({ name: input.name.trim(), bio: input.bio?.trim() || null })
-    .eq("id", userId);
-  if (error) throw new Error(error.message);
+): Promise<UpdateProfileResult> {
+  const { data, error } = await client.functions.invoke("update-profile", {
+    body: { name: input.name, bio: input.bio },
+  });
+  if (error) {
+    try {
+      const context = (error as { context?: Response }).context;
+      if (context) {
+        const body = (await context.json()) as { code?: string };
+        if (body.code === "contact_in_text") return "contact_in_text";
+      }
+    } catch {
+      // fall through
+    }
+    return "error";
+  }
+  return (data as { code?: UpdateProfileResult })?.code === "updated" ? "updated" : "error";
 }

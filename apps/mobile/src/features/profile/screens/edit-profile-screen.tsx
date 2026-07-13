@@ -47,7 +47,18 @@ export function EditProfileScreen() {
       return;
     }
     try {
-      await save.mutateAsync({ name: name.trim(), bio });
+      const result = await save.mutateAsync({ name: name.trim(), bio });
+      if (result === 'contact_in_text') {
+        setFeedback({
+          kind: 'error',
+          text: 'Não coloque telefone, e-mail, redes sociais ou links no perfil.',
+        });
+        return;
+      }
+      if (result === 'error') {
+        setFeedback({ kind: 'error', text: 'Não foi possível salvar agora. Tente de novo.' });
+        return;
+      }
       setFeedback({ kind: 'success', text: 'Perfil salvo!' });
       setTimeout(() => router.back(), 1000);
     } catch {

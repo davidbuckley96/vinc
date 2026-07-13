@@ -53,7 +53,13 @@ export async function signUpWithEmail(
   // on the first sign-in.
   if (data.session && data.user) {
     try {
-      await savePayoutAccount(supabase, data.user.id, payout);
+      const result = await savePayoutAccount(supabase, data.user.id, payout);
+      if (result === 'cpf_taken') {
+        return { ok: false, error: 'Este CPF já está em uso em outra conta. Cada pessoa pode ter só uma conta.' };
+      }
+      if (result === 'cpf_banned') {
+        return { ok: false, error: 'Este CPF não pode ser usado no Vinc.' };
+      }
     } catch {
       // Non-fatal: the completion screen will ask again.
     }

@@ -324,6 +324,25 @@ saque fixo embaixo e extrato na tela "Histórico". Regras:
   legível — é parte da análise); resolução atômica (só a primeira decisão
   move dinheiro) via `resolve-dispute`, restrita a `profiles.is_admin`.
 
+### 6.1 Integridade e anti-abuso (D-046 — implementado)
+
+- **Sem contato fora do app:** o texto da **vaga** e do **perfil** (nome +
+  bio) barra telefone, e-mail, link e rede social — inclusive disfarçados
+  (número por extenso, dígitos espaçados, `@handle`). O contato acontece
+  no app, depois da escolha paga. Aviso anti-golpe fixo no chat.
+- **Conteúdo proibido na vaga:** drogas, armas e sexual explícito são
+  bloqueados na publicação. Casos ambíguos (ex.: discriminação) vão para
+  as **denúncias** (revisão humana no painel).
+- **1 CPF = 1 conta, à prova de recriação:** CPF obrigatório e único por
+  conta; um registro (hash) sobrevive à exclusão da conta guardando
+  penalidades — **deletar e recriar a conta não zera** suspensão/ban (a
+  conta nova herda a suspensão vigente do CPF).
+- **Suspensão automática por reincidência:** 3 cancelamentos de última
+  hora (≤24h do início) em 30 dias **ou** 2 denúncias procedentes em 30
+  dias → **7 dias** sem publicar nem se candidatar (limiares/prazo a rever
+  no pré-lançamento). Fora da lista atual (próxima leva): anti
+  auto-negócio (Sybil), verificação por SMS, OCR em imagens.
+
 ## 7. Avaliações
 
 - Ao concluir um serviço, **ambas as partes se avaliam** com nota 1–5

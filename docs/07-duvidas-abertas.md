@@ -61,12 +61,15 @@
     anti-spam e promo de lançamento (ver `06-decisoes.md` D-040;
     implementado e verificado e2e nos dois modos).
 
-### Abuso e integridade (proposta 2026-07-13, aguardando validação do David)
+### Abuso e integridade (validado 2026-07-13 → D-046)
 
-David pediu (2026-07-13) mais defesas contra abuso, começando pelo exemplo
-de **telefone/links no anúncio** — que **já está no ar** (bloqueio de
-contato em criar/editar vaga via `containsContactInfo`, D-040). Proposta de
-próximas medidas, **aguardando o David marcar quais entram**:
+David aprovou **A+B+C+D** em 2026-07-13 (implementado e verificado e2e — ver
+`06-decisoes.md` D-046). CPF **obrigatório e único, à prova de recriação**;
+suspensão **7 dias** nos limiares sugeridos (a rever no pré-lançamento —
+checklist item 10). **Pendentes (próxima leva, itens 10-e/f/g):** anti
+auto-negócio (Sybil), verificação por SMS, OCR em imagens.
+
+Histórico da proposta (o que foi decidido):
 
 - **10-a. Reforçar o bloqueio de contato**: pegar contato disfarçado
   (número por extenso, emojis/espaços entre dígitos, "arroba fulano") +

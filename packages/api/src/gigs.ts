@@ -192,6 +192,7 @@ export type ApplyGigResult =
   | "refused_before"
   | "blocked"
   | "schedule_conflict"
+  | "suspended"
   | "invalid_request"
   | "network_error";
 
@@ -482,6 +483,8 @@ export async function deleteGig(
 
 export type UpdateGigResult =
   | "updated"
+  | "contact_in_text"
+  | "prohibited_content"
   | "unauthorized"
   | "not_found"
   | "forbidden"
@@ -559,7 +562,9 @@ export async function cancelGig(
 export type CreateGigResult =
   | "created"
   | "contact_in_text"
+  | "prohibited_content"
   | "too_many_open_gigs"
+  | "suspended"
   | "unauthorized"
   | "invalid_draft"
   | "invalid_request"
@@ -578,6 +583,10 @@ export interface CreateGigOutcome {
   gigId?: string;
   /** Cap that was hit when code is too_many_open_gigs. */
   limit?: number;
+  /** Offending category when code is prohibited_content (D-046). */
+  category?: string;
+  /** ISO end of the suspension when code is suspended (D-046). */
+  until?: string;
 }
 
 /**

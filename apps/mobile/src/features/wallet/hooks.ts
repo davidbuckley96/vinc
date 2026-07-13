@@ -7,6 +7,7 @@ import {
   savePayoutAccount,
   withdraw,
   type PayoutAccount,
+  type SavePayoutResult,
   type Wallet,
   type WithdrawResult,
 } from '@vinc/api';
@@ -70,11 +71,12 @@ export function useSavePayoutAccount() {
       pixKeyType: PixKeyType;
       pixKey: string;
       holderCpf: string;
-    }): Promise<void> => {
-      if (!supabase || !userId) return; // demo mode: pretend success
-      await savePayoutAccount(supabase, userId, input);
+    }): Promise<SavePayoutResult> => {
+      if (!supabase || !userId) return 'saved'; // demo mode: pretend success
+      return savePayoutAccount(supabase, userId, input);
     },
-    onSuccess: (_, input) => {
+    onSuccess: (result, input) => {
+      if (result !== 'saved') return; // cpf_taken / cpf_banned: keep the form
       // Write the fresh account into the cache BEFORE any navigation:
       // the onboarding gate (D-038) reads this query and would bounce
       // the user back while a refetch is still in flight.
