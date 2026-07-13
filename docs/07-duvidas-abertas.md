@@ -61,6 +61,34 @@
     anti-spam e promo de lançamento (ver `06-decisoes.md` D-040;
     implementado e verificado e2e nos dois modos).
 
+### Abuso e integridade (proposta 2026-07-13, aguardando validação do David)
+
+David pediu (2026-07-13) mais defesas contra abuso, começando pelo exemplo
+de **telefone/links no anúncio** — que **já está no ar** (bloqueio de
+contato em criar/editar vaga via `containsContactInfo`, D-040). Proposta de
+próximas medidas, **aguardando o David marcar quais entram**:
+
+- **10-a. Reforçar o bloqueio de contato**: pegar contato disfarçado
+  (número por extenso, emojis/espaços entre dígitos, "arroba fulano") +
+  aplicar o MESMO bloqueio na **bio do perfil** (hoje só no anúncio) +
+  **aviso anti-golpe no chat** ("nunca combine/pague por fora"). Baixo esforço.
+- **10-b. Uma conta por CPF**: impor unicidade do CPF (já coletado no
+  cadastro — D-038) para fechar a criação de conta nova que foge de
+  multa/suspensão/nota. Médio esforço, alto valor.
+- **10-c. Suspensão automática por reincidência**: cancelamentos de última
+  hora, no-shows ou denúncias procedentes acumuladas → tempo sem publicar/
+  se candidatar. Médio esforço.
+- **10-d. Termos proibidos na vaga** (drogas, armas, cunho sexual,
+  discriminação) → bloqueio ou fila de revisão no painel. Baixo-médio esforço.
+- **10-e. Anti auto-negócio (Sybil no mesmo serviço)**: impedir escolher um
+  candidato que compartilha CPF/telefone com o anunciante (auto-elogio para
+  lavar reputação). Mais complexo — provável 2ª leva.
+- **10-f. Verificação por SMS no cadastro** (barra criação em massa): exige
+  provedor de SMS + custo → junto do CNPJ/gateway.
+- **10-g. OCR em imagens** (telefone escrito em foto): pesado → bem depois.
+
+Recomendação do Claude para a 1ª leva: **10-a, 10-b, 10-c, 10-d**.
+
 ## Design
 
 11. ~~🔴 **Direção visual**~~ ✅ Respondida em 2026-07-02: Opção C, roxo
