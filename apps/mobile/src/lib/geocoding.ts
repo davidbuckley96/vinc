@@ -11,6 +11,21 @@ const NOMINATIM = 'https://nominatim.openstreetmap.org';
 // without one can be throttled or blocked.
 const UA = 'VincApp/1.0 (marketplace de serviços; contato@vinc.app)';
 const HEADERS = { 'Accept-Language': 'pt-BR', 'User-Agent': UA };
+// Hard ceiling on each lookup: Nominatim's free server can hang or throttle,
+// and callers must never wait forever (the confirm button depends on it).
+const TIMEOUT_MS = 6000;
+
+async function fetchJson(url: string): Promise<Response | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    return await fetch(url, { headers: HEADERS, signal: controller.signal });
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 export interface GeoResult {
   lat: number;
@@ -46,12 +61,11 @@ function shortLabel(row: NominatimRow): string {
 }
 
 export async function searchAddress(query: string): Promise<GeoResult[]> {
+  const response = await fetchJson(
+    `${NOMINATIM}/search?format=jsonv2&addressdetails=1&countrycodes=br&limit=5&q=${encodeURIComponent(query)}`,
+  );
+  if (!response || !response.ok) return [];
   try {
-    const response = await fetch(
-      `${NOMINATIM}/search?format=jsonv2&addressdetails=1&countrycodes=br&limit=5&q=${encodeURIComponent(query)}`,
-      { headers: HEADERS },
-    );
-    if (!response.ok) return [];
     const rows = (await response.json()) as NominatimRow[];
     return rows.map((row) => ({
       lat: Number(row.lat),
@@ -64,12 +78,11 @@ export async function searchAddress(query: string): Promise<GeoResult[]> {
 }
 
 export async function reverseGeocode(lat: number, lng: number): Promise<ReverseResult | null> {
+  const response = await fetchJson(
+    `${NOMINATIM}/reverse?format=jsonv2&addressdetails=1&lat=${lat}&lon=${lng}`,
+  );
+  if (!response || !response.ok) return null;
   try {
-    const response = await fetch(
-      `${NOMINATIM}/reverse?format=jsonv2&addressdetails=1&lat=${lat}&lon=${lng}`,
-      { headers: HEADERS },
-    );
-    if (!response.ok) return null;
     const row = (await response.json()) as NominatimRow & { error?: string };
     // Ocean / no-man's-land: Nominatim returns an error and no address.
     if (row.error || !row.address) return null;

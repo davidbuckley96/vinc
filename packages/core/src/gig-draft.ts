@@ -49,7 +49,7 @@ export const GIG_MIN_PRICE_CENTS = 1000;
  */
 export const BRAZIL_BBOX = { minLat: -34.0, maxLat: 5.5, minLng: -74.5, maxLng: -34.0 };
 
-function insideBrazilBbox(lat: number, lng: number): boolean {
+export function insideBrazilBbox(lat: number, lng: number): boolean {
   return (
     lat >= BRAZIL_BBOX.minLat &&
     lat <= BRAZIL_BBOX.maxLat &&

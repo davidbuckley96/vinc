@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { insideBrazilBbox } from '@vinc/core';
+
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { reverseGeocode, searchAddress, type GeoResult } from '@/lib/geocoding';
@@ -50,9 +52,6 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
   const [interacted, setInteracted] = useState(Boolean(start));
   const [label, setLabel] = useState<string | null>(start?.address ?? null);
   const [reading, setReading] = useState(false);
-  // The point must resolve to an address inside Brazil (D-023). Starts true
-  // for an already-chosen spot; a fresh pin is validated on the first move.
-  const [inBrazil, setInBrazil] = useState(Boolean(start));
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<GeoResult[]>([]);
@@ -64,6 +63,13 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
     if (reverseTimer.current) clearTimeout(reverseTimer.current);
   }, []);
 
+  // Whether the pin is in Brazil is decided OFFLINE by the bounding box
+  // (same guard the backend uses) — never by the network. This way a slow
+  // or blocked reverse-geocode can't wrongly reject a valid pin (the old
+  // "Escolha um local dentro do Brasil" false-block). The network lookup
+  // only fills in the human-readable address label, as a convenience.
+  const inBrazil = insideBrazilBbox(center.lat, center.lng);
+
   const moved = (lat: number, lng: number) => {
     setCenter((current) => ({ ...current, lat, lng }));
     setInteracted(true);
@@ -71,8 +77,7 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
     if (reverseTimer.current) clearTimeout(reverseTimer.current);
     reverseTimer.current = setTimeout(async () => {
       const found = await reverseGeocode(lat, lng);
-      setLabel(found?.label ?? 'Ponto fora de uma área com endereço');
-      setInBrazil(found?.inBrazil ?? false);
+      setLabel(found?.label ?? 'Ponto marcado no mapa');
       setReading(false);
     }, 700);
   };
@@ -98,7 +103,7 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
     setCenter({ lat: result.lat, lng: result.lng, zoom: 16 });
     setLabel(result.label);
     setInteracted(true);
-    setInBrazil(true); // search is scoped to Brazil (countrycodes=br)
+    setReading(false);
   };
 
   const canConfirm = interacted && inBrazil && !reading;

@@ -59,6 +59,16 @@
 - [ ] Prioridade de usuário como recurso premium (expansão do D-034 — ideia do David)
 - [ ] Geolocalização e busca por proximidade/mapa
 - [ ] Filtros avançados, recomendações, favoritos
+- [ ] **Termos de uso + política de privacidade** (pedido do David 2026-07-13):
+  escrever os documentos (intermediação, multa/cláusula penal, taxa, LGPD —
+  ver checklist 6 para o escopo jurídico) e a tela de aceite no cadastro
+  (checkbox "li e aceito os termos" com links). Hoje o cadastro não os
+  apresenta. **Precisa de revisão jurídica antes do lançamento.**
+- [ ] **Provedor de geocodificação/mapas de produção**: o MVP usa o Nominatim
+  público (OSM), que proíbe autocomplete e limita a 1 req/s — inviável em
+  volume real (foi a causa do falso "fora do Brasil" no 1º teste). Migrar para
+  LocationIQ / Mapbox / Google (ou Nominatim self-hosted) quando houver
+  tráfego. Junto do item 9 do checklist (tiles MapTiler).
 - [ ] Publicação nas lojas (App Store / Play Store)
 
 ## Infra, CI/CD e observabilidade (plano em docs/10 — pedido do David 2026-07-13)
