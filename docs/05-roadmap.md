@@ -63,7 +63,7 @@
 
 ## Infra, CI/CD e observabilidade (plano em docs/10 — pedido do David 2026-07-13)
 Objetivo: "nova versão fácil" + backend observável. Detalhes e stack em `docs/10-infra-cicd-observabilidade.md`.
-- [ ] **CI de PR**: typecheck + vitest + lint barrando o merge (formaliza/expande o CI da Fase 0)
+- [x] **CI de PR**: typecheck + vitest + **lint (ESLint 9 + eslint-config-expo)** barrando o merge; roda em todo push/PR com concurrency. Regras novas opinativas do React Compiler (`set-state-in-effect`, `refs`) ficam como **warning** por ora → tarefa de limpeza depois para virarem erro. `.github/workflows/ci.yml`
 - [ ] **Pipeline de deploy**: staging no merge / produção por tag, com Supabase CLI (migrations + functions) e **EAS Update (OTA)** + **EAS Build** por canal
 - [ ] **Projeto de staging** separado do de produção
 - [ ] **Sentry** no app + **logs estruturados** (nível + request_id) nas Edge Functions, com drain de logs

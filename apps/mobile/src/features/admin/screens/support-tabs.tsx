@@ -66,7 +66,6 @@ export function ReportsTab() {
   const resolve = useResolveReport();
   const cancelGig = useCancelGigOnBehalf();
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [note, setNote] = useState<Record<string, string>>({});
 
   const items = reports.data ?? [];
   const pending = items.filter((r) => r.status === 'pending');
@@ -81,7 +80,7 @@ export function ReportsTab() {
     if (alsoCancelGig && report.targetType === 'gig') {
       await cancelGig.mutateAsync({ gigId: report.targetId, note: 'denúncia procedente' });
     }
-    await resolve.mutateAsync({ reportId: report.id, decision, note: note[report.id] });
+    await resolve.mutateAsync({ reportId: report.id, decision });
     setBusyId(null);
   };
 

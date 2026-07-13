@@ -38,7 +38,7 @@ export function NotificationsScreen() {
 
   const groups = useMemo(() => {
     const now = new Date();
-    const result: Array<{ label: string; items: AppNotification[] }> = [];
+    const result: { label: string; items: AppNotification[] }[] = [];
     for (const item of notifications.data ?? []) {
       const label = dayGroupLabel(item.createdAt, now);
       const last = result[result.length - 1];

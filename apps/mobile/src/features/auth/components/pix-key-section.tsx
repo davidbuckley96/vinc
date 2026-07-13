@@ -14,7 +14,7 @@ import { useTheme } from '@/hooks/use-theme';
  * mandatory completion screen (Google / first sign-in without a key).
  */
 
-const OTHER_KEY_TYPES: Array<{ type: PixKeyType; label: string; placeholder: string }> = [
+const OTHER_KEY_TYPES: { type: PixKeyType; label: string; placeholder: string }[] = [
   { type: 'phone', label: 'Celular', placeholder: '(81) 99999-0000' },
   { type: 'email', label: 'E-mail', placeholder: 'voce@email.com' },
   { type: 'random', label: 'Aleatória', placeholder: 'chave gerada pelo seu banco' },

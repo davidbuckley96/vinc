@@ -19,7 +19,7 @@ import { useTheme } from '@/hooks/use-theme';
 
 import { usePayoutAccount, useSavePayoutAccount } from '../hooks';
 
-const KEY_TYPES: Array<{ type: PixKeyType; label: string; placeholder: string }> = [
+const KEY_TYPES: { type: PixKeyType; label: string; placeholder: string }[] = [
   { type: 'cpf', label: 'CPF', placeholder: '000.000.000-00' },
   { type: 'phone', label: 'Celular', placeholder: '(81) 99999-0000' },
   { type: 'email', label: 'E-mail', placeholder: 'voce@email.com' },
