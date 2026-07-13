@@ -134,3 +134,58 @@ público:
 Prioridade sugerida: 1 e 2 primeiro (facilitam todo o resto e já dão o
 "nova versão fácil"), depois 4/5 (observabilidade), 3 e 6 perto do
 lançamento. Nada disso bloqueia o desenvolvimento de features atual.
+
+## 9. Escalabilidade (dúvida do David, 2026-07-13)
+
+**Pergunta:** de 10 → 10.000 → 100.000+ usuários, o backend é elástico?
+Mudanças estruturais ficam difíceis com usuários reais.
+
+**Resposta curta:** a maior parte da stack é **elástica/gerenciada** e escala
+sozinha; o único ponto de atenção é o **Postgres primário**, que tem uma
+sequência conhecida de alavancas **operacionais (não reescrita)** que aguenta
+**100k+ usuários** confortavelmente.
+
+### Por componente
+- **Edge Functions (Deno serverless):** auto-escalam, sem estado. ✅
+- **PostgREST / Auth / Realtime / Storage:** gerenciados, escalam com o plano. ✅
+- **Postgres (primário único):** o coração — onde mora a atenção.
+
+### Pista do Postgres (na ordem)
+1. **Resize vertical** (mais CPU/RAM — um clique). Postgres indexado faz
+   milhares de req/s e milhões de linhas. 100k users não é "grande".
+2. **Connection pooling** (Supavisor/PgBouncer — já incluso).
+3. **Réplicas de leitura** (Supabase oferece): busca/feed/perfil nas réplicas,
+   primário só p/ escrita.
+4. **Partição/arquivamento** das tabelas grandes (ledger, notifications,
+   messages) — só na casa dos milhões de linhas; otimização tardia.
+
+### Por faixa
+| Usuários | Ação | Muda estrutura? |
+|---|---|---|
+| ≤ 1k | nada | não |
+| 1k–10k | compute pequeno + índices + pooling | não |
+| 10k–100k | compute médio + talvez 1 réplica; olhar queries lentas/Realtime | não |
+| 100k–1M+ | réplicas + partição + cache de leituras quentes | só otimização |
+| além | sharding/serviços dedicados nos caminhos quentes | pontual, por métrica |
+
+### Mitigando o risco de "mudar com users reais"
+- Alavancas de escala são **botões**, não reescrita (resize/réplica/índice/partição não tocam a lógica).
+- **Lógica de domínio desacoplada** (`packages/core` + portas) → mudança estrutural fica contida.
+- **Risco real = migração de schema em tabela grande.** Mitigação: migrations
+  versionadas + **staging + CI** (testar antes) + mudança **aditiva** (coluna
+  nullable → backfill → restringe), sem operação destrutiva.
+
+### Proativo agora (barato, evita dor)
+1. Índice em **toda FK** e em **todo predicado de RLS** (auditar).
+2. `pg_stat_statements` + alerta de query lenta (§4.2).
+3. Trabalho pesado fora do request (jobs — já fazemos).
+4. Realtime só onde a tela precisa (canal por vaga/ticket — já fazemos).
+
+### Opinião
+Forma **padrão, comprovada e elástica**; escala a 100k+ com botões, não
+reescrita. **Não** over-engenharia agora (sem K8s/microserviços/sharding —
+prematuro). Prevenção barata + plataforma gerenciada escalando; reavaliar
+por **métricas reais**. Ressalvas honestas: em escala grande **paga-se mais**
+(compute + réplicas) e há **acoplamento ao Supabase** (Postgres é portável;
+Auth/Realtime/Functions são "sabor Supabase" — o core desacoplado reduz a dor
+de uma eventual saída).
