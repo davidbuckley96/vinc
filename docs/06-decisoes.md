@@ -859,3 +859,31 @@ auto-negócio/Sybil (mais complexo), verificação por SMS no cadastro
 contato disfarçado, conteúdo proibido, CPF único (colisão → erro),
 suspensão após 3 ofensas (publicar/candidatar → bloqueado) e herança da
 suspensão numa conta nova com o mesmo CPF. Migrations 0034–0037.
+
+## D-047 — Notificações push (fora do app)
+**Data:** 2026-07-13 · **Decidido por:** David (roadmap: "começar pela 1")
+
+Para um marketplace de "bicos" o tempo é crítico (ser escolhido, mensagem,
+lembrete), então as notificações não podem viver só dentro do app. Desenho
+escolhido, reaproveitando o que já existe:
+
+- **Fonte única de eventos:** a central in-app (2.6) já grava uma linha em
+  `notifications` por TRIGGER nos eventos (candidatura, status, liberação,
+  disputa — inclusive pelos jobs pg_cron). Um trigger extra `dispatch_push`
+  em `notifications` dispara (via **pg_net**, como o run-money-jobs) a Edge
+  Function **`send-push`**, que entrega via **Expo Push API**. Assim ações
+  de usuário E jobs notificam por push do mesmo jeito, sem duplicar lógica.
+- **`send-push`** (verify_jwt off, protegida pelo mesmo `CRON_SECRET`):
+  monta o texto pt-BR curto por `type`, busca os tokens do usuário, envia e
+  **poda tokens mortos** (Expo `DeviceNotRegistered`).
+- **App:** `expo-notifications` registra o token do aparelho em
+  `push_tokens` (RLS: dono lê/apaga; "reivindicar" o token ao trocar de
+  dono do aparelho); tocar na push abre `/service/:gigId`; some no logout.
+- **Trocável/seguro por padrão:** sem `projectId` EAS (Expo Go/sem build) o
+  app **não emite token** e tudo segue funcionando (só sem push) — a
+  entrega real no aparelho depende do **build EAS** (checklist item 11).
+
+Verificado e2e: registro de token, trigger → pg_net → `send-push` (resposta
+200 no `net._http_response`), envio ao Expo com poda do token inválido,
+gate do secret (403 sem ele) e RLS (terceiro não lê tokens alheios).
+Migration 0038; função `send-push`; `@vinc/api` push.ts.

@@ -145,6 +145,13 @@ Recomendação do Claude para a 1ª leva: **10-a, 10-b, 10-c, 10-d**.
 22. 🔴 **CNPJ** (bloqueia o 3.7 — produção): constituir a empresa e então
     contratar o provedor (decisão final Mercado Pago × Pagar.me, dúvida
     #13) com credenciais de produção.
+    - **MEI como ponto de partida? (dúvida do David, 2026-07-13)** Provável
+      que sirva para o piloto, mas confirmar 3 coisas (não é aconselhamento
+      jurídico/contábil): (a) o **CNAE** de marketplace/intermediação por
+      app é elegível ao MEI?; (b) **teto** ~R$ 81 mil/ano — migrar para
+      ME/LTDA ao crescer; (c) o **provedor** aceita **MEI para conta de
+      marketplace/split**? (o desenho D-035 já evita a plataforma segurar
+      dinheiro, o que ajuda). Começar como MEI e migrar quando exigir.
 
 23. 🟡 **Chave da API da Anthropic para a Vi** (D-045): criar uma chave em
     console.anthropic.com e enviar ao Claude para virar o secret de função

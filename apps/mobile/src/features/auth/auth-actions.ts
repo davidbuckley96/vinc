@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 import { savePayoutAccount } from '@vinc/api';
 import type { PixKeyType } from '@vinc/core';
 
+import { clearPushRegistration } from '@/features/notifications/push-token';
 import { supabase } from '@/lib/supabase';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -100,5 +101,7 @@ export async function signInWithGoogle(): Promise<AuthResult> {
 }
 
 export async function signOut(): Promise<void> {
+  await clearPushRegistration();
   await supabase?.auth.signOut();
 }
+

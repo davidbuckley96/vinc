@@ -54,7 +54,8 @@
 - [x] Desistência de candidatura + recandidatura + notificação sem duplicata + lista de candidatos por relevância (D-039, 2026-07-09, verificado e2e 9 checks)
 
 ## Fase 4 — Crescimento
-- [ ] Central de suporte no app + agente de IA para dúvidas básicas (pedido do David, 2026-07-09 — começar com um modelo gratuito; fazer "no momento propício", antes da abertura ao público)
+- [x] Central de suporte no app + a "Vi" (docs/09 S1–S4, D-045): Central de Ajuda (rodada 17 C), a Vi (porta de IA `local`/`claude`), painel do suporte (denúncias/tickets/usuário 360°). Verificado e2e
+- [x] Notificações push (D-047): registro de token (`push_tokens` + `expo-notifications`), Edge Function `send-push` (Expo Push API) disparada por trigger `dispatch_push` nos mesmos eventos das notificações in-app (via pg_net), toque abre o serviço, poda de token morto. Plumbing verificada e2e; **entrega real no aparelho depende do build EAS** (checklist item 11)
 - [ ] Prioridade de usuário como recurso premium (expansão do D-034 — ideia do David)
 - [ ] Geolocalização e busca por proximidade/mapa
 - [ ] Filtros avançados, recomendações, favoritos
@@ -114,6 +115,12 @@ revisados antes de abrir o app ao público:
     `packages/core/src/suspension.ts`). Antes do lançamento, avaliar com
     dados reais se o prazo/limiares devem ser ajustados (mais brandos no
     começo, escalonamento por reincidência, etc.).
+11. **Configurar o projeto EAS + build para dispositivo** (habilita push e
+    testes no celular real — D-047): criar o projeto no Expo (grátis),
+    pôr o `projectId` em `extra.eas.projectId` no app.json (o app já lê e
+    registra o token quando ele existe), gerar um build EAS (APK/dev) para
+    testar push no aparelho e, depois, subir para o teste interno da Play
+    Store. Sem isso, a plumbing de push está pronta mas não emite token.
 
 ## Estado atual
 
@@ -121,6 +128,15 @@ revisados antes de abrir o app ao público:
 andamento (3.1–3.5 no ar em modo sandbox, aguardando conta MP e CNPJ para
 3.6–3.7); Suporte & moderação (docs/09 S1–S4) no ar**
 
+- **Notificações push (D-047) — plumbing no ar e verificada e2e**: tabela
+  `push_tokens` (RLS), `expo-notifications` no app registrando o token do
+  aparelho quando houver `projectId` EAS, Edge Function `send-push` (Expo
+  Push API, poda token morto) disparada pelo trigger `dispatch_push` em
+  `notifications` (pg_net), toque na push abre o serviço. **Falta só o
+  build EAS** para emitir tokens e entregar no aparelho (checklist 11).
+- **Anti-abuso (D-046) no ar e verificado e2e**: contato reforçado
+  (extenso/espaçado/handles) no anúncio e no perfil, CPF único à prova de
+  recriação, suspensão por reincidência e termos proibidos.
 - **Suporte, a "Vi" e moderação (docs/09 · D-045) no ar e verificados e2e**:
   migrations 0031–0033; Edge Functions `support-assistant` (a Vi, porta de
   IA `local`/`claude`) e `support-panel-action` (ações do painel, checa
