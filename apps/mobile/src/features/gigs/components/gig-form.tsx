@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -38,6 +38,7 @@ const ERROR_MESSAGES: Record<GigDraftError, string> = {
   price_too_low: 'O valor mínimo de uma vaga é R$ 10,00.',
   address_required: 'Escolha o local do serviço no mapa.',
   location_invalid: 'Não foi possível marcar o local. Escolha de novo no mapa.',
+  location_outside_brazil: 'O local precisa ser dentro do Brasil.',
 };
 
 const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
@@ -138,6 +139,30 @@ export function GigForm({
   const [localError, setLocalError] = useState<string | null>(null);
 
   const selectedDay = days[dayIndex] ?? days[0]!;
+
+  // No past hours (D-007, bug fix): on today, only hours strictly after the
+  // current one can start a gig; other days offer the full range.
+  const nowHour = new Date().getHours();
+  const isToday = (d: Date) =>
+    d.getFullYear() === new Date().getFullYear() &&
+    d.getMonth() === new Date().getMonth() &&
+    d.getDate() === new Date().getDate();
+  const startHoursFor = (d: Date) => HOURS.filter((h) => !isToday(d) || h > nowHour);
+  const availableStartHours = startHoursFor(selectedDay);
+
+  // Keep the selected start/end valid when the day (or "today") changes.
+  useEffect(() => {
+    if (availableStartHours.length === 0) return;
+    if (!availableStartHours.includes(startHour)) {
+      const first = availableStartHours[0]!;
+      setStartHour(first);
+      setEndHour(Math.min(first + 1, 23));
+    } else if (endHour <= startHour) {
+      setEndHour(Math.min(startHour + 1, 23));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dayIndex]);
+
   const pricing = computeGigPricing(priceCents);
   const hasPin = location !== null && !(location.lat === 0 && location.lng === 0);
   const draft: GigDraft = {
@@ -269,22 +294,26 @@ export function GigForm({
       {label('QUE DIA?')}
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.chipRow}>
-          {days.map((day, index) => (
-            <Pressable
-              key={day.toISOString()}
-              accessibilityRole="button"
-              onPress={() => setDayIndex(index)}
-              style={chip(dayIndex === index)}>
-              <Text style={chipLabel(dayIndex === index)}>{dayLabel(day, index)}</Text>
-            </Pressable>
-          ))}
+          {days.map((day, index) => {
+            const dayFull = startHoursFor(day).length === 0; // today, too late
+            return (
+              <Pressable
+                key={day.toISOString()}
+                accessibilityRole="button"
+                disabled={dayFull}
+                onPress={() => setDayIndex(index)}
+                style={[chip(dayIndex === index), dayFull && { opacity: 0.4 }]}>
+                <Text style={chipLabel(dayIndex === index)}>{dayLabel(day, index)}</Text>
+              </Pressable>
+            );
+          })}
         </View>
       </ScrollView>
 
       {label('DAS')}
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.chipRow}>
-          {HOURS.map((hour) => (
+          {availableStartHours.map((hour) => (
             <Pressable
               key={hour}
               accessibilityRole="button"

@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useState } from 'react';
 import { useColorScheme } from 'react-native';
 
+import { DemoModeBanner } from '@/components/demo-mode-banner';
 import { Colors } from '@/constants/theme';
 import { PayoutOnboardingGate } from '@/features/auth/components/payout-onboarding-gate';
 import { WelcomeGate } from '@/features/auth/components/welcome-gate';
@@ -36,6 +37,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
         <ThemeProvider value={navigationTheme}>
+          <DemoModeBanner />
           <PayoutOnboardingGate />
           <WelcomeGate />
           <PushRegistrar />

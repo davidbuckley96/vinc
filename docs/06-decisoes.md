@@ -903,3 +903,36 @@ Implementação: `WelcomeGate` (só dispara com a conta completa, para não
 competir com o gate de chave Pix — D-038), flag "visto" por usuário no
 aparelho (AsyncStorage). Descartadas: A (carrossel de 3 telas — passivo,
 adia a ação) e C (onboarding embutido — depende de a pessoa ler a dica).
+
+## D-049 — Correção de bugs do 1º teste do David + causa-raiz "modo demo" no build
+**Data:** 2026-07-13 · **Decidido por:** David (reporte) + Claude (diagnóstico)
+
+David reportou 9 bugs no 1º teste. Diagnóstico (cada um reproduzido):
+
+**6 dos 9 eram artefatos do MODO DEMONSTRAÇÃO** (bugs 4,5,6,7,8,9): o app
+rodava sem conexão ao Supabase, então as telas usavam mocks (lista de 3
+candidatos fixa, escolher/recusar/avaliar/editar/bloquear "fingem sucesso").
+Provado por e2e que o **backend real está correto**: escolher trava a vaga
+(2º choose recusado), recusar funciona abaixo de 3, editar vaga aceita →
+`not_editable`, avaliação é única (2ª → 409) e aparece no perfil, bloqueio
+alterna certo. **Causa-raiz:** o `.env` é gitignored → o **EAS Build não o
+inclui** → o APK subia sem `EXPO_PUBLIC_SUPABASE_*` → modo demo. **Correção:**
+as credenciais **públicas** (URL + chave publishable) entram no `eas.json`
+(`env` por perfil), e um **banner de "Modo demonstração"** passa a avisar
+quando não há conexão — nunca mais silencioso.
+
+**3 eram bugs reais, corrigidos:**
+- **Bug 1 (horários passados):** o formulário agora **oculta horas que já
+  passaram** quando o dia é hoje (e desabilita "Hoje" se não há mais horas);
+  o backend já rejeitava `starts_in_past`.
+- **Bug 2 (local fora do Brasil/oceano):** o mapa só confirma um ponto que o
+  reverse-geocode resolve **dentro do Brasil** (oceano/fora → bloqueado com
+  aviso); e o backend passa a validar um **bounding box do Brasil**
+  (`validateGigDraft` → `location_outside_brazil`, verificado e2e). **Regra
+  de produto:** por ora só locais dentro do Brasil.
+- **Bug 3 (busca de endereço não fazia nada):** a busca no mapa agora roda
+  **enquanto se digita** (debounce, ≥3 letras) em vez de só no "enter", e
+  manda o `User-Agent` exigido pelo Nominatim.
+
+Rebuild do APK (`eas build`) elimina os 6 bugs de modo demo; os 3 reais já
+estão no código. Testes do core + typecheck + lint verdes.

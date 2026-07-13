@@ -50,6 +50,9 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
   const [interacted, setInteracted] = useState(Boolean(start));
   const [label, setLabel] = useState<string | null>(start?.address ?? null);
   const [reading, setReading] = useState(false);
+  // The point must resolve to an address inside Brazil (D-023). Starts true
+  // for an already-chosen spot; a fresh pin is validated on the first move.
+  const [inBrazil, setInBrazil] = useState(Boolean(start));
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<GeoResult[]>([]);
@@ -68,17 +71,26 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
     if (reverseTimer.current) clearTimeout(reverseTimer.current);
     reverseTimer.current = setTimeout(async () => {
       const found = await reverseGeocode(lat, lng);
-      setLabel(found ?? 'Ponto marcado no mapa');
+      setLabel(found?.label ?? 'Ponto fora de uma área com endereço');
+      setInBrazil(found?.inBrazil ?? false);
       setReading(false);
     }, 700);
   };
 
-  const search = async () => {
-    if (query.trim().length < 3) return;
+  // Search AS the person types (debounced) — no need to press "buscar".
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 3) {
+      setResults([]);
+      return;
+    }
     setSearching(true);
-    setResults(await searchAddress(query.trim()));
-    setSearching(false);
-  };
+    const timer = setTimeout(async () => {
+      setResults(await searchAddress(q));
+      setSearching(false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [query]);
 
   const pickResult = (result: GeoResult) => {
     setResults([]);
@@ -86,10 +98,13 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
     setCenter({ lat: result.lat, lng: result.lng, zoom: 16 });
     setLabel(result.label);
     setInteracted(true);
+    setInBrazil(true); // search is scoped to Brazil (countrycodes=br)
   };
 
+  const canConfirm = interacted && inBrazil && !reading;
+
   const confirm = () => {
-    if (!interacted) return;
+    if (!canConfirm) return;
     onConfirm({ address: label ?? 'Ponto marcado no mapa', lat: center.lat, lng: center.lng });
   };
 
@@ -143,7 +158,6 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
                   placeholderTextColor={theme.textSecondary}
                   value={query}
                   onChangeText={setQuery}
-                  onSubmitEditing={search}
                   returnKeyType="search"
                 />
                 {searching && <ActivityIndicator size="small" color={theme.primary} />}
@@ -167,26 +181,33 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
             </View>
 
             <View style={[styles.confirmBar, { backgroundColor: theme.background }]}>
-              <Text style={[styles.address, { color: theme.text }]} numberOfLines={2}>
+              <Text
+                style={[
+                  styles.address,
+                  { color: interacted && !inBrazil && !reading ? theme.danger : theme.text },
+                ]}
+                numberOfLines={2}>
                 {reading
                   ? 'Lendo o endereço…'
-                  : (label ?? 'Busque um endereço ou arraste o mapa até o local')}
+                  : interacted && !inBrazil
+                    ? 'Escolha um local dentro do Brasil.'
+                    : (label ?? 'Busque um endereço ou arraste o mapa até o local')}
               </Text>
               <Text style={[styles.hint, { color: theme.textSecondary }]}>
                 arraste o mapa para ajustar o pino
               </Text>
               <Pressable
                 accessibilityRole="button"
-                disabled={!interacted}
+                disabled={!canConfirm}
                 onPress={confirm}
                 style={[
                   styles.confirm,
-                  { backgroundColor: interacted ? theme.primary : theme.backgroundSelected },
+                  { backgroundColor: canConfirm ? theme.primary : theme.backgroundSelected },
                 ]}>
                 <Text
                   style={[
                     styles.confirmLabel,
-                    { color: interacted ? theme.onPrimary : theme.textSecondary },
+                    { color: canConfirm ? theme.onPrimary : theme.textSecondary },
                   ]}>
                   Confirmar este local
                 </Text>

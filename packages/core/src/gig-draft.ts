@@ -29,7 +29,8 @@ export type GigDraftError =
   | "price_required"
   | "price_too_low"
   | "address_required"
-  | "location_invalid";
+  | "location_invalid"
+  | "location_outside_brazil";
 
 export const GIG_TITLE_MIN = 3;
 export const GIG_TITLE_MAX = 80;
@@ -39,6 +40,23 @@ export const GIG_DESCRIPTION_MAX = 2000;
  * postings (e.g. using gigs as ads) and matches the fine floor.
  */
 export const GIG_MIN_PRICE_CENTS = 1000;
+
+/**
+ * Brazil bounding box (padded), the backend's coarse "is it in Brazil"
+ * guard (D-023). The app also checks the country via reverse geocoding
+ * before letting the pin be confirmed — this rejects the obvious
+ * out-of-range cases (other continents, mid-ocean beyond the coast).
+ */
+export const BRAZIL_BBOX = { minLat: -34.0, maxLat: 5.5, minLng: -74.5, maxLng: -34.0 };
+
+function insideBrazilBbox(lat: number, lng: number): boolean {
+  return (
+    lat >= BRAZIL_BBOX.minLat &&
+    lat <= BRAZIL_BBOX.maxLat &&
+    lng >= BRAZIL_BBOX.minLng &&
+    lng <= BRAZIL_BBOX.maxLng
+  );
+}
 
 export function validateGigDraft(draft: GigDraft, now: Date): GigDraftError[] {
   const errors: GigDraftError[] = [];
@@ -62,7 +80,11 @@ export function validateGigDraft(draft: GigDraft, now: Date): GigDraftError[] {
   if (hasLat && hasLng) {
     const validLat = Number.isFinite(draft.lat) && Math.abs(draft.lat!) <= 90;
     const validLng = Number.isFinite(draft.lng) && Math.abs(draft.lng!) <= 180;
-    if (!validLat || !validLng) errors.push("location_invalid");
+    if (!validLat || !validLng) {
+      errors.push("location_invalid");
+    } else if (!insideBrazilBbox(draft.lat!, draft.lng!)) {
+      errors.push("location_outside_brazil");
+    }
   }
 
   return errors;

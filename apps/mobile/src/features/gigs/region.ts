@@ -81,7 +81,7 @@ export async function locateDevice(): Promise<LocateResult> {
       accuracy: Location.Accuracy.Balanced,
     });
     const { latitude: lat, longitude: lng } = position.coords;
-    const label = (await reverseGeocode(lat, lng)) ?? 'Minha região';
+    const label = (await reverseGeocode(lat, lng))?.label ?? 'Minha região';
     return { ok: true, lat, lng, label };
   } catch {
     return { ok: false, reason: 'unavailable' };

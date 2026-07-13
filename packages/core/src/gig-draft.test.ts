@@ -39,6 +39,25 @@ describe("validateGigDraft", () => {
     ).toContain("starts_in_past");
   });
 
+  it("accepts a pin inside Brazil (Recife)", () => {
+    expect(validateGigDraft({ ...VALID, lat: -8.05, lng: -34.88 }, NOW)).toEqual([]);
+  });
+
+  it("rejects a pin outside Brazil / in the ocean", () => {
+    // Middle of the Atlantic (east of the coast)
+    expect(validateGigDraft({ ...VALID, lat: -8, lng: -20 }, NOW)).toContain(
+      "location_outside_brazil",
+    );
+    // Lisbon
+    expect(validateGigDraft({ ...VALID, lat: 38.72, lng: -9.14 }, NOW)).toContain(
+      "location_outside_brazil",
+    );
+    // New York
+    expect(validateGigDraft({ ...VALID, lat: 40.71, lng: -74.0 }, NOW)).toContain(
+      "location_outside_brazil",
+    );
+  });
+
   it("rejects end before start", () => {
     expect(
       validateGigDraft({ ...VALID, endsAt: "2026-07-03T13:00:00Z" }, NOW),
