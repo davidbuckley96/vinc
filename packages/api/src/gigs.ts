@@ -641,7 +641,7 @@ export async function fetchGigPayment(
   };
 }
 
-export type ReportTarget = "gig" | "message" | "profile";
+export type ReportTarget = "gig" | "message" | "profile" | "review";
 export type ReportResult = "reported" | "already_reported" | "error";
 
 /** Reports any target for moderation (D-040/S1); one report per user per target. */

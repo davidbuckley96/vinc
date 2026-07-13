@@ -15,6 +15,7 @@ import type { ApplyGigResult } from '@vinc/api';
 import { formatBRL } from '@vinc/core';
 
 import { LocationModal } from '@/components/location-map';
+import { ReportSheet, type ReportReason } from '@/components/report-sheet';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
 import { useTheme } from '@/hooks/use-theme';
@@ -53,6 +54,14 @@ const CANDIDACY_MESSAGES: Record<string, string> = {
 
 const WEEKDAYS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 
+const GIG_REPORT_REASONS: ReportReason[] = [
+  { key: 'contato', label: 'Pede contato fora do app (telefone, WhatsApp, redes)' },
+  { key: 'golpe', label: 'Parece golpe ou anúncio enganoso' },
+  { key: 'proibido', label: 'Serviço ilegal ou proibido' },
+  { key: 'ofensivo', label: 'Conteúdo ofensivo ou impróprio' },
+  { key: 'outro', label: 'Outro motivo' },
+];
+
 /** Gig detail with the one-tap candidacy (docs/02 §3 — D-024). */
 export function GigDetailScreen() {
   const theme = useTheme();
@@ -72,17 +81,17 @@ export function GigDetailScreen() {
   const withdraw = useWithdrawCandidacy(id);
   const [withdrawArmed, setWithdrawArmed] = useState(false);
   const report = useReportGig(id);
-  const [reportArmed, setReportArmed] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [reported, setReported] = useState(false);
 
-  // Report for moderation (D-040): two taps, once per user per gig.
-  const onReport = async () => {
-    if (!reportArmed) {
-      setReportArmed(true);
-      return;
-    }
-    setReportArmed(false);
-    const result = await report.mutateAsync();
+  // Report for moderation (D-040/D-052): pick a reason + optional detail.
+  const onReport = async (category: string, detail: string) => {
+    const label = GIG_REPORT_REASONS.find((r) => r.key === category)?.label ?? 'Denúncia';
+    const result = await report.mutateAsync({
+      category,
+      reason: detail || label,
+    });
+    setReportOpen(false);
     if (result !== 'error') setReported(true);
   };
 
@@ -330,19 +339,25 @@ export function GigDetailScreen() {
               <Pressable
                 accessibilityRole="button"
                 disabled={report.isPending || reported}
-                onPress={onReport}
+                onPress={() => setReportOpen(true)}
                 style={styles.reportLink}>
                 <Text style={[styles.reportLabel, { color: theme.textSecondary }]}>
                   {reported
                     ? 'Denúncia enviada. Obrigado por ajudar a manter o Vinc seguro.'
-                    : reportArmed
-                      ? 'Toque de novo para confirmar a denúncia'
-                      : '🚩 Denunciar esta vaga'}
+                    : '🚩 Denunciar esta vaga'}
                 </Text>
               </Pressable>
             )}
           </ScrollView>
         )}
+        <ReportSheet
+          visible={reportOpen}
+          title="Denunciar esta vaga"
+          reasons={GIG_REPORT_REASONS}
+          pending={report.isPending}
+          onSubmit={onReport}
+          onClose={() => setReportOpen(false)}
+        />
       </View>
     </View>
   );

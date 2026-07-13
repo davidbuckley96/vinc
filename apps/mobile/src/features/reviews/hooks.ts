@@ -4,6 +4,7 @@ import {
   fetchProfileStats,
   fetchRecentReviews,
   hasReviewed,
+  report,
   submitReview,
   type ProfileStats,
   type Review,
@@ -54,11 +55,34 @@ export function useProfileStats(userId: string | null) {
   });
 }
 
-export function useRecentReviews(userId: string | null, role: 'worker' | 'poster') {
+/** Reports an unfair/offensive review for moderation (D-052). */
+export function useReportReview() {
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
+  return useMutation({
+    mutationFn: async (input: {
+      reviewId: string;
+      category: string;
+      reason: string;
+    }): Promise<'reported' | 'already_reported' | 'error'> => {
+      if (!supabase || !userId) return 'reported'; // demo mode: pretend
+      return report(supabase, {
+        targetType: 'review',
+        targetId: input.reviewId,
+        reporterId: userId,
+        category: input.category,
+        reason: input.reason,
+      });
+    },
+  });
+}
+
+/** Reviews for a profile. Omit `role` for the unified list (both roles, D-052). */
+export function useRecentReviews(userId: string | null, role?: 'worker' | 'poster') {
   return useQuery({
-    queryKey: ['profile', 'reviews', userId, role],
+    queryKey: ['profile', 'reviews', userId, role ?? 'all'],
     queryFn: async (): Promise<Review[]> => {
-      if (!supabase) return DEMO_REVIEWS[role];
+      if (!supabase) return role ? DEMO_REVIEWS[role] : [...DEMO_REVIEWS.worker, ...DEMO_REVIEWS.poster];
       if (!userId) return [];
       return fetchRecentReviews(supabase, userId, role);
     },

@@ -948,3 +948,32 @@ o `eas.json` já injeta as credenciais públicas por perfil (D-049), qualquer
 build de `preview`/`production` sobe conectado ao backend real e, portanto,
 exige login antes de qualquer ação — o modo demo só aparece em execução sem
 env (ex.: dev local sem `.env`), sinalizado pela faixa.
+
+## D-051 — App usa só o primeiro nome
+**Data:** 2026-07-13 · **Decidido por:** David
+
+Em todo o app, as pessoas são identificadas apenas pelo **primeiro nome**
+("David" se candidatando à vaga de "Ana", em vez de "David Buckley"/"Ana
+Abuso"). O cadastro pede só o primeiro nome; para contas antigas, o app
+também corta no primeiro token ao exibir (`firstName()` no core, idempotente,
+aplicado na fronteira da API). Mais simples e informal, alinhado à referência
+de UX (iFood/Uber) e à regra de baixa fricção do produto (docs/01).
+
+## D-052 — Perfil com nota geral única + denúncia de avaliação e de vaga com motivos
+**Data:** 2026-07-13 · **Decidido por:** David
+
+**(a) Nota geral única.** O perfil deixa de mostrar blocos separados "COMO
+PRESTADOR"/"COMO ANUNCIANTE" e passa a mostrar **uma nota geral** (média de
+prestador + anunciante, já disponível na view `profile_stats.avg_rating`) mais
+os **totais**: avaliações, serviços prestados e vagas anunciadas. As
+avaliações listadas passam a ser as de **ambos os papéis**. Observação: a
+separação por papel havia sido criada contra manipulação (D-010/D-011); a
+média geral continua computada sobre as mesmas avaliações reais, então não
+abre brecha — só simplifica a leitura.
+
+**(b) Denúncia com motivos.** A denúncia (de vaga e de avaliação) passa a
+abrir uma folha com **lista de motivos** + **texto complementar** opcional,
+em vez do "toque duas vezes". Componente único `ReportSheet`, gravando em
+`reports.category` (motivo) e `reports.reason` (texto). A tabela genérica
+`reports` ganhou o alvo `review` (migração 0039). Denunciar uma avaliação
+injusta/ofensiva vira um item de moderação como os demais.

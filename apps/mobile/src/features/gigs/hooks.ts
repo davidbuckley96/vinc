@@ -267,19 +267,22 @@ export function useGigPayment(gigId: string) {
   });
 }
 
-/** Reports a gig for moderation (D-040). */
+/** Reports a gig for moderation with a chosen reason + detail (D-040/D-052). */
 export function useReportGig(gigId: string) {
   const { session } = useSession();
   const userId = session?.user.id ?? null;
   return useMutation({
-    mutationFn: async (): Promise<'reported' | 'already_reported' | 'error'> => {
+    mutationFn: async (input: {
+      category: string;
+      reason: string;
+    }): Promise<'reported' | 'already_reported' | 'error'> => {
       if (!supabase || !userId) return 'reported'; // demo mode: pretend
       return report(supabase, {
         targetType: 'gig',
         targetId: gigId,
         reporterId: userId,
-        category: 'conteudo',
-        reason: 'Conteúdo suspeito ou anúncio externo',
+        category: input.category,
+        reason: input.reason,
       });
     },
   });
