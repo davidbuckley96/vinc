@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinc — Suporte implementado (S2–S4)</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --ok:#059669; --danger:#DC2626; --dangersoft:#FEF2F2; --elem:#F4F1FA; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:40px 24px}
+  h1{font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:960px;line-height:1.5}
+  h2{font-size:15px;margin:34px 0 14px;color:var(--roxo-deep)}
+  .row{display:flex;gap:30px;flex-wrap:wrap;align-items:flex-start}
+  .cap{font-size:12.5px;color:var(--ink2);margin-top:10px;max-width:300px;line-height:1.5}
+  .phone{width:300px;height:600px;border-radius:32px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .head{background:var(--roxo);color:#fff;padding:22px 16px 14px;display:flex;align-items:center;gap:10px}
+  .head.rounded{border-radius:0 0 22px 22px}
+  .avatar{width:38px;height:38px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .head .t{font-size:16px;font-weight:800}
+  .head .st{font-size:10.5px;opacity:.85}
+  .back{color:#fff;font-size:20px;opacity:.9}
+  .body{flex:1;padding:13px;display:flex;flex-direction:column;gap:9px;overflow:hidden}
+  .vibox{background:var(--lilas);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .vibox .intro{display:flex;gap:9px;align-items:flex-start}
+  .viav{width:28px;height:28px;border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .vitext{font-size:12.5px;line-height:1.45;color:var(--roxo-deep);font-weight:600}
+  .viinput{display:flex;gap:7px;align-items:center;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 9px}
+  .viinput .ph{flex:1;font-size:12px;color:var(--ink2);padding-left:6px}
+  .snd{width:28px;height:28px;border-radius:9px;background:var(--roxo);display:flex;align-items:center;justify-content:center}
+  .sectlabel{font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--ink2);margin-top:6px}
+  .card{border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .card .q{font-size:12.5px;font-weight:700;line-height:1.3}
+  .card.open{flex-direction:column;align-items:stretch}
+  .card .a{font-size:11.5px;color:var(--ink2);margin-top:7px;line-height:1.5}
+  .chev{color:var(--ink2);font-size:13px}
+  .others{border-top:1px solid var(--line);padding-top:11px;margin-top:2px;font-size:12.5px;font-weight:700;display:flex;justify-content:space-between}
+  .human{background:#fff;border:1.5px solid var(--roxo);border-radius:12px;padding:11px;text-align:center;font-size:12.5px;font-weight:800;color:var(--roxo-deep);display:flex;align-items:center;justify-content:center;gap:7px}
+  .hint{font-size:10.5px;color:var(--ink2);text-align:center;line-height:1.4;padding:0 6px}
+  .spacer{flex:1}
+  /* chat */
+  .chat{flex:1;display:flex;flex-direction:column;gap:9px;overflow:hidden}
+  .airow{display:flex;gap:7px;align-items:flex-end;max-width:86%}
+  .aiav{width:24px;height:24px;border-radius:8px;background:var(--lilas);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .bubble{border-radius:14px;padding:9px 11px;font-size:12px;line-height:1.45}
+  .theirs{background:var(--elem);border-bottom-left-radius:4px}
+  .mine{background:var(--roxo);color:#fff;border-bottom-right-radius:4px;align-self:flex-end;max-width:82%}
+  .agenttag{font-size:8.5px;font-weight:800;letter-spacing:.4px;color:var(--roxo-deep);margin-bottom:2px}
+  .banner{background:var(--lilas);border-radius:11px;padding:9px 10px;font-size:10.5px;color:var(--roxo-deep);line-height:1.4;display:flex;gap:7px;align-items:flex-start}
+  .inputbar{display:flex;gap:7px;align-items:center;border-top:1px solid var(--line);padding-top:10px}
+  .inputbar .field{flex:1;border:1.5px solid var(--line);border-radius:14px;padding:9px 12px;font-size:12px;color:var(--ink2)}
+  /* desktop panel */
+  .desk{width:820px;max-width:100%;border-radius:16px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13);background:#fff;border:1px solid var(--line)}
+  .desktop-top{background:var(--roxo);color:#fff;padding:14px 18px 0}
+  .desktop-top .title{font-size:15px;font-weight:800;margin-bottom:12px}
+  .tabs{display:flex;gap:8px}
+  .tab{display:flex;align-items:center;gap:5px;border-radius:99px;padding:7px 13px;font-size:12.5px;font-weight:800;color:#D8CCF3}
+  .tab.active{background:#fff;color:var(--roxo)}
+  .desk-body{display:flex;min-height:430px}
+  .desk-list{width:300px;border-right:1px solid var(--line);padding:6px 0}
+  .qhead{font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--ink2);padding:14px 16px 6px}
+  .qitem{padding:10px 16px;border-bottom:1px solid var(--line)}
+  .qitem.active{background:var(--lilas);border-left:3px solid var(--roxo)}
+  .qitem .name{font-size:13px;font-weight:700}
+  .qitem .meta{font-size:11px;color:var(--ink2);margin-top:2px}
+  .desk-main{flex:1;padding:18px;display:flex;flex-direction:column;gap:12px}
+  .repcard{border:1.5px solid var(--line);border-radius:12px;padding:13px;display:flex;flex-direction:column;gap:7px}
+  .pill{align-self:flex-start;font-size:9.5px;font-weight:800;border-radius:99px;padding:2px 9px;background:var(--dangersoft);color:var(--danger)}
+  .repcard .tl{font-size:14px;font-weight:700}
+  .repcard .bd{font-size:12px;color:var(--ink2);line-height:1.5}
+  .repcard .rs{font-size:12.5px;font-style:italic}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:3px}
+  .btn{border-radius:10px;padding:8px 12px;font-size:11.5px;font-weight:800}
+  .btn.solid{background:var(--danger);color:#fff}
+  .btn.ghostd{border:1.5px solid var(--danger);color:var(--danger)}
+  .btn.ghost{border:1.5px solid var(--line);color:var(--ink2)}
+  .btn.ok{border:1.5px solid var(--ok);color:var(--ok)}
+  .thread{border:1.5px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
+  .tmsg{max-width:80%;border-radius:11px;padding:8px 11px;font-size:12px}
+  .twho{font-size:8.5px;font-weight:800;letter-spacing:.4px;margin-bottom:2px;opacity:.7}
+  .ctxblock{margin-top:4px}
+  .ctxlabel{font-size:10px;font-weight:800;letter-spacing:.4px;color:var(--ink2);margin-bottom:5px}
+  .gigrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-bottom:6px}
+  .gigrow .gname{font-size:12.5px;font-weight:600}
+  .gigrow .gmeta{font-size:11px;color:var(--ink2)}
+  .cancelbtn{border:1.5px solid var(--danger);color:var(--danger);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700}
+  .ledgerrow{display:flex;justify-content:space-between;font-size:12px;padding:3px 0}
+  .green{color:var(--ok);font-weight:700}
+  .red{color:var(--danger);font-weight:700}
+</style>
+</head>
+<body>
+  <h1>Vinc — Suporte implementado (docs/09 · S2–S4)</h1>
+  <p class="sub">O que foi construído e verificado: a <b>Central de Ajuda</b> (rodada 17, opção C que você escolheu), a conversa com a <b>Vi</b> e o <b>Painel do Suporte</b> para a equipe. A Vi hoje responde pela recuperação da FAQ (provedor <code>local</code>); quando você enviar a chave da Anthropic, ela passa a usar o Claude Haiku. Esta é uma representação fiel das telas que já estão no código.</p>
+
+  <h2>1. Lado do usuário — Central de Ajuda e a Vi</h2>
+  <div class="row">
+    <!-- Central de Ajuda -->
+    <div>
+      <div class="phone">
+        <div class="head rounded">
+          <span class="back">‹</span>
+          <div class="avatar"><svg width="24" height="24" viewBox="0 0 72 72"><g fill="none" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"><path d="M 21 22 L 36 52"/><path d="M 51 22 L 36 52"/></g><circle cx="36" cy="25" r="8" fill="#A78BFA"/></svg></div>
+          <div><div class="t">Central de Ajuda</div><div class="st">a Vi resolve na hora · ou fale com a equipe</div></div>
+        </div>
+        <div class="body">
+          <div class="vibox">
+            <div class="intro"><div class="viav"><svg width="16" height="16" viewBox="0 0 72 72"><g fill="none" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"><path d="M 21 22 L 36 52"/><path d="M 51 22 L 36 52"/></g><circle cx="36" cy="25" r="8" fill="#A78BFA"/></svg></div><div class="vitext">Oi! Sou a Vi 💜 Me conta sua dúvida que eu tento resolver na hora.</div></div>
+            <div class="viinput"><div class="ph">Como posso ajudar?</div><div class="snd"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div></div>
+          </div>
+          <div class="sectlabel">PERGUNTAS FREQUENTES</div>
+          <div class="card open"><div style="display:flex;justify-content:space-between;align-items:center"><span class="q">Como funciona o pagamento de uma vaga?</span><span class="chev">▲</span></div><div class="a">Publicar é grátis. Você só paga quando escolhe um candidato: nesse momento paga por Pix o valor + a taxa de 10%. O dinheiro fica guardado pelo app e é liberado ao prestador depois do serviço concluído.</div></div>
+          <div class="card"><span class="q">Quando recebo pelo serviço que fiz?</span><span class="chev">▼</span></div>
+          <div class="card"><span class="q">Posso cancelar uma vaga?</span><span class="chev">▼</span></div>
+          <div class="others">Outros assuntos <span class="chev">▾</span></div>
+          <div class="human"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4C1D95" stroke-width="2"><circle cx="9" cy="7" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><circle cx="17" cy="8" r="2.2"/></svg> Falar com alguém do suporte</div>
+          <div class="hint">A Vi tenta resolver primeiro. Se precisar, a equipe continua o atendimento por aqui mesmo.</div>
+        </div>
+      </div>
+      <p class="cap"><b>Central de Ajuda</b> (<code>/help</code>): a Vi em destaque, cards de FAQ que abrem no toque (accordion), "Outros assuntos" e, no fim, o humano.</p>
+    </div>
+
+    <!-- Vi chat -->
+    <div>
+      <div class="phone">
+        <div class="head">
+          <span class="back">‹</span>
+          <div class="avatar"><svg width="24" height="24" viewBox="0 0 72 72"><g fill="none" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"><path d="M 21 22 L 36 52"/><path d="M 51 22 L 36 52"/></g><circle cx="36" cy="25" r="8" fill="#A78BFA"/></svg></div>
+          <div><div class="t">Vi</div><div class="st">assistente do Vinc · responde na hora</div></div>
+        </div>
+        <div class="body">
+          <div class="chat">
+            <div class="airow"><div class="aiav"><svg width="14" height="14" viewBox="0 0 72 72"><g fill="none" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"><path d="M 21 22 L 36 52"/><path d="M 51 22 L 36 52"/></g><circle cx="36" cy="25" r="8" fill="#A78BFA"/></svg></div><div class="bubble theirs">Oi! Sou a Vi 💜 Me conta sua dúvida que eu tento resolver na hora.</div></div>
+            <div class="bubble mine">como faço para sacar meu dinheiro?</div>
+            <div class="airow"><div class="aiav"><svg width="14" height="14" viewBox="0 0 72 72"><g fill="none" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"><path d="M 21 22 L 36 52"/><path d="M 51 22 L 36 52"/></g><circle cx="36" cy="25" r="8" fill="#A78BFA"/></svg></div><div class="bubble theirs">Na aba Carteira, toque em "Sacar via Pix". O dinheiro vai para a chave Pix que você cadastrou no perfil.</div></div>
+            <div class="bubble mine">quero falar com um atendente</div>
+            <div class="airow"><div class="aiav"><svg width="14" height="14" viewBox="0 0 72 72"><g fill="none" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"><path d="M 21 22 L 36 52"/><path d="M 51 22 L 36 52"/></g><circle cx="36" cy="25" r="8" fill="#A78BFA"/></svg></div><div class="bubble theirs">Vou te encaminhar para alguém da nossa equipe, que continua esse atendimento por aqui mesmo. 💜</div></div>
+            <div class="spacer"></div>
+            <div class="banner">👥 Você está na fila para falar com a equipe. Pode escrever aqui mesmo — a gente responde por aqui.</div>
+          </div>
+          <div class="inputbar"><div class="field">Escreva sua dúvida…</div><div class="snd"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div></div>
+        </div>
+      </div>
+      <p class="cap"><b>Conversa com a Vi</b> (<code>/help/vi</code>): bolhas com o avatar da Vi. Ao pedir um humano (ou quando ela não tem certeza), o ticket entra na fila e a equipe responde por ali mesmo (aparece como "EQUIPE VINC").</p>
+    </div>
+  </div>
+
+  <h2>2. Lado da equipe — Painel do Suporte (/admin)</h2>
+  <div class="desk">
+    <div class="desktop-top">
+      <div class="title">Vinc · Painel do Suporte</div>
+      <div class="tabs">
+        <div class="tab">⚖ Disputas</div>
+        <div class="tab active">⚑ Denúncias</div>
+        <div class="tab">💬 Tickets</div>
+        <div class="tab">🔎 Usuário</div>
+      </div>
+    </div>
+    <div class="desk-body">
+      <div class="desk-list">
+        <div class="qhead">PENDENTES (2)</div>
+        <div class="qitem active"><div class="name">Vaga: Ajudante de mudança</div><div class="meta">conteudo · há 2h</div></div>
+        <div class="qitem"><div class="name">Perfil: João S.</div><div class="meta">abuso · há 5h</div></div>
+        <div class="qhead">RESOLVIDAS</div>
+        <div class="qitem"><div class="name">Mensagem em uma conversa</div><div class="meta">✅ Ação tomada · spam</div></div>
+      </div>
+      <div class="desk-main">
+        <div class="repcard">
+          <span class="pill">CONTEUDO</span>
+          <div class="tl">Vaga: Ajudante de mudança</div>
+          <div class="bd">Preciso de ajuda pra carregar caixas no sábado de manhã. Chamar no zap 81 9xxxx-xxxx…</div>
+          <div class="rs">“Está pedindo contato por fora do app” <span style="color:var(--ink2)">— Maria R.</span></div>
+          <div class="btnrow">
+            <div class="btn solid">Remover a vaga</div>
+            <div class="btn ghostd">Confirmar denúncia</div>
+            <div class="btn ghost">Arquivar</div>
+          </div>
+        </div>
+        <div class="ctxlabel" style="margin-top:6px">Cada decisão fica registrada em <code>support_actions</code> (quem, o quê, quando).</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:22px">
+    <!-- ticket detail -->
+    <div class="desk" style="width:400px">
+      <div class="desktop-top"><div class="title">Ticket · Ana P.</div><div class="tabs"><div class="tab active">💬 conversa + contexto</div></div></div>
+      <div class="desk-main" style="padding:16px">
+        <div class="thread">
+          <div class="tmsg theirs" style="align-self:flex-start;background:var(--elem)"><div class="twho">USUÁRIO</div>não consigo cancelar minha vaga</div>
+          <div class="tmsg" style="align-self:flex-start;background:var(--lilas)"><div class="twho">VI</div>Vou te encaminhar para alguém da nossa equipe. 💜</div>
+          <div class="tmsg mine" style="background:var(--roxo);color:#fff"><div class="twho" style="color:#D8CCF3">VOCÊ (EQUIPE)</div>Oi Ana! Já cancelei a vaga pra você, tudo certo. 🙂</div>
+        </div>
+        <div class="inputbar" style="border:0;padding:0"><div class="field">Responder ao usuário…</div><div class="snd"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></div></div>
+        <div class="btn ok" style="align-self:flex-start">Marcar como resolvido</div>
+      </div>
+    </div>
+
+    <!-- user 360 -->
+    <div class="desk" style="width:400px">
+      <div class="desktop-top"><div class="title">Usuário 360° · Ana P.</div><div class="tabs"><div class="tab active">perfil · vagas · pagamentos</div></div></div>
+      <div class="desk-main" style="padding:16px">
+        <div class="ctxlabel">Na plataforma desde 03/2026</div>
+        <div class="ctxblock"><div class="ctxlabel">COMO ANUNCIANTE</div>
+          <div class="gigrow"><div style="flex:1"><div class="gname">Ajudante de mudança</div><div class="gmeta">aberta · R$ 100,00</div></div><div class="cancelbtn">Cancelar</div></div>
+          <div class="gigrow"><div style="flex:1"><div class="gname">Faxina apartamento</div><div class="gmeta">concluída · R$ 120,00</div></div></div>
+        </div>
+        <div class="ctxblock"><div class="ctxlabel">HISTÓRICO DE PAGAMENTOS</div>
+          <div class="ledgerrow"><span>Taxa</span><span class="red">−R$ 10,00</span></div>
+          <div class="ledgerrow"><span>Liberação</span><span class="green">+R$ 120,00</span></div>
+          <div class="ledgerrow"><span>Saque</span><span class="red">−R$ 120,00</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="cap" style="max-width:820px;margin-top:14px"><b>Desbloqueio com segurança:</b> a equipe cancela em nome do usuário só vagas sem dinheiro retido (abertas). Vaga já paga/aceita é encaminhada para a aba <b>Disputas</b> — o painel nunca move dinheiro por fora do fluxo.</p>
+
+</body>
+</html>
