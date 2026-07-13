@@ -385,7 +385,7 @@ export function GigForm({
               </View>
               <View style={styles.feeRow}>
                 <Text style={[styles.feeLabel, { color: theme.primarySoftMeta }]}>
-                  Taxa de serviço (10%)
+                  Taxa de serviço
                 </Text>
                 <Text style={[styles.feeValue, { color: theme.primarySoftText }]}>
                   + {formatBRL(pricing.feeCents)}

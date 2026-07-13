@@ -91,7 +91,7 @@ export function ProfileScreen() {
                   style={[styles.payoutEntry, { borderColor: theme.line }]}>
                   <Ionicons name="key-outline" size={17} color={theme.primary} />
                   <Text style={[styles.payoutEntryLabel, { color: theme.text }]}>
-                    Receber pagamentos (chave Pix)
+                    Minha chave Pix
                   </Text>
                   <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
                 </Pressable>

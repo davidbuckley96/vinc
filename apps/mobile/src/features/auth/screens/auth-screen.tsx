@@ -35,6 +35,7 @@ export function AuthScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -55,6 +56,14 @@ export function AuthScreen() {
     }
     if (!email.trim() || !password) {
       setError('Preencha e-mail e senha.');
+      return;
+    }
+    if (signUp && password.length < 6) {
+      setError('A senha precisa ter pelo menos 6 caracteres.');
+      return;
+    }
+    if (signUp && password !== confirmPassword) {
+      setError('As senhas não são iguais. Confira e tente de novo.');
       return;
     }
     // Receiving key required at sign-up (D-038).
@@ -93,6 +102,7 @@ export function AuthScreen() {
     setMode(signUp ? 'signIn' : 'signUp');
     setError(null);
     setNotice(null);
+    setConfirmPassword('');
   };
 
   const inputStyle = [
@@ -153,6 +163,17 @@ export function AuthScreen() {
               value={password}
               onChangeText={setPassword}
             />
+            {signUp && (
+              <TextInput
+                style={inputStyle}
+                placeholder="Repita a senha"
+                placeholderTextColor={theme.textSecondary}
+                secureTextEntry
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
+            )}
 
             {signUp && <PixKeySection state={pixKey} />}
 
