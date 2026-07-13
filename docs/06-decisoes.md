@@ -936,3 +936,15 @@ quando não há conexão — nunca mais silencioso.
 
 Rebuild do APK (`eas build`) elimina os 6 bugs de modo demo; os 3 reais já
 estão no código. Testes do core + typecheck + lint verdes.
+
+## D-050 — Manter o modo demonstração, mas usar sempre o modo real nos testes
+**Data:** 2026-07-13 · **Decidido por:** David
+
+O modo demonstração (app sem `EXPO_PUBLIC_SUPABASE_*` → dados fictícios,
+identificado pela faixa laranja de D-049) **fica no código** — é útil para
+pré-visualizar telas sem backend. Mas, como ainda **não há clientes reais**,
+todos os testes do David rodam **no modo real** (conectado ao Supabase). Como
+o `eas.json` já injeta as credenciais públicas por perfil (D-049), qualquer
+build de `preview`/`production` sobe conectado ao backend real e, portanto,
+exige login antes de qualquer ação — o modo demo só aparece em execução sem
+env (ex.: dev local sem `.env`), sinalizado pela faixa.
