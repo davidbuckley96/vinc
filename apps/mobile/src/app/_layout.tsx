@@ -6,6 +6,7 @@ import { useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
 import { PayoutOnboardingGate } from '@/features/auth/components/payout-onboarding-gate';
+import { WelcomeGate } from '@/features/auth/components/welcome-gate';
 import { SessionProvider } from '@/features/auth/session-context';
 import { PushRegistrar } from '@/features/notifications/push';
 
@@ -36,10 +37,12 @@ export default function RootLayout() {
       <SessionProvider>
         <ThemeProvider value={navigationTheme}>
           <PayoutOnboardingGate />
+          <WelcomeGate />
           <PushRegistrar />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="auth" />
+            <Stack.Screen name="welcome" />
             <Stack.Screen name="gig/[id]" />
             <Stack.Screen name="service/[id]" />
             <Stack.Screen name="review/[gigId]" />

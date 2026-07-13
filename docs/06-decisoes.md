@@ -887,3 +887,19 @@ Verificado e2e: registro de token, trigger → pg_net → `send-push` (resposta
 200 no `net._http_response`), envio ao Expo com poda do token inválido,
 gate do secret (403 sem ele) e RLS (terceiro não lê tokens alheios).
 Migration 0038; função `send-push`; `@vinc/api` push.ts.
+
+## D-048 — Primeiro uso: opção B (ação em primeiro lugar)
+**Data:** 2026-07-13 · **Decidido por:** David
+
+Rodada 18 (`docs/design/rodada-18-onboarding.html`): David escolheu a
+**opção B**. Após a conta ficar completa (logado + chave Pix), o app mostra
+**uma vez** a tela `/welcome`: "Oi, {nome}! O que você quer fazer agora?"
+com dois cartões grandes que levam **direto à ação** — "Preciso de uma
+ajuda" (→ Anunciar, "publicar é grátis") e "Quero fazer bicos" (→ Buscar,
+"receba pelo app") — mais "Depois eu vejo". Zero leitura obrigatória,
+coerente com o público de baixa escolaridade (poucos cliques, ação óbvia).
+
+Implementação: `WelcomeGate` (só dispara com a conta completa, para não
+competir com o gate de chave Pix — D-038), flag "visto" por usuário no
+aparelho (AsyncStorage). Descartadas: A (carrossel de 3 telas — passivo,
+adia a ação) e C (onboarding embutido — depende de a pessoa ler a dica).
