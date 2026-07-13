@@ -61,6 +61,15 @@
 - [ ] Filtros avançados, recomendações, favoritos
 - [ ] Publicação nas lojas (App Store / Play Store)
 
+## Infra, CI/CD e observabilidade (plano em docs/10 — pedido do David 2026-07-13)
+Objetivo: "nova versão fácil" + backend observável. Detalhes e stack em `docs/10-infra-cicd-observabilidade.md`.
+- [ ] **CI de PR**: typecheck + vitest + lint barrando o merge (formaliza/expande o CI da Fase 0)
+- [ ] **Pipeline de deploy**: staging no merge / produção por tag, com Supabase CLI (migrations + functions) e **EAS Update (OTA)** + **EAS Build** por canal
+- [ ] **Projeto de staging** separado do de produção
+- [ ] **Sentry** no app + **logs estruturados** (nível + request_id) nas Edge Functions, com drain de logs
+- [ ] **Heartbeat/alerta dos cron jobs** (run-money-jobs, expirações, dispatch_push) — não falhar em silêncio
+- [ ] **Dashboards** de produto/infra (funil cadastro→1ª vaga→match→concluído, deflexão do suporte, saúde)
+
 ---
 
 ## ⚠️ Checklist de pré-lançamento (obrigatório antes do deployment real)

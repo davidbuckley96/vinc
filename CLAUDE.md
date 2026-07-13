@@ -42,6 +42,8 @@ Visão completa em `docs/01-visao-geral.md`.
 | `docs/05-roadmap.md` | Fases de desenvolvimento e estado atual |
 | `docs/06-decisoes.md` | Registro de decisões (ADR) com data e justificativa |
 | `docs/07-duvidas-abertas.md` | Questões pendentes de resposta do David |
+| `docs/09-suporte-e-moderacao.md` | Suporte, a "Vi" (IA) e moderação/denúncias |
+| `docs/10-infra-cicd-observabilidade.md` | Plano de infra, CI/CD, observabilidade e build |
 
 ## Stack (resumo)
 
