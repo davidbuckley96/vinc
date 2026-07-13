@@ -28,6 +28,16 @@ import {
   usePartyStats,
   useResolveDispute,
 } from '../hooks';
+import { ReportsTab, TicketsTab, UserTab } from './support-tabs';
+
+type PanelTab = 'disputes' | 'reports' | 'tickets' | 'user';
+
+const TABS: { key: PanelTab; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: 'disputes', label: 'Disputas', icon: 'shield-half-outline' },
+  { key: 'reports', label: 'Denúncias', icon: 'flag-outline' },
+  { key: 'tickets', label: 'Tickets', icon: 'chatbubbles-outline' },
+  { key: 'user', label: 'Usuário', icon: 'search-outline' },
+];
 
 const KIND_LABELS = {
   pre_release: 'PRÉ-LIBERAÇÃO',
@@ -75,7 +85,8 @@ export function AdminPanelScreen() {
   const wide = width >= 900;
 
   const isAdmin = useIsAdmin();
-  const queue = useDisputeQueue(isAdmin.data === true);
+  const [tab, setTab] = useState<PanelTab>('disputes');
+  const queue = useDisputeQueue(isAdmin.data === true && tab === 'disputes');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const items = queue.data ?? [];
@@ -171,7 +182,7 @@ export function AdminPanelScreen() {
       <View style={[styles.topBar, { backgroundColor: theme.primary }]}>
         <SafeAreaView edges={['top']}>
           <View style={styles.topBarRow}>
-            {!wide && selected ? (
+            {tab === 'disputes' && !wide && selected ? (
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Voltar à fila"
@@ -189,25 +200,59 @@ export function AdminPanelScreen() {
               </Pressable>
             )}
             <Text style={[styles.topBarTitle, { color: theme.onPrimary }]}>
-              Vinc · Painel de disputas
+              Vinc · Painel do Suporte
             </Text>
           </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tabBar}>
+            {TABS.map((t) => {
+              const active = tab === t.key;
+              return (
+                <Pressable
+                  key={t.key}
+                  accessibilityRole="button"
+                  onPress={() => setTab(t.key)}
+                  style={[
+                    styles.tabChip,
+                    { backgroundColor: active ? theme.onPrimary : 'transparent' },
+                  ]}>
+                  <Ionicons
+                    name={t.icon}
+                    size={14}
+                    color={active ? theme.primary : theme.onPrimaryMuted}
+                  />
+                  <Text
+                    style={[
+                      styles.tabLabel,
+                      { color: active ? theme.primary : theme.onPrimaryMuted },
+                    ]}>
+                    {t.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         </SafeAreaView>
       </View>
 
-      <View style={styles.split}>
-        {(wide || !selected) && queueList}
-        {selected && (
-          <CaseFile key={selected.id} item={selected} wide={wide} />
-        )}
-        {wide && !selected && queue.isSuccess && items.length > 0 && (
-          <View style={styles.casePlaceholder}>
-            <Text style={{ color: theme.textSecondary, fontSize: 13 }}>
-              Escolha um caso na fila.
-            </Text>
-          </View>
-        )}
-      </View>
+      {tab === 'disputes' && (
+        <View style={styles.split}>
+          {(wide || !selected) && queueList}
+          {selected && <CaseFile key={selected.id} item={selected} wide={wide} />}
+          {wide && !selected && queue.isSuccess && items.length > 0 && (
+            <View style={styles.casePlaceholder}>
+              <Text style={{ color: theme.textSecondary, fontSize: 13 }}>
+                Escolha um caso na fila.
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
+      {tab === 'reports' && <ReportsTab />}
+      {tab === 'tickets' && <TicketsTab />}
+      {tab === 'user' && <UserTab />}
     </View>
   );
 }
@@ -494,6 +539,23 @@ const styles = StyleSheet.create({
   },
   topBarTitle: {
     fontSize: 15,
+    fontWeight: '800',
+  },
+  tabBar: {
+    gap: Spacing.one + 2,
+    paddingHorizontal: Spacing.three,
+    paddingBottom: Spacing.two,
+  },
+  tabChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.two + 2,
+    paddingVertical: 6,
+  },
+  tabLabel: {
+    fontSize: 12.5,
     fontWeight: '800',
   },
   split: {

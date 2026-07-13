@@ -111,15 +111,25 @@ revisados antes de abrir o app ao público:
 
 ## Estado atual
 
-**Última atualização:** 2026-07-09 — **Fases 1 e 2 completas; Fase 3 em
-andamento (3.1–3.5 no ar em modo sandbox, aguardando conta MP e CNPJ para 3.6–3.7)**
+**Última atualização:** 2026-07-13 — **Fases 1 e 2 completas; Fase 3 em
+andamento (3.1–3.5 no ar em modo sandbox, aguardando conta MP e CNPJ para
+3.6–3.7); Suporte & moderação (docs/09 S1–S4) no ar**
 
+- **Suporte, a "Vi" e moderação (docs/09 · D-045) no ar e verificados e2e**:
+  migrations 0031–0033; Edge Functions `support-assistant` (a Vi, porta de
+  IA `local`/`claude`) e `support-panel-action` (ações do painel, checa
+  `is_admin`, auditoria em `support_actions`). App: Central de Ajuda `/help`
+  (rodada 17 opção C), conversa com a Vi `/help/vi`, e o **Painel do
+  Suporte** com abas Disputas/Denúncias/Tickets/Usuário 360° no `/admin`. A
+  Vi roda no provedor `local` (recuperação da FAQ) até o David enviar a
+  `ANTHROPIC_API_KEY` para ligar o Claude Haiku (lembrete docs/07 #23).
 - **Backend real (Supabase) operacional e verificado e2e**: projeto
-  `gexzpkbqodoyoxudzklb`, migrations 0001–0025 aplicadas, Edge Functions
+  `gexzpkbqodoyoxudzklb`, migrations 0001–0033 aplicadas, Edge Functions
   ATIVAS: `create-gig`, `update-gig`, `delete-gig`, `apply-gig`,
   `get-candidates`, `decide-candidacy`, `cancel-gig`, `gig-lifecycle`,
-  `withdraw`, `open-dispute`, `resolve-dispute`, `payment-webhook`,
-  `scheduled-money-jobs` e o dublê `mp-mock` (só teste); jobs pg_cron
+  `withdraw`, `withdraw-candidacy`, `open-dispute`, `resolve-dispute`,
+  `payment-webhook`, `scheduled-money-jobs`, `support-assistant`,
+  `support-panel-action` e o dublê `mp-mock` (só teste); jobs pg_cron
   `auto-mark-awaiting`, `expire-unpaid-gigs` (só-status, SQL) e
   `run-money-jobs` (pg_net → `scheduled-money-jobs` a cada 15 min, header
   `x-cron-secret`). Google OAuth configurado. Credenciais públicas em

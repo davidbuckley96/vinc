@@ -84,12 +84,36 @@ Abas no /admin (além da fila de disputas que já existe):
 
 ## 3. Fases de execução
 
-| Fase | Entrega | Precisa de |
+| Fase | Entrega | Estado |
 |---|---|---|
-| **S1** | Tabelas (reports unificado, tickets, mensagens, faq) + RLS + seed de FAQ | — (inferível) |
-| **S2** | Central de Ajuda do usuário (cards FAQ + Vi + Outros + Falar com suporte) | **rodada de design 17** |
-| **S3** | A Vi de verdade (Edge Function + adapter de LLM) | **decisão do LLM (§4)** |
-| **S4** | Painel do Suporte (denúncias, tickets, contexto 360°, ações) | — (segue o /admin) |
+| **S1** | Tabelas (reports unificado, tickets, mensagens, faq) + RLS + seed de FAQ | ✅ feito |
+| **S2** | Central de Ajuda do usuário (cards FAQ + Vi + Outros + Falar com suporte) | ✅ feito (rodada 17, opção C) |
+| **S3** | A Vi de verdade (Edge Function + adapter de LLM) | ✅ feito (porta `local`+`claude`, D-045) |
+| **S4** | Painel do Suporte (denúncias, tickets, contexto 360°, ações) | ✅ feito (abas no /admin) |
+
+### O que ficou pronto (S2–S4)
+- **S3 — a Vi**: porta trocável `supabase/functions/_shared/assistant.ts`
+  (`local` recupera da FAQ; `claude` = Haiku via Anthropic Messages API,
+  ligado por `ANTHROPIC_API_KEY`). Edge Function `support-assistant` mantém
+  o ticket, anexa um resumo seguro do usuário, responde e escala. Verificado
+  e2e (provider local): FAQ, continuidade no ticket, escalonamento por pedido
+  e por baixa confiança, silêncio pós-escalonamento, RLS.
+- **S2 — Central de Ajuda** (`/help`): a Vi no topo, cards de FAQ (accordion),
+  "Outros assuntos" e "Falar com o suporte" (entra já escalando). Conversa
+  com a Vi em `/help/vi` (bolhas, "Digitando…", banner de fila, Realtime para
+  respostas da equipe). Link no perfil.
+- **S4 — Painel do Suporte**: abas no `/admin` (Disputas, Denúncias, Tickets,
+  Usuário). Denúncias: fila com o conteúdo à vista → confirmar/arquivar (e
+  "remover a vaga"). Tickets: conversa completa (Vi+humano) + contexto do
+  usuário; responder e resolver. Usuário 360°: busca → perfil, vagas nos dois
+  papéis, histórico de pagamentos, e desbloqueio (cancelar vaga sem dinheiro
+  movido; vaga paga vai para Disputas). Escritas via Edge Function
+  `support-panel-action` (service role, checa `is_admin`, registra em
+  `support_actions`). Verificado e2e: forbidden p/ não-admin, cancelamento,
+  resolução de denúncia, resposta/resolução de ticket, auditoria.
+- **⚠️ Segurança do dinheiro (D-040)**: o painel **nunca move dinheiro ad
+  hoc**. O desbloqueio só cancela vagas sem valor retido (open /
+  pending_approval); vaga paga/aceita segue pelo fluxo de disputa.
 
 ## 4. Decisão do motor da Vi (resolvida — D-045)
 

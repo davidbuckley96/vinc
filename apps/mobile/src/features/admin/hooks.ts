@@ -1,15 +1,29 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
+  cancelGigOnBehalf,
   fetchDisputeCase,
   fetchDisputeQueue,
   fetchIsAdmin,
   fetchProfileStats,
+  fetchReports,
+  fetchSupportTickets,
+  fetchTicketThread,
+  fetchUserContext,
+  replyTicket,
   resolveDispute,
+  resolveReport,
+  resolveTicket,
+  searchUsers,
   type DisputeCase,
   type DisputeQueueItem,
+  type PanelActionResult,
   type ProfileStats,
+  type ReportItem,
   type ResolveDisputeResult,
+  type TicketItem,
+  type TicketMessage,
+  type UserContext,
 } from '@vinc/api';
 
 import { useSession } from '@/features/auth/session-context';
@@ -82,5 +96,113 @@ export function useResolveDispute() {
         queryClient.invalidateQueries({ queryKey: ['admin', 'disputes'] });
       }
     },
+  });
+}
+
+// ------------------------------------------------------- support panel (S4)
+export function useReports(enabled: boolean) {
+  return useQuery({
+    queryKey: ['admin', 'reports'],
+    queryFn: async (): Promise<ReportItem[]> => {
+      if (!supabase) return [];
+      return fetchReports(supabase);
+    },
+    enabled,
+  });
+}
+
+export function useSupportTickets(enabled: boolean) {
+  return useQuery({
+    queryKey: ['admin', 'tickets'],
+    queryFn: async (): Promise<TicketItem[]> => {
+      if (!supabase) return [];
+      return fetchSupportTickets(supabase);
+    },
+    enabled,
+  });
+}
+
+export function useTicketThread(ticketId: string | null) {
+  return useQuery({
+    queryKey: ['admin', 'ticket-thread', ticketId ?? 'none'],
+    queryFn: async (): Promise<TicketMessage[]> => {
+      if (!supabase || !ticketId) return [];
+      return fetchTicketThread(supabase, ticketId);
+    },
+    enabled: Boolean(ticketId),
+    refetchInterval: 15_000,
+  });
+}
+
+export function useUserContext(userId: string | null) {
+  return useQuery({
+    queryKey: ['admin', 'user-context', userId ?? 'none'],
+    queryFn: async (): Promise<UserContext | null> => {
+      if (!supabase || !userId) return null;
+      return fetchUserContext(supabase, userId);
+    },
+    enabled: Boolean(userId),
+  });
+}
+
+export function useUserSearch(term: string) {
+  return useQuery({
+    queryKey: ['admin', 'user-search', term],
+    queryFn: async (): Promise<{ id: string; name: string }[]> => {
+      if (!supabase || term.trim().length < 2) return [];
+      return searchUsers(supabase, term);
+    },
+    enabled: term.trim().length >= 2,
+  });
+}
+
+export function useResolveReport() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      reportId: string;
+      decision: 'actioned' | 'dismissed';
+      note?: string;
+    }): Promise<PanelActionResult> => {
+      if (!supabase) return 'ok';
+      return resolveReport(supabase, input);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] }),
+  });
+}
+
+export function useReplyTicket() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { ticketId: string; replyBody: string }): Promise<PanelActionResult> => {
+      if (!supabase) return 'ok';
+      return replyTicket(supabase, input);
+    },
+    onSuccess: (_r, input) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'ticket-thread', input.ticketId] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'tickets'] });
+    },
+  });
+}
+
+export function useResolveTicket() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (ticketId: string): Promise<PanelActionResult> => {
+      if (!supabase) return 'ok';
+      return resolveTicket(supabase, ticketId);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'tickets'] }),
+  });
+}
+
+export function useCancelGigOnBehalf() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { gigId: string; note?: string }): Promise<PanelActionResult> => {
+      if (!supabase) return 'ok';
+      return cancelGigOnBehalf(supabase, input);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'user-context'] }),
   });
 }
