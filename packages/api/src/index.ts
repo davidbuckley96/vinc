@@ -9,4 +9,5 @@ export * from "./notifications";
 export * from "./payout";
 export * from "./profile";
 export * from "./reviews";
+export * from "./support";
 export * from "./wallet";

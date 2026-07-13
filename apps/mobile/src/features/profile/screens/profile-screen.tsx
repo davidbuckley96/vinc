@@ -99,6 +99,18 @@ export function ProfileScreen() {
               {status === 'signedIn' && (
                 <Pressable
                   accessibilityRole="button"
+                  onPress={() => router.push('/help')}
+                  style={[styles.payoutEntry, { borderColor: theme.line }]}>
+                  <Ionicons name="help-circle-outline" size={17} color={theme.primary} />
+                  <Text style={[styles.payoutEntryLabel, { color: theme.text }]}>
+                    Central de Ajuda
+                  </Text>
+                  <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
+                </Pressable>
+              )}
+              {status === 'signedIn' && (
+                <Pressable
+                  accessibilityRole="button"
                   onPress={() => signOut()}
                   style={[styles.signOut, { borderColor: theme.danger }]}>
                   <Ionicons name="log-out-outline" size={16} color={theme.danger} />
