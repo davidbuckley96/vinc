@@ -114,3 +114,10 @@
 22. 🔴 **CNPJ** (bloqueia o 3.7 — produção): constituir a empresa e então
     contratar o provedor (decisão final Mercado Pago × Pagar.me, dúvida
     #13) com credenciais de produção.
+
+23. 🟡 **Chave da API da Anthropic para a Vi** (D-045): criar uma chave em
+    console.anthropic.com e enviar ao Claude para virar o secret de função
+    `ANTHROPIC_API_KEY`. Com ela, a Vi troca o provedor `local`
+    (recuperação da FAQ) pelo **Claude Haiku** (`claude-haiku-4-5`), com
+    pt-BR melhor e sem treinar nos dados. Custo de centavos por conversa,
+    sem exigir CNPJ. Até lá, a Vi já responde o comum pelo `local`.

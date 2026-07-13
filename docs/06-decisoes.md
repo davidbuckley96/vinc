@@ -779,3 +779,33 @@ segurança** do grant de UPDATE por coluna (name/avatar_url/bio) — o
 escalonamento para `is_admin` segue fechado. Migration 0030 remove as
 colunas `gender`/`show_gender`. Verificado: cartão do candidato sem
 gênero, bio editável, `PATCH is_admin` → 42501.
+
+## D-045 — Central de Ajuda layout C (híbrido) + a "Vi" com Claude Haiku e fallback local
+**Data:** 2026-07-13 · **Decidido por:** David
+
+Fechada a rodada 17: **Central de Ajuda no layout C (híbrido)** — a Vi em
+destaque no topo (campo "Como posso ajudar?"), os cards de perguntas
+frequentes abaixo, "Outros assuntos" e, no rodapé, "Falar com o suporte"
+(humano). Bate exatamente com o pedido do David: a IA resolve o comum, o
+humano só recebe o que sobra.
+
+**Motor da Vi (§4 do docs/09 resolvido):** David deixou a critério do
+Claude ("faça como recomendado por você"). Escolha: **Claude Haiku 4.5**
+(`claude-haiku-4-5`) — melhor pt-BR entre as opções, **não treina** com os
+dados (postura de dados adequada a uma central de suporte, que vê dados do
+usuário — LGPD), custo de centavos por conversa. Descartados: **Gemini
+free** (os termos do free tier **treinam** com os prompts → risco de
+privacidade), **Groq/Llama** (não treina, mas pt-BR mais fraco).
+
+**Porta de IA trocável** (espelha a `PaymentProvider`): `_shared/assistant.ts`
+com dois adapters selecionados por env `ASSISTANT_PROVIDER`:
+- `local` (**padrão**) — recuperação sobre `faq_articles` sem chamada
+  externa; funciona sem chave e é o que roda até o David prover a chave.
+- `claude` — adapter da Anthropic Messages API (`POST /v1/messages`,
+  `x-api-key`, `anthropic-version: 2023-06-01`, modelo `claude-haiku-4-5`),
+  ativado quando existir o secret **`ANTHROPIC_API_KEY`** de função.
+
+⚠️ **Pendência (lembrete permanente, junto ao #21 do MP):** para a Vi rodar
+com LLM de verdade, o David precisa criar uma **chave da API da Anthropic**
+e enviá-la para virar o secret `ANTHROPIC_API_KEY`. Até lá, a Vi responde
+pelo provedor `local` (recuperação da FAQ), que já resolve o comum.

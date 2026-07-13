@@ -91,7 +91,7 @@ Abas no /admin (além da fila de disputas que já existe):
 | **S3** | A Vi de verdade (Edge Function + adapter de LLM) | **decisão do LLM (§4)** |
 | **S4** | Painel do Suporte (denúncias, tickets, contexto 360°, ações) | — (segue o /admin) |
 
-## 4. ⚠️ Decisão pendente do David — qual IA move a Vi
+## 4. Decisão do motor da Vi (resolvida — D-045)
 
 Modelo de "porta trocável"; a escolha inicial define custo e privacidade:
 
@@ -99,12 +99,16 @@ Modelo de "porta trocável"; a escolha inicial define custo e privacidade:
 |---|---|---|---|
 | **Google Gemini Flash** | **Grátis** (1.500 req/dia, sem cartão) | ⚠️ termos do free tier **treinam** com os prompts | Boa |
 | **Groq (Llama 3.3 70B)** | **Grátis** (1.000 req/dia) | Não treina | Razoável (abaixo dos outros) |
-| **Claude Haiku** | Barato (~centavos/conversa), **não grátis** | **Não treina**; melhor postura de dados | Excelente |
+| **Claude Haiku** ✅ | Barato (~centavos/conversa), **não grátis** | **Não treina**; melhor postura de dados | Excelente |
 
 O detalhe crítico: a Vi vê **dados de suporte do usuário**. O free tier do
 Gemini treinar com os prompts é um risco de privacidade/LGPD que não
-combina com uma central de suporte. Recomendação do Claude: **começar com
-Groq grátis** (não treina, resolve o simples) OU **Claude Haiku** se
-aceitar um custo mínimo por melhor qualidade e postura de dados —
-deixando o adapter pronto para trocar quando houver CNPJ/orçamento. Gemini
-free só se os prompts forem 100% anonimizados. **Aguardando a escolha.**
+combina com uma central de suporte.
+
+**Escolhido (D-045): Claude Haiku 4.5** (`claude-haiku-4-5`) — melhor
+pt-BR, não treina com os dados, custo de centavos. A porta de IA
+(`_shared/assistant.ts`) tem dois adapters por env `ASSISTANT_PROVIDER`:
+- **`local` (padrão)** — recuperação sobre `faq_articles`, sem chamada
+  externa; roda sem chave e é o default até chegar a chave da Anthropic.
+- **`claude`** — Anthropic Messages API, ativado com o secret
+  `ANTHROPIC_API_KEY` (pendente do David — lembrete em docs/07 #23).
