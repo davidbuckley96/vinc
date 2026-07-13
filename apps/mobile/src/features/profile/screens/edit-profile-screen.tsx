@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { firstName } from '@vinc/core';
+
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -47,7 +49,7 @@ export function EditProfileScreen() {
       return;
     }
     try {
-      const result = await save.mutateAsync({ name: name.trim(), bio });
+      const result = await save.mutateAsync({ name: firstName(name), bio });
       if (result === 'contact_in_text') {
         setFeedback({
           kind: 'error',
@@ -85,10 +87,10 @@ export function EditProfileScreen() {
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
           {profile.isLoading && <ActivityIndicator color={theme.primary} />}
 
-          <Text style={[styles.label, { color: theme.textSecondary }]}>SEU NOME</Text>
+          <Text style={[styles.label, { color: theme.textSecondary }]}>SEU PRIMEIRO NOME</Text>
           <TextInput
             style={inputStyle(theme)}
-            placeholder="Seu nome"
+            placeholder="Seu primeiro nome"
             placeholderTextColor={theme.textSecondary}
             autoCapitalize="words"
             value={name}

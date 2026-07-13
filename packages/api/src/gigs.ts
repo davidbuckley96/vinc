@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { boundingBox, distanceMeters, type GigDraft } from "@vinc/core";
+import { boundingBox, distanceMeters, firstName, type GigDraft } from "@vinc/core";
 
 export interface Category {
   id: string;
@@ -139,7 +139,7 @@ export async function fetchOpenGigs(
     approxLat: row.approx_lat,
     approxLng: row.approx_lng,
     categoryId: row.category_id,
-    posterName: row.poster_name,
+    posterName: firstName(row.poster_name) || "Anunciante",
   }));
   return filter.region ? applyRegion(gigs, filter.region) : gigs;
 }
@@ -175,7 +175,7 @@ export async function fetchGigById(
     approxLat: row.approx_lat,
     approxLng: row.approx_lng,
     categoryId: row.category_id,
-    posterName: row.poster?.name ?? "Anunciante",
+    posterName: firstName(row.poster?.name) || "Anunciante",
     exactAddress: exact?.address ?? null,
     exactLat: exact?.lat ?? null,
     exactLng: exact?.lng ?? null,

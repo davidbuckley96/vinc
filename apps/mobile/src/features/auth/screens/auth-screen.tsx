@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { firstName } from '@vinc/core';
+
 import { GoogleLogo } from '@/components/google-logo';
 import { VincLogo } from '@/components/vinc-logo';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
@@ -79,7 +81,7 @@ export function AuthScreen() {
     setBusy(true);
     const result =
       signUp && payout
-        ? await signUpWithEmail(name.trim(), email.trim(), password, payout)
+        ? await signUpWithEmail(firstName(name), email.trim(), password, payout)
         : await signInWithEmail(email.trim(), password);
     setBusy(false);
     if (!result.ok) {
@@ -136,10 +138,10 @@ export function AuthScreen() {
             {signUp && (
               <TextInput
                 style={inputStyle}
-                placeholder="Seu nome"
+                placeholder="Seu primeiro nome"
                 placeholderTextColor={theme.textSecondary}
                 autoCapitalize="words"
-                autoComplete="name"
+                autoComplete="name-given"
                 value={name}
                 onChangeText={setName}
               />

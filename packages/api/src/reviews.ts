@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { firstName } from "@vinc/core";
+
 export interface ProfileStats {
   id: string;
   name: string;
@@ -46,7 +48,7 @@ export async function fetchProfileStats(
   if (!data) return null;
   return {
     id: data.id,
-    name: data.name,
+    name: firstName(data.name) || "Usuário",
     avatarUrl: data.avatar_url,
     avgRating: data.avg_rating === null ? null : Number(data.avg_rating),
     reviewCount: Number(data.review_count ?? 0),
@@ -87,7 +89,7 @@ export async function fetchRecentReviews(
     rating: row.rating,
     comment: row.comment,
     tags: row.tags ?? [],
-    reviewerName: row.reviewer?.name ?? "Usuário",
+    reviewerName: firstName(row.reviewer?.name) || "Usuário",
     createdAt: row.created_at,
   }));
 }

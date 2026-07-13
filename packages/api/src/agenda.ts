@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { firstName } from "@vinc/core";
+
 /** A gig occupying the user's agenda, in either role (docs/02 §8). */
 export interface AgendaEntry {
   id: string;
@@ -105,7 +107,8 @@ export async function fetchServiceDetail(
     lat: exact?.lat ?? null,
     lng: exact?.lng ?? null,
     counterpartId: role === "poster" ? row.worker_id : row.poster_id,
-    counterpartName: role === "poster" ? (row.worker?.name ?? null) : (row.poster?.name ?? null),
+    counterpartName:
+      firstName(role === "poster" ? row.worker?.name : row.poster?.name) || null,
     checkinCode,
   };
 }
@@ -155,7 +158,8 @@ export async function fetchMyAgenda(
       endsAt: row.ends_at,
       priceCents: row.price_cents,
       status: row.status,
-      counterpartName: role === "poster" ? (row.worker?.name ?? null) : (row.poster?.name ?? null),
+      counterpartName:
+      firstName(role === "poster" ? row.worker?.name : row.poster?.name) || null,
     };
   });
 

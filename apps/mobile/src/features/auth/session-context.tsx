@@ -1,6 +1,8 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
+import { firstName } from '@vinc/core';
+
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 export type SessionStatus =
@@ -39,8 +41,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         status: session ? 'signedIn' : 'signedOut',
         session,
         userName:
-          (session?.user.user_metadata?.name as string | undefined) ??
-          session?.user.email ??
+          firstName(session?.user.user_metadata?.name as string | undefined) ||
+          session?.user.email ||
           null,
       });
 
