@@ -8,9 +8,11 @@
     "scheme": "vinc",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.vinc.app"
     },
     "android": {
+      "package": "com.vinc.app",
       "adaptiveIcon": {
         "backgroundColor": "#6D28D9",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
