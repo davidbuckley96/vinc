@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -112,7 +111,7 @@ export function ChatScreen() {
     <View style={[styles.root, { backgroundColor: theme.background }]}>
       <KeyboardAvoidingView
         style={styles.column}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        behavior="padding">
         <View style={[styles.header, { backgroundColor: theme.primary }]}>
           <SafeAreaView edges={['top']}>
             <Pressable

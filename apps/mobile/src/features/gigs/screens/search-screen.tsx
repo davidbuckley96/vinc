@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -38,9 +38,26 @@ function dayChipLabel(date: Date, index: number): string {
 export function SearchScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const navigation = useNavigation();
   const params = useLocalSearchParams<{ day?: string; hour?: string }>();
   const [category, setCategory] = useState<Category | null>(null);
   const categories = useCategories();
+
+  // Tapping the "Buscar" tab always returns to the top of search (root
+  // categories), instead of reopening the last drilled-in subcategory.
+  // tabPress fires on the tab icon only — not when popping back from a gig
+  // detail — so browsing a category and viewing a gig still returns to it.
+  useEffect(() => {
+    // `tabPress` isn't in the generic navigator's event map types, but the
+    // bottom-tab navigator emits it — narrow the listener locally.
+    const tabNav = navigation as unknown as {
+      addListener: (event: 'tabPress', cb: () => void) => () => void;
+    };
+    const unsubscribe = tabNav.addListener('tabPress', () => {
+      setCategory(null);
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const days = useMemo(
     () =>

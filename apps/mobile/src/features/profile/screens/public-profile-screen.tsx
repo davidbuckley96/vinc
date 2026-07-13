@@ -74,9 +74,6 @@ export function PublicProfileScreen() {
           </View>
           <ProfileView userId={params.id} role={role} fallbackName={name} />
 
-          {blockNote && (
-            <Text style={[styles.blockNote, { color: theme.textSecondary }]}>{blockNote}</Text>
-          )}
           <Pressable
             accessibilityRole="button"
             disabled={toggleBlock.isPending}
@@ -91,6 +88,11 @@ export function PublicProfileScreen() {
               {blocked ? 'Desbloquear usuário' : 'Bloquear usuário'}
             </Text>
           </Pressable>
+          {/* Note below the button (never above) so it can't shift the
+              button down just as the person is tapping it. */}
+          {blockNote && (
+            <Text style={[styles.blockNote, { color: theme.textSecondary }]}>{blockNote}</Text>
+          )}
         </ScrollView>
       </View>
     </View>

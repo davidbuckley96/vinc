@@ -10,6 +10,7 @@ import { useProfileStats } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
 import { ProfileView } from '../components/profile-view';
+import { useMyProfile } from '../hooks';
 
 /**
  * Own profile tab. The platform picks which version to show (D-011): the
@@ -21,6 +22,8 @@ export function ProfileScreen() {
   const { status, userName, session } = useSession();
   const userId = session?.user.id ?? null;
   const stats = useProfileStats(userId);
+  const profile = useMyProfile();
+  const bio = profile.data?.bio?.trim();
 
   const role =
     (stats.data?.completedAsPoster ?? 0) > (stats.data?.completedAsWorker ?? 0)
@@ -53,6 +56,7 @@ export function ProfileScreen() {
                 {session.user.email}
               </Text>
             )}
+            {!!bio && <Text style={[styles.bio, { color: theme.text }]}>{bio}</Text>}
           </View>
 
           {signedOut ? (
@@ -180,6 +184,13 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: 12.5,
     lineHeight: 18,
+  },
+  bio: {
+    fontSize: 13.5,
+    lineHeight: 19,
+    textAlign: 'center',
+    marginTop: Spacing.one,
+    paddingHorizontal: Spacing.two,
   },
   primaryButton: {
     borderRadius: Radius.medium,

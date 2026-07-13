@@ -285,6 +285,14 @@ export function GigDetailScreen() {
               <Text style={[styles.feedback, { color: theme.danger }]}>
                 {CANDIDACY_MESSAGES.refused}
               </Text>
+            ) : reported ? (
+              // Denunciou a vaga → não faz sentido se candidatar a ela (D-040).
+              <View style={[styles.priorityNote, { backgroundColor: theme.dangerSoft }]}>
+                <Text style={[styles.priorityNoteText, { color: theme.danger }]}>
+                  Você denunciou esta vaga. Enquanto a equipe avalia, não é possível se
+                  candidatar a ela.
+                </Text>
+              </View>
             ) : (
               <>
                 {myPriority.data && (
