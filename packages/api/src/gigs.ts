@@ -101,13 +101,22 @@ export function applyRegion<T extends OpenGig>(gigs: T[], region: RegionFilter):
 
 export async function fetchOpenGigs(
   client: SupabaseClient,
-  filter: { categoryIds?: string[]; slot?: TimeSlotFilter; region?: RegionFilter } = {},
+  filter: {
+    categoryIds?: string[];
+    slot?: TimeSlotFilter;
+    region?: RegionFilter;
+    /** Hide the caller's own gigs from the search (V-05) — you can't work them. */
+    excludePosterId?: string;
+  } = {},
 ): Promise<OpenGig[]> {
   let query = client
     .from("visible_open_gigs")
     .select("id, title, description, starts_at, ends_at, price_cents, area, approx_lat, approx_lng, category_id, poster_id, poster_name")
     .order("starts_at")
     .limit(50);
+  if (filter.excludePosterId) {
+    query = query.neq("poster_id", filter.excludePosterId);
+  }
   if (filter.categoryIds && filter.categoryIds.length > 0) {
     query = query.in("category_id", filter.categoryIds);
   }

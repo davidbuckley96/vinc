@@ -48,17 +48,26 @@ export function useCategories() {
 
 /** categoryIds: the selected category expanded to [parent, ...children] (D-041). */
 export function useOpenGigs(categoryIds?: string[], slot?: TimeSlotFilter, region?: RegionFilter) {
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
   return useQuery({
     queryKey: [
       'gigs',
       'open',
+      userId ?? 'anon',
       categoryIds?.join(',') ?? 'all',
       slot?.startsAt ?? '-',
       slot?.endsAt ?? '-',
       region ? `${region.lat.toFixed(4)},${region.lng.toFixed(4)},${region.radiusKm}` : '-',
     ],
     queryFn: () => {
-      if (supabase) return fetchOpenGigs(supabase, { categoryIds, slot, region });
+      if (supabase)
+        return fetchOpenGigs(supabase, {
+          categoryIds,
+          slot,
+          region,
+          excludePosterId: userId ?? undefined, // V-05: don't list my own gigs
+        });
       let gigs = categoryIds && categoryIds.length > 0
         ? DEMO_GIGS.filter((gig) => categoryIds.includes(gig.categoryId))
         : DEMO_GIGS;

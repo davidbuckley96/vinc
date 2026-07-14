@@ -10,6 +10,8 @@ import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useProfileStats } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
+import { useSession } from '@/features/auth/session-context';
+
 import { useBlockStatus, useToggleBlock } from '../block-hooks';
 import { ProfileView, type ProfileRole } from '../components/profile-view';
 
@@ -23,6 +25,9 @@ export function PublicProfileScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string; role?: string; name?: string }>();
   const role: ProfileRole = params.role === 'worker' ? 'worker' : 'poster';
+  const { session } = useSession();
+  // V-04: vendo o próprio perfil não faz sentido "bloquear a si mesmo".
+  const isSelf = Boolean(session?.user.id && session.user.id === params.id);
   const stats = useProfileStats(params.id);
   const blockStatus = useBlockStatus(params.id);
   const toggleBlock = useToggleBlock(params.id);
@@ -87,20 +92,22 @@ export function PublicProfileScreen() {
           </View>
           <ProfileView userId={params.id} role={role} fallbackName={name} />
 
-          <Pressable
-            accessibilityRole="button"
-            disabled={toggleBlock.isPending}
-            onPress={onToggleBlock}
-            style={[styles.blockButton, { borderColor: theme.danger }]}>
-            <Ionicons
-              name={blocked ? 'lock-open-outline' : 'ban-outline'}
-              size={16}
-              color={theme.danger}
-            />
-            <Text style={[styles.blockLabel, { color: theme.danger }]}>
-              {blocked ? 'Desbloquear usuário' : 'Bloquear usuário'}
-            </Text>
-          </Pressable>
+          {!isSelf && (
+            <Pressable
+              accessibilityRole="button"
+              disabled={toggleBlock.isPending}
+              onPress={onToggleBlock}
+              style={[styles.blockButton, { borderColor: theme.danger }]}>
+              <Ionicons
+                name={blocked ? 'lock-open-outline' : 'ban-outline'}
+                size={16}
+                color={theme.danger}
+              />
+              <Text style={[styles.blockLabel, { color: theme.danger }]}>
+                {blocked ? 'Desbloquear usuário' : 'Bloquear usuário'}
+              </Text>
+            </Pressable>
+          )}
           {/* Note below the button (never above) so it can't shift the
               button down just as the person is tapping it. */}
           {blockNote && (

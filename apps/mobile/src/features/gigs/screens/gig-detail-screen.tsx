@@ -68,7 +68,7 @@ export function GigDetailScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { status } = useSession();
+  const { status, session } = useSession();
   const gig = useGig(id);
   const categories = useCategories();
   const apply = useApplyGig();
@@ -88,6 +88,11 @@ export function GigDetailScreen() {
   // Persisted (B-23): a gig I reported stays "denunciada" across reopens, so
   // I can't apply to it or report it again.
   const reported = reportedLocal || (reportedGigs.data?.includes(id) ?? false);
+  // V-03: você é o dono desta vaga? Nesse caso não dá para se candidatar nem
+  // denunciar a própria vaga — mostramos o caminho de gestão. Checagem SÍNCRONA
+  // pelo posterId (não depende do status 'own_gig' assíncrono, que chegava
+  // tarde e deixava o "Me candidatar" aparecer).
+  const isOwner = Boolean(session?.user.id && gig.data?.posterId === session.user.id);
 
   // Report for moderation (D-040/D-052): pick a reason + optional detail.
   const onReport = async (category: string, detail: string) => {
@@ -262,7 +267,24 @@ export function GigDetailScreen() {
               </Text>
             )}
 
-            {applied || (myCandidacy.data && myCandidacy.data !== 'refused') ? (
+            {isOwner ? (
+              // V-03: a vaga é sua — sem candidatar/denunciar; leva à gestão.
+              <>
+                <View style={[styles.priorityNote, { backgroundColor: theme.primarySoft }]}>
+                  <Text style={[styles.priorityNoteText, { color: theme.primarySoftText }]}>
+                    Esta vaga foi anunciada por você.
+                  </Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => router.replace(`/service/${id}`)}
+                  style={[styles.accept, { backgroundColor: theme.primary }]}>
+                  <Text style={[styles.acceptLabel, { color: theme.onPrimary }]}>
+                    Gerenciar minha vaga
+                  </Text>
+                </Pressable>
+              </>
+            ) : applied || (myCandidacy.data && myCandidacy.data !== 'refused') ? (
               <>
                 {!feedback && myCandidacy.data && (
                   <Text style={[styles.feedback, { color: theme.success }]}>
@@ -346,7 +368,7 @@ export function GigDetailScreen() {
               </>
             )}
 
-            {status === 'signedIn' && (
+            {status === 'signedIn' && !isOwner && (
               <Pressable
                 accessibilityRole="button"
                 disabled={report.isPending || reported}

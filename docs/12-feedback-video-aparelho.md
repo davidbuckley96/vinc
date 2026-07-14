@@ -56,7 +56,7 @@
   (Se ainda aparecer, era efeito colateral do snap-back do V-01, já corrigido.)
 - **Severidade:** Baixa.
 
-## V-03 🔴 Vaga própria mostra "Me candidatar" e "Denunciar"
+## V-03 🟢 (corrigido) Vaga própria mostra "Me candidatar" e "Denunciar"
 - **Descrição:** abrindo a **sua própria vaga** pela busca, o app mostra
   **"Me candidatar"** e **"🚩 Denunciar esta vaga"**. Você não deveria poder se
   candidatar nem denunciar a própria vaga. No vídeo o David **denunciou a
@@ -70,24 +70,22 @@
 - **Correção:** gate firme por `gig.posterId === session.user.id`: se for dono,
   esconder "Me candidatar" **e** "Denunciar" e mostrar o caminho de gestão
   (ver candidatos / minha vaga). Não depender só do `own_gig` assíncrono.
+- **Correção:** gate síncrono `isOwner = gig.posterId === session.user.id` no gig-detail — dono não vê 'Me candidatar' nem 'Denunciar'; vê 'Gerenciar minha vaga' (→ /service/id).
 - **Severidade:** Média/Alta (coerência; e denunciar a própria vaga é furada).
 
-## V-04 🔴 Perfil próprio mostra "Bloquear usuário" (e bloquear a si dá erro)
+## V-04 🟢 (corrigido) Perfil próprio mostra "Bloquear usuário" (e bloquear a si dá erro)
 - **Descrição:** abrindo o **seu próprio perfil** (via "Anunciado por David"),
   aparece **"Bloquear usuário"**; ao tocar, dá erro "Não foi possível
   completar" (o back recusa bloquear a si mesmo).
-- **Correção:** na tela de perfil público, esconder o "Bloquear usuário"
-  quando `params.id === session.user.id` (e idealmente esconder o link
-  "Anunciado por …" quando o anunciante é você).
+- **Correção:** `isSelf = params.id === session.user.id` esconde o 'Bloquear usuário' no próprio perfil.
 - **Severidade:** Média.
 
-## V-05 🔴 Busca lista as suas próprias vagas
+## V-05 🟢 (corrigido) Busca lista as suas próprias vagas
 - **Descrição:** "Todas as vagas" e as categorias mostram as vagas que **você
   anunciou** (Baba, Teste2, Teste3). Como não dá pra trabalhar na própria
   vaga, elas não deveriam aparecer na busca (ou deveriam vir marcadas
   "sua vaga", sem botão de candidatar).
-- **Correção:** filtrar `poster_id <> auth.uid()` na busca de vagas abertas
-  (`fetchOpenGigs`), como já se faz com bloqueados/denunciados.
+- **Correção:** `fetchOpenGigs` ganhou `excludePosterId` (`.neq poster_id`), passado pelo `useOpenGigs` com o id do usuário logado.
 - **Severidade:** Média.
 
 ## V-06 🟢 Teto de valor não era aplicado no servidor — CORRIGIDO
