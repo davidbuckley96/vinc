@@ -1017,6 +1017,31 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-064 — Perfil rico + alertas de vagas (B-30, rodada 21 opção A)
+**Data:** 2026-07-14 · **Decidido por:** David (mock rodada 21)
+
+Perfil ganha **foto** e **localização** e passa a oferecer **alertas de vagas**.
+Layout escolhido: **opção A** (capa colorida + foto redonda grande, estilo rede
+social). Decisões firmes:
+- **Localização do perfil = cidade/UF apenas** (nunca endereço). É separada da
+  localização de busca; dá contexto e alimenta os alertas.
+- **Selo "novo usuário" (🌱):** visível **só para o anunciante na lista de
+  candidatos** (quem avalia quem se candidatou à sua vaga) — **não** aparece no
+  próprio perfil nem no perfil público. Refina B-29/D-061 (a nota inicial ★ 5,0
+  continua; muda só onde o selo aparece). Já aplicado em `profile-view.tsx`.
+- **Alertas de vaga:** casam serviço + dias + faixa de horário + região/raio;
+  o aviso reusa o push (D-047). Sem push (build EAS pendente), o alerta mostra
+  um selo "novas vagas" no app. Implementação em etapa própria (tabela
+  `job_alerts` + matching + tela de criar/gerenciar).
+
+**Ponto aberto — foto na lista de candidatos (altera a D-024):** o David pediu
+"foto sempre visível", inclusive na lista de candidatos. Hoje a D-024 esconde
+foto e nome **"por segurança e igualdade"** (evita escolha por aparência —
+discriminação). Antes de reverter isso, confirmar com o David o trade-off (ver
+`docs/07` #— foto vs. anonimato) — pode haver meio-termo (foto no perfil de
+reputação, mas candidato ainda anônimo na lista; ou foto sem nome). Enquanto não
+confirmado, a lista de candidatos **segue anônima**.
+
 ## D-063 — Agenda: candidaturas sobrepostas em colunas (Opção C)
 **Data:** 2026-07-14 · **Decidido por:** David (mock rodada 20, opção C)
 

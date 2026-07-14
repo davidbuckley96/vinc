@@ -263,12 +263,18 @@ Limitações descobertas (a resolver antes do vídeo completo):
   mas com um selo "novo usuário" visível para quem está escolhendo.
 - **Severidade:** Baixa.
 
-### B-30 ⚪ Perfil: foto, localização e alertas de vagas (estilo LinkedIn) 🟣 (movido para o roadmap)
+### B-30 ⚪ Perfil: foto, localização e alertas de vagas (estilo LinkedIn) 🟣 (feature — em design/roadmap)
 - **Descrição:** adicionar foto, definir localização e criar alertas de vagas
   para serviços/horários/dias específicos.
-- **Encaminhamento:** é uma feature maior (não um bug) — movida para o roadmap
-  (docs/05, Fase 4). Precisa de rodada de design e decisão de escopo com o David
-  (foto → moderação de imagem; alertas → matching + push já existente).
+- **Design (rodada 21, D-064):** David escolheu a **opção A** (capa + foto
+  grande). Decisões firmes: localização = cidade/UF; selo "novo usuário" só para
+  o anunciante na lista de candidatos (já aplicado em `profile-view.tsx`);
+  alertas = serviço+dias+horário+região com push (D-047). **Ponto aberto:** foto
+  na lista de candidatos reverteria a D-024 ("segurança e igualdade") — a
+  confirmar com o David (docs/07 #25) antes de implementar; até lá a lista
+  segue anônima.
+- **Implementação (etapas, na Fase 4):** (1) foto + cidade no perfil de
+  reputação; (2) tabela `job_alerts` + matching + tela criar/gerenciar alerta.
 - **Severidade:** Média (feature).
 
 ---

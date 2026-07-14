@@ -59,8 +59,10 @@ export function ProfileView({ userId, fallbackName }: Props) {
   return (
     <View style={styles.root}>
       <View style={[styles.ratingCard, { backgroundColor: theme.primarySoft }]}>
+        {/* O selo "novo usuário" (D-064) fica SÓ na lista de candidatos, visível
+            ao anunciante que avalia — não no próprio perfil nem no público. */}
         <Text style={[styles.roleLabel, { color: theme.primarySoftMeta }]}>
-          {reviewCount === 0 ? '🌱 NOVO USUÁRIO' : 'AVALIAÇÃO GERAL'}
+          AVALIAÇÃO GERAL
         </Text>
         <Text style={[styles.bigRating, { color: theme.primarySoftText }]}>
           {/* Novo usuário começa com nota máxima (benefício da dúvida) — B-29. */}
