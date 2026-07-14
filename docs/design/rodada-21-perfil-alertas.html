@@ -1,0 +1,196 @@
+<meta charset="utf-8">
+<title>Rodada 21 — Perfil com foto/local + alertas de vagas (B-30)</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --ok:#059669; --amarelo:#F59E0B; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:36px 24px;margin:0}
+  h1{font-size:22px;margin:0 0 4px}
+  h2{font-size:15px;margin:34px 0 14px;color:var(--roxo-deep)}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:8px;max-width:960px;line-height:1.55}
+  .row{display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start}
+  .option{width:300px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;margin-bottom:8px;background:var(--lilas);color:var(--roxo)}
+  .option h3{margin:2px 0 4px;font-size:16px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 0 14px;min-height:70px}
+  .phone{width:300px;height:600px;border-radius:34px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .body{flex:1;overflow:hidden;background:#fff}
+  .pad{padding:12px}
+  /* peças */
+  .avatar{border-radius:99px;background:#DDD3F3;color:var(--roxo);font-weight:800;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .photo{background:linear-gradient(135deg,#c9b8ef,#e7dcfb);position:relative}
+  .photo::after{content:"👩🏽";font-size:26px;position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .cam{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:99px;background:var(--roxo);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+  .name{font-size:16px;font-weight:800}
+  .loc{font-size:12px;color:var(--ink2);display:flex;align-items:center;gap:3px}
+  .rate{display:inline-flex;gap:4px;align-items:center;font-size:12.5px;font-weight:700;color:var(--roxo-deep)}
+  .star{color:var(--amarelo)}
+  .card{border:1.5px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
+  .alertcard{border:1.5px solid var(--roxo);background:var(--lilas);border-radius:14px;padding:12px;margin-top:10px}
+  .alertcard .h{font-weight:800;font-size:13.5px;color:var(--roxo-deep);display:flex;align-items:center;gap:6px}
+  .alertcard .m{font-size:11.5px;color:var(--roxo);margin-top:2px}
+  .cta{display:block;text-align:center;background:var(--roxo);color:#fff;font-weight:800;font-size:12.5px;padding:9px;border-radius:10px;margin-top:9px}
+  .statline{display:flex;gap:0;justify-content:space-around;text-align:center;margin-top:8px}
+  .statline .v{font-size:16px;font-weight:800;color:var(--roxo-deep)}
+  .statline .l{font-size:10.5px;color:var(--ink2)}
+  .sec{font-size:10.5px;font-weight:800;letter-spacing:.5px;color:var(--ink2);margin:14px 0 6px}
+  /* alertas — criação */
+  .field{border:1.5px solid var(--line);border-radius:11px;padding:9px 11px;font-size:12.5px;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between;color:var(--ink)}
+  .field .lab{color:var(--ink2);font-size:11px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+  .chip{font-size:11.5px;font-weight:700;padding:6px 10px;border-radius:99px;border:1.5px solid var(--line);color:var(--ink2)}
+  .chip.on{background:var(--roxo);border-color:var(--roxo);color:#fff}
+  .toggle{width:38px;height:22px;border-radius:99px;background:var(--roxo);position:relative}
+  .toggle::after{content:"";position:absolute;width:18px;height:18px;border-radius:99px;background:#fff;top:2px;right:2px}
+  .arow{display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:9px}
+  .arow .t{font-weight:800;font-size:12.5px}
+  .arow .s{font-size:11px;color:var(--ink2);margin-top:1px}
+  .note{font-size:12px;color:var(--ink2);line-height:1.55;background:#FAFAFC;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:22px;max-width:960px}
+  b{color:var(--ink)}
+  .top{background:var(--roxo);color:#fff;padding:14px 14px}
+  .top .t{font-size:15px;font-weight:800}
+</style>
+
+<h1>Rodada 21 — Perfil com foto e localização + alertas de vagas</h1>
+<p class="sub"><b>B-30:</b> enriquecer o perfil (foto e localização, estilo LinkedIn) e permitir
+<b>alertas de vagas</b> — receber aviso quando surgir uma vaga que combina com serviço, dias, horário e região escolhidos.
+Primeiro escolha o <b>layout do perfil</b> (linha 1); a <b>criação de alerta</b> (linha 2) é a mesma proposta nos três.</p>
+
+<h2>1 · Layout do perfil — escolha A, B ou C</h2>
+<div class="row">
+
+  <!-- A -->
+  <div class="option">
+    <span class="tag">Opção A</span>
+    <h3>Capa + foto grande (rede social)</h3>
+    <p>Faixa colorida de capa com a foto redonda sobreposta, nome e cidade logo abaixo. Visual mais "rede social", acolhedor e familiar. Ocupa mais espaço no topo.</p>
+    <div class="phone">
+      <div class="body">
+        <div style="height:78px;background:linear-gradient(120deg,var(--roxo),#9333EA)"></div>
+        <div class="pad" style="padding-top:0">
+          <div style="margin-top:-34px;display:flex;align-items:flex-end;gap:10px">
+            <div class="avatar photo" style="width:66px;height:66px;border:3px solid #fff"><span class="cam">📷</span></div>
+          </div>
+          <div class="name" style="margin-top:8px">Ana Souza</div>
+          <div class="loc">📍 Aracaju, SE</div>
+          <div class="rate" style="margin-top:4px"><span class="star">★</span> 5,0 · 🌱 novo usuário</div>
+          <div class="alertcard">
+            <div class="h">🔔 Alertas de vagas</div>
+            <div class="m">Seja avisado quando surgir uma vaga do seu jeito.</div>
+            <span class="cta">Criar meu alerta</span>
+          </div>
+          <div class="sec">MEUS NÚMEROS</div>
+          <div class="statline"><div><div class="v">0</div><div class="l">avaliações</div></div><div><div class="v">0</div><div class="l">serviços</div></div><div><div class="v">0</div><div class="l">vagas</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="option">
+    <span class="tag">Opção B (recomendada)</span>
+    <h3>Cabeçalho roxo com foto + local</h3>
+    <p>Mantém o cabeçalho roxo atual, mas com a foto e a cidade dentro dele, nome ao lado. Menos rolagem, coerente com o resto do app, mudança pequena e segura.</p>
+    <div class="phone">
+      <div class="body">
+        <div class="top" style="padding:16px 14px 18px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="avatar photo" style="width:56px;height:56px;border:2px solid rgba(255,255,255,.6)"><span class="cam">📷</span></div>
+            <div>
+              <div class="name" style="color:#fff">Ana Souza</div>
+              <div class="loc" style="color:#EDE7FB">📍 Aracaju, SE</div>
+              <div class="rate" style="color:#fff;margin-top:2px"><span class="star">★</span> 5,0 · 🌱 novo</div>
+            </div>
+          </div>
+        </div>
+        <div class="pad">
+          <div class="alertcard">
+            <div class="h">🔔 Alertas de vagas</div>
+            <div class="m">Avisamos quando surgir uma vaga que combina.</div>
+            <span class="cta">Criar meu alerta</span>
+          </div>
+          <div class="sec">MEUS NÚMEROS</div>
+          <div class="statline"><div><div class="v">0</div><div class="l">avaliações</div></div><div><div class="v">0</div><div class="l">serviços</div></div><div><div class="v">0</div><div class="l">vagas</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="option">
+    <span class="tag">Opção C</span>
+    <h3>Cartão de identidade</h3>
+    <p>Um cartão branco único no topo com foto, nome, cidade e nota na mesma linha (tipo "cartão de visita"). Compacto e elegante; a foto fica menor.</p>
+    <div class="phone">
+      <div class="body">
+        <div class="top"><div class="t">Perfil</div></div>
+        <div class="pad">
+          <div class="card" style="display:flex;gap:11px;align-items:center;margin-top:2px">
+            <div class="avatar photo" style="width:52px;height:52px"><span class="cam">📷</span></div>
+            <div style="flex:1">
+              <div class="name">Ana Souza</div>
+              <div class="loc">📍 Aracaju, SE</div>
+              <div class="rate" style="margin-top:2px"><span class="star">★</span> 5,0 · 🌱 novo</div>
+            </div>
+          </div>
+          <div class="alertcard">
+            <div class="h">🔔 Alertas de vagas</div>
+            <div class="m">Avise-me quando aparecer uma vaga do meu perfil.</div>
+            <span class="cta">Criar meu alerta</span>
+          </div>
+          <div class="sec">MEUS NÚMEROS</div>
+          <div class="statline"><div><div class="v">0</div><div class="l">avaliações</div></div><div><div class="v">0</div><div class="l">serviços</div></div><div><div class="v">0</div><div class="l">vagas</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<h2>2 · Criar alerta de vaga (igual nas três) — só para ilustrar o fluxo</h2>
+<div class="row">
+  <div class="option">
+    <span class="tag">Fluxo</span>
+    <h3>Criar alerta</h3>
+    <p>Escolhe o serviço, os dias, a faixa de horário e a região/raio. Um toque liga o aviso por push (usa a base de notificações que já existe).</p>
+    <div class="phone">
+      <div class="body">
+        <div class="top"><div class="t">← Criar alerta de vaga</div></div>
+        <div class="pad">
+          <div class="field"><span class="lab">Serviço</span><span>Faxina / Limpeza ▾</span></div>
+          <div class="sec">DIAS</div>
+          <div class="chips"><span class="chip on">Seg</span><span class="chip on">Ter</span><span class="chip">Qua</span><span class="chip on">Qui</span><span class="chip">Sex</span><span class="chip">Sáb</span><span class="chip">Dom</span></div>
+          <div class="sec">HORÁRIO</div>
+          <div class="chips"><span class="chip">Manhã</span><span class="chip on">Tarde</span><span class="chip on">Noite</span><span class="chip">Madrugada</span></div>
+          <div class="field"><span class="lab">Região</span><span>Aracaju · 10 km ▾</span></div>
+          <div class="field"><span>🔔 Avisar por push</span><span class="toggle"></span></div>
+          <span class="cta" style="margin-top:4px">Salvar alerta</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option">
+    <span class="tag">Fluxo</span>
+    <h3>Meus alertas</h3>
+    <p>Lista dos alertas criados, cada um com um interruptor para ligar/desligar sem apagar. Simples de gerenciar.</p>
+    <div class="phone">
+      <div class="body">
+        <div class="top"><div class="t">🔔 Meus alertas de vagas</div></div>
+        <div class="pad">
+          <div class="arow"><div><div class="t">Faxina · tarde/noite</div><div class="s">Seg, Ter, Qui · Aracaju 10 km</div></div><span class="toggle"></span></div>
+          <div class="arow"><div><div class="t">Babá · manhã</div><div class="s">Sáb, Dom · Aracaju 5 km</div></div><span class="toggle" style="background:#D8DCE2"></span></div>
+          <div class="arow" style="border-style:dashed;justify-content:center;color:var(--roxo);font-weight:800;font-size:12.5px">+ Novo alerta</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>Decisões de produto embutidas (me diga se concorda):</b><br>
+  • <b>Foto e privacidade:</b> a foto aparece no perfil público (reputação) e para a outra parte <b>depois</b> que vocês se conectam. Enquanto a candidatura está pendente, o candidato continua <b>anônimo</b> (mantém a D-024) — a foto não vaza na lista de candidatos.<br>
+  • <b>Localização do perfil</b> = só a <b>cidade/UF</b> (nunca endereço). É separada da localização de busca; serve para dar contexto e alimentar os alertas.<br>
+  • <b>Alertas</b> = casam serviço + dias + horário + região; o aviso reusa o push que já existe (D-047). Sem push (build EAS ainda pendente), o alerta ainda mostra um selo "novas vagas" no app.<br>
+  • <b>Moderação da foto:</b> entra na fila de denúncias que já temos (foto imprópria → denunciar). Numa 2ª fase dá para checar imagem automaticamente.<br>
+  Depois da sua escolha (A/B/C) eu registro a decisão e implemento por partes: (1) foto + cidade no perfil, (2) alertas.
+</div>
