@@ -18,7 +18,7 @@ import { useTheme } from '@/hooks/use-theme';
 
 import { GigCard } from '../components/gig-card';
 import { RegionModal } from '../components/region-modal';
-import { useCategories, useOpenGigs } from '../hooks';
+import { useCategories, useMyReportedGigs, useOpenGigs } from '../hooks';
 import { useRegion } from '../region';
 
 const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
@@ -118,6 +118,12 @@ export function SearchScreen() {
     regionLoaded && region
       ? { lat: region.lat, lng: region.lng, radiusKm: region.radiusKm }
       : undefined,
+  );
+
+  // Hide gigs I reported (B-23): a vaga denunciada não deve reaparecer.
+  const reported = useMyReportedGigs();
+  const visibleGigs = (gigs.data ?? []).filter(
+    (gig) => !reported.data?.includes(gig.id),
   );
 
   const categoryName = (id: string) => {
@@ -309,7 +315,7 @@ export function SearchScreen() {
               Não foi possível carregar as vagas. Verifique sua conexão.
             </Text>
           )}
-          {gigs.data?.length === 0 &&
+          {gigs.isSuccess && visibleGigs.length === 0 &&
             (region ? (
               <View style={styles.emptyRegion}>
                 <Text style={[styles.feedback, { color: theme.textSecondary }]}>
@@ -341,7 +347,7 @@ export function SearchScreen() {
                 </Pressable>
               </View>
             ))}
-          {gigs.data?.map((gig) => (
+          {visibleGigs.map((gig) => (
             <GigCard
               key={gig.id}
               gig={gig}

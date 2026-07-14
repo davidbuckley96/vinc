@@ -12,6 +12,7 @@ import {
   fetchGigById,
   fetchGigPayment,
   fetchMyCandidacy,
+  fetchMyReportedGigIds,
   report,
   withdrawCandidacy,
   fetchOpenGigs,
@@ -67,6 +68,19 @@ export function useOpenGigs(categoryIds?: string[], slot?: TimeSlotFilter, regio
       // Same region rule as the backend path (D-029).
       if (region) gigs = applyRegion(gigs, region);
       return Promise.resolve(gigs);
+    },
+  });
+}
+
+/** Ids of gigs the current user reported — hidden from the list, apply blocked (B-23). */
+export function useMyReportedGigs() {
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
+  return useQuery({
+    queryKey: ['gigs', 'reported', userId ?? 'anon'],
+    queryFn: async (): Promise<string[]> => {
+      if (!supabase || !userId) return [];
+      return fetchMyReportedGigIds(supabase, userId);
     },
   });
 }
@@ -269,6 +283,7 @@ export function useGigPayment(gigId: string) {
 
 /** Reports a gig for moderation with a chosen reason + detail (D-040/D-052). */
 export function useReportGig(gigId: string) {
+  const queryClient = useQueryClient();
   const { session } = useSession();
   const userId = session?.user.id ?? null;
   return useMutation({
@@ -284,6 +299,12 @@ export function useReportGig(gigId: string) {
         category: input.category,
         reason: input.reason,
       });
+    },
+    onSuccess: (result) => {
+      // Refresh the reported set so the gig drops out of the list (B-23).
+      if (result !== 'error') {
+        queryClient.invalidateQueries({ queryKey: ['gigs', 'reported'] });
+      }
     },
   });
 }

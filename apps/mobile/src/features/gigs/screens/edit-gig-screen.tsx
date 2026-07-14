@@ -14,7 +14,9 @@ import { GigForm, type GigFormFeedback } from '../components/gig-form';
 import { useGig, useUpdateGig } from '../hooks';
 
 const ERROR_MESSAGES: Partial<Record<UpdateGigResult, string>> = {
-  not_editable: 'Esta vaga não pode mais ser editada (alguém já se candidatou?).',
+  not_editable: 'Esta vaga não pode mais ser editada.',
+  has_candidates:
+    'Já há gente candidatada — não dá para mudar horário ou local agora. Para alterar, recuse os candidatos atuais ou exclua a vaga e crie outra.',
   forbidden: 'Esta vaga não é sua.',
   not_found: 'Esta vaga não existe mais.',
   unauthorized: 'Entre na sua conta para continuar.',

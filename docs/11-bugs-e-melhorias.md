@@ -180,18 +180,18 @@ Limitações descobertas (a resolver antes do vídeo completo):
   motivo for especificado no texto.
 - **Severidade:** Baixa.
 
-### B-23 Vaga denunciada continua na lista + candidatar + re-denunciar 🔴
+### B-23 Vaga denunciada continua na lista + candidatar + re-denunciar 🟢
 - **Descrição:** após denunciar, a vaga ainda aparece nas vagas abertas, ainda
   dá para se candidatar, e dá para denunciar de novo várias vezes.
 - **Severidade:** Média.
 
-### B-24 Candidatar e depois denunciar não remove a candidatura 🔴
+### B-24 Candidatar e depois denunciar não remove a candidatura 🟢
 - **Descrição:** dá para candidatar e denunciar; a denúncia não tira a
   candidatura. **Cuidado:** denunciar **não pode** virar uma saída fácil para o
   prestador escapar do serviço — não pode servir de desistência sem multa.
 - **Severidade:** Média (regra de negócio delicada).
 
-### B-25 Editar vaga: bloquear com candidatos/escolhido; liberar sem candidaturas 🔴
+### B-25 Editar vaga: bloquear com candidatos/escolhido; liberar sem candidaturas 🟢
 - **Descrição:** com candidatos ou trabalhador escolhido, **não** pode editar
   (horário/local etc.). Sem candidaturas (aberta e ninguém aplicou, ou todos
   recusados), **deveria** dar para editar.

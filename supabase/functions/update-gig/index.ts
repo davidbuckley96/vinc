@@ -25,6 +25,7 @@ type ResultCode =
   | "not_found"
   | "forbidden"
   | "not_editable"
+  | "has_candidates"
   | "invalid_draft"
   | "state_changed"
   | "invalid_request";
@@ -76,6 +77,17 @@ Deno.serve(async (request) => {
   if (!gig) return respond("not_found", 404);
   if (gig.poster_id !== userId) return respond("forbidden", 403);
   if (!posterCanEdit(gig.status as GigStatus)) return respond("not_editable", 409);
+
+  // B-25: once anyone has applied (or was chosen), the terms are locked — the
+  // poster can't move the time/place under the candidates' feet. Editing is
+  // only allowed on an open gig with NO active candidacies (none applied yet,
+  // or every applicant was refused).
+  const { count: activeCandidates } = await admin
+    .from("gig_candidacies")
+    .select("id", { count: "exact", head: true })
+    .eq("gig_id", gigId)
+    .in("status", ["pending", "chosen"]);
+  if ((activeCandidates ?? 0) > 0) return respond("has_candidates", 409);
 
   // The price is not editable: validate the draft against the price that
   // was paid at creation, ignoring whatever the client sent.

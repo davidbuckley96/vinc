@@ -26,6 +26,7 @@ import {
   useGig,
   useMyCandidacy,
   useMyPriority,
+  useMyReportedGigs,
   useReportGig,
   useWithdrawCandidacy,
 } from '../hooks';
@@ -81,18 +82,28 @@ export function GigDetailScreen() {
   const withdraw = useWithdrawCandidacy(id);
   const [withdrawArmed, setWithdrawArmed] = useState(false);
   const report = useReportGig(id);
+  const reportedGigs = useMyReportedGigs();
   const [reportOpen, setReportOpen] = useState(false);
-  const [reported, setReported] = useState(false);
+  const [reportedLocal, setReportedLocal] = useState(false);
+  // Persisted (B-23): a gig I reported stays "denunciada" across reopens, so
+  // I can't apply to it or report it again.
+  const reported = reportedLocal || (reportedGigs.data?.includes(id) ?? false);
 
   // Report for moderation (D-040/D-052): pick a reason + optional detail.
   const onReport = async (category: string, detail: string) => {
     const label = GIG_REPORT_REASONS.find((r) => r.key === category)?.label ?? 'Denúncia';
-    const result = await report.mutateAsync({
-      category,
-      reason: detail || label,
-    });
+    const result = await report.mutateAsync({ category, reason: detail || label });
     setReportOpen(false);
-    if (result !== 'error') setReported(true);
+    if (result !== 'error') {
+      setReportedLocal(true);
+      // B-24: denunciar retira uma candidatura AINDA PENDENTE (não quero mais a
+      // vaga). Mas nunca serve de fuga: se já fui ESCOLHIDO, a candidatura/
+      // compromisso permanece — a denúncia vai para a moderação, sem cancelar.
+      if (applied || myCandidacy.data === 'pending') {
+        await withdraw.mutateAsync().catch(() => {});
+        setApplied(false);
+      }
+    }
   };
 
   // Withdraw a pending candidacy (D-039): no penalty, re-apply allowed.

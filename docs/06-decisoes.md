@@ -1017,6 +1017,25 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-060 — Coerência da denúncia e da edição de vaga
+**Data:** 2026-07-14 · **Decidido por:** David
+
+- **Vaga denunciada some da lista e não aceita candidatura (B-23):** o usuário
+  passa a poder ler as próprias denúncias (nova policy RLS em `reports`,
+  migração 0040). A vaga que denunciei é filtrada das "vagas abertas", o botão
+  de candidatar fica bloqueado e não dá para denunciar de novo — tudo persistido
+  (não é só no estado da tela).
+- **Denunciar não é fuga de responsabilidade (B-24):** ao denunciar uma vaga
+  em que eu era candidato **pendente**, minha candidatura é retirada (eu não
+  quero mais a vaga). Mas se eu já fui **escolhido**, a denúncia **não cancela**
+  o compromisso — vai para a moderação; sair sem multa continua sendo só pela
+  regra de cancelamento (D-027).
+- **Não editar vaga com candidatos (B-25):** o `update-gig` recusa
+  (`has_candidates`) alterar horário/local quando há candidaturas ativas
+  (pendentes ou escolhido). Só dá para editar uma vaga aberta **sem** ninguém
+  candidatado (ou com todos recusados). Assim ninguém muda as regras debaixo
+  dos candidatos.
+
 ## D-059 — Localização: abre na região do usuário, rejeita o mar, busca melhor
 **Data:** 2026-07-14 · **Decidido por:** David
 

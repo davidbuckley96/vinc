@@ -489,6 +489,7 @@ export type UpdateGigResult =
   | "not_found"
   | "forbidden"
   | "not_editable"
+  | "has_candidates"
   | "invalid_draft"
   | "state_changed"
   | "invalid_request"
@@ -643,6 +644,20 @@ export async function fetchGigPayment(
 
 export type ReportTarget = "gig" | "message" | "profile" | "review";
 export type ReportResult = "reported" | "already_reported" | "error";
+
+/** Ids of gigs the current user has reported (D-060) — hidden from their list. */
+export async function fetchMyReportedGigIds(
+  client: SupabaseClient,
+  userId: string,
+): Promise<string[]> {
+  const { data, error } = await client
+    .from("reports")
+    .select("target_id")
+    .eq("reporter_id", userId)
+    .eq("target_type", "gig");
+  if (error) throw new Error(error.message);
+  return (data as { target_id: string }[]).map((r) => r.target_id);
+}
 
 /** Reports any target for moderation (D-040/S1); one report per user per target. */
 export async function report(
