@@ -98,12 +98,13 @@
   do teto foram **expiradas** (saem da busca).
 - **Severidade:** Alta (era brecha de valor absurdo) — resolvido.
 
-## V-07 🔴 Alerta só aceita 1 categoria; não dá pra "todas"
+## V-07 🟢 Alerta só aceita 1 categoria; não dá pra "todas" — CORRIGIDO
 - **Descrição (David):** ao criar alerta, só dá pra escolher **uma** categoria;
   não há como escolher **várias** nem **todas as categorias**.
-- **Correção planejada:** trocar `job_alerts.category_id` (uma) por
-  `category_ids uuid[]` (**vazio = todas**); UI com multi-seleção + botão
-  "Todas as categorias"; atualizar o trigger de matching. Migração 0044.
+- **Correção:** migração 0044 trocou `category_id` por `category_ids uuid[]`
+  (**vazio = todas**); UI com multi-seleção + chip "Todas as categorias";
+  trigger de matching atualizado. Verificado e2e (alerta 'todas' casa com vaga
+  de qualquer categoria; alerta existente preservado).
 - **Severidade:** Média (feature pedida).
 
 ## V-08 🟡 Push não chega (falta FCM no Android)
