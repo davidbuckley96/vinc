@@ -284,8 +284,12 @@ Limitações descobertas (a resolver antes do vídeo completo):
     devolve `avatarUrl`; o cartão do candidato mostra a foto; nota de
     privacidade atualizada (só nome completo/contato ficam ocultos até a
     escolha). Verificado e2e (foto passa; nome completo segue oculto).
-  - **Fatia 3 — alertas de vaga:** tabela `job_alerts` + matching + tela
-    criar/gerenciar. Pendente.
+  - **Fatia 3 — alertas de vaga 🟢** (migração 0043): tabela `job_alerts`,
+    função `distance_km`, trigger `notify_job_alerts` (ao publicar a vaga, casa
+    serviço + dias + faixa de horário + região e cria a notificação `job_match`,
+    que já dispara o push D-047); telas criar/gerenciar alerta + card no perfil.
+    Verificado e2e (casa por folha e por categoria-pai; filtra faixa de horário;
+    ignora categoria/horário errados). **B-30 completo.**
 - **Severidade:** Média (feature).
 
 ---

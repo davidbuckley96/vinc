@@ -1040,7 +1040,14 @@ social). Decisões firmes:
 verificado e2e; upload da foto valida no aparelho. Fatia 2 (foto na lista de
 candidatos) implementada — `get-candidates` v17 devolve `avatarUrl`, cartão
 mostra a foto, nome completo/contato seguem ocultos até a escolha (verificado
-e2e). Fatia 3 (alertas) pendente.
+e2e). Fatia 3 (alertas de vaga) implementada — migração 0043 (`job_alerts` +
+`distance_km` + trigger `notify_job_alerts` que casa serviço/dias/faixa/região
+ao publicar a vaga e cria a notificação `job_match`, que já dispara o push
+D-047); telas criar/gerenciar alerta + card no perfil. Verificado e2e (casa por
+categoria folha e por categoria-pai; filtra por faixa de horário; ignora
+categoria/horário errados). **B-30 completo.** Obs.: o toggle "push" por alerta
+fica guardado para controle fino quando o push estiver ativo no aparelho; por
+ora todo match gera notificação no sino (e push quando houver build).
 
 **Foto na lista de candidatos (revoga a anonimização de foto da D-024):** o
 David confirmou (2026-07-14), com o trade-off de igualdade explicitado, a

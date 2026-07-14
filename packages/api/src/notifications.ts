@@ -18,7 +18,8 @@ export type NotificationType =
   | "dispute_resolved"
   | "cancelled_by_poster"
   | "cancelled_by_worker"
-  | "gig_expired";
+  | "gig_expired"
+  | "job_match";
 
 export interface AppNotification {
   id: string;

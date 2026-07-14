@@ -4,6 +4,7 @@ export * from "./blocks";
 export * from "./client";
 export * from "./disputes";
 export * from "./gigs";
+export * from "./job-alerts";
 export * from "./messages";
 export * from "./notifications";
 export * from "./payout";

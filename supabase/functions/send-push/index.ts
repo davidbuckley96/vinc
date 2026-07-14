@@ -26,6 +26,7 @@ const PUSH_COPY: Record<string, (title: string) => { title: string; body: string
   cancelled_by_poster: (t) => ({ title: "Vaga cancelada", body: `O anunciante cancelou "${t}".` }),
   cancelled_by_worker: (t) => ({ title: "Serviço cancelado", body: `O prestador cancelou "${t}".` }),
   gig_expired: (t) => ({ title: "Vaga expirada", body: `"${t}" expirou sem prestador.` }),
+  job_match: (t) => ({ title: "Nova vaga pra você 🔔", body: `"${t}" combina com seu alerta.` }),
 };
 
 Deno.serve(async (request) => {

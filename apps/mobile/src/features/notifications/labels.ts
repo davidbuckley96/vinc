@@ -54,6 +54,10 @@ export const NOTIFICATION_PRESENTATIONS: Record<NotificationType, NotificationPr
     icon: 'time',
     text: (title) => `"${title}" expirou sem prestador — o valor voltou para a sua carteira.`,
   },
+  job_match: {
+    icon: 'notifications',
+    text: (title) => `Nova vaga que combina com seu alerta: "${title}". Corra para se candidatar!`,
+  },
 };
 
 const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];

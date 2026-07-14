@@ -91,6 +91,24 @@ export function ProfileScreen() {
           ) : (
             <>
               <ProfileView userId={userId} role={role} fallbackName="Você" />
+              {status === 'signedIn' && (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Alertas de vagas"
+                  onPress={() => router.push('/alerts')}
+                  style={[styles.alertsCard, { backgroundColor: theme.primarySoft, borderColor: theme.primary }]}>
+                  <Ionicons name="notifications" size={20} color={theme.primarySoftText} />
+                  <View style={styles.alertsText}>
+                    <Text style={[styles.alertsTitle, { color: theme.primarySoftText }]}>
+                      Alertas de vagas
+                    </Text>
+                    <Text style={[styles.alertsHint, { color: theme.primarySoftMeta }]}>
+                      Avisamos quando surgir uma vaga do seu jeito.
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={theme.primarySoftMeta} />
+                </Pressable>
+              )}
               {status === 'signedIn' && <MyActivity />}
               {status === 'signedIn' && (
                 <Pressable
@@ -231,6 +249,18 @@ const styles = StyleSheet.create({
     fontSize: 14.5,
     fontWeight: '700',
   },
+  alertsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1.5,
+    borderRadius: Radius.large - 2,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+  },
+  alertsText: { flex: 1, gap: 1 },
+  alertsTitle: { fontSize: 14, fontWeight: '800' },
+  alertsHint: { fontSize: 11.5, lineHeight: 15 },
   payoutEntry: {
     flexDirection: 'row',
     alignItems: 'center',
