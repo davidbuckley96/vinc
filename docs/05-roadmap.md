@@ -148,9 +148,23 @@ revisados antes de abrir o app ao público:
 
 ## Estado atual
 
-**Última atualização:** 2026-07-13 — **Fases 1 e 2 completas; Fase 3 em
+**Última atualização:** 2026-07-14 — **Fases 1 e 2 completas; Fase 3 em
 andamento (3.1–3.5 no ar em modo sandbox, aguardando conta MP e CNPJ para
-3.6–3.7); Suporte & moderação (docs/09 S1–S4) no ar**
+3.6–3.7); Suporte & moderação (docs/09 S1–S4) no ar; rodada de bugs/melhorias
+B-01..B-30 concluída (docs/11)**
+
+- **Bugs & melhorias (docs/11, 2ª bateria de feedback do David) — 28/30 no
+  código, verificados por typecheck/lint/testes**: fluxo de vaga (taxa, valor,
+  redirecionamento, calendário fixo), localização (mapa offline, oceano/fora
+  do Brasil, virada do dia +8h, provedor de geocodificação → roadmap),
+  denúncia/moderação coerente (esconde vaga, trava edição com candidatos),
+  **busca com filtros** (24h, raio, região por nome com sugestões dinâmicas por
+  GPS, faixa de datas — D-062), **agenda** (navegar meses, dias passados só
+  leitura, candidaturas sobrepostas em colunas — D-063), perfil (novo usuário
+  nota 5 + selo, minhas vagas/candidaturas). Restam dependendo do David: **B-01**
+  (config de OAuth no painel Supabase/Google — docs/10 §10), **B-09** (gesto do
+  mapa mitigado no código, verificar no aparelho) e **B-30** (perfil rico +
+  alertas — movido para Fase 4). Vídeo de comprovação: o David grava.
 
 - **Notificações push (D-047) — plumbing no ar e verificada e2e**: tabela
   `push_tokens` (RLS), `expo-notifications` no app registrando o token do
