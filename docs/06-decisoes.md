@@ -1029,9 +1029,12 @@ Hora · Distância · Região. Implementado por partes:
   ~75 km ao redor do GPS) — **nada hard-coded**: "centro" perto de Aracaju
   devolve o centro de Aracaju; perto do Rio, o do Rio (verificado). Sem
   bias, é busca Brasil inteiro.
-- **Hora (B-06):** já cobre 24h.
-- **Faixa de datas (B-05):** pendente — calendário de início+fim (2× no mesmo
-  dia = só ele) + reorganização dos filtros em chips na tela de busca.
+- **Hora (B-06):** já cobre 24h; o seletor de hora só aparece quando a busca
+  é de um único dia (uma faixa de vários dias cobre cada dia inteiro).
+- **Faixa de datas (B-05):** chips "Qualquer dia · Hoje · Amanhã · 📅 Escolher
+  datas"; o `DateRangeCalendar` seleciona início+fim (2× no mesmo dia = só ele).
+  O `slot` vira a janela [início 00:00, fim+1 00:00], que casa com a busca por
+  sobreposição já existente no back — sem migração de banco.
 
 ## D-061 — Novo usuário começa com nota 5 + selo; "ver todas as vagas"
 **Data:** 2026-07-14 · **Decidido por:** David

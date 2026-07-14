@@ -67,11 +67,16 @@ Limitações descobertas (a resolver antes do vídeo completo):
   o back de hardware sai da aba.
 - **Severidade:** Média.
 
-### B-05 🔵 Filtros de data na busca (hoje/amanhã/calendário em faixa) 🔴
+### B-05 Filtros de data na busca (hoje/amanhã/calendário em faixa) 🟢
 - **Descrição:** a aba de busca deveria ter filtros como na criação de vaga:
   "hoje", "amanhã" e um **calendário de faixa** (dia de início + dia de fim;
   clicar 2× no mesmo dia = só aquele dia). Ver imagem de referência enviada.
-- **Nota:** precisa de mock de UI (faixa de datas) para aprovação.
+- **Fix (D-062, opção A):** chips "Qualquer dia · Hoje · Amanhã · 📅 Escolher
+  datas". O calendário (`DateRangeCalendar`) faz seleção em faixa: toca no
+  início e depois no fim; tocar 2× no mesmo dia = só ele. O filtro de hora
+  (24h, B-06) só aparece quando é um único dia — uma faixa de vários dias
+  cobre cada dia inteiro. `slot` vira a janela [início 00:00, fim+1 00:00],
+  casando com a busca por sobreposição no back.
 - **Severidade:** Média.
 
 ### B-06 Filtro de hora na busca só vai de 6h–23h 🟢
@@ -245,7 +250,7 @@ Limitações descobertas (a resolver antes do vídeo completo):
    B-13, B-14, B-15, B-02, B-19+B-18 (valor), B-20 (calendário).
 2. **Localização (crítico):** B-10, B-11 (com vídeo), B-16 (vira o dia + 8h).
 3. **Denúncia/moderação coerente:** B-22, B-23, B-24, B-25.
-4. **Busca com filtros:** B-06, B-07, B-08, B-05 (mock), B-03.
+4. **Busca com filtros:** B-06, B-07, B-08, B-05, B-03. ✅ concluído
 5. **Agenda e perfil:** B-26 (mock), B-27, B-28, B-29.
 6. **Nativos (prova no aparelho do David):** B-01, B-04, B-09.
 7. **Features maiores:** B-30.

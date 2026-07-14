@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Category } from '@vinc/api';
 
+import { DateRangeCalendar, type DateRange } from '@/components/date-range-calendar';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -25,10 +26,34 @@ import { useRegion } from '../region';
 const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 const HOURS = Array.from({ length: 24 }, (_, i) => i); // 0h–23h (B-06)
 
-function dayChipLabel(date: Date, index: number): string {
-  if (index === 0) return 'Hoje';
-  if (index === 1) return 'Amanhã';
-  return `${WEEKDAYS[date.getDay()]} ${date.getDate()}`;
+function startOfDay(d: Date): Date {
+  const c = new Date(d);
+  c.setHours(0, 0, 0, 0);
+  return c;
+}
+
+function sameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+/** "qua 22" / "seg 21 – qua 23" for the selected range chip (B-05). */
+function rangeLabel(range: DateRange): string {
+  const one = (d: Date) => `${WEEKDAYS[d.getDay()]} ${d.getDate()}`;
+  return sameDay(range.start, range.end)
+    ? one(range.start)
+    : `${one(range.start)} – ${one(range.end)}`;
+}
+
+/** Deep-link "2026-07-21" → local midnight Date (from the agenda's slot CTA). */
+function parseDayParam(value?: string): Date | null {
+  if (!value) return null;
+  const [y, m, d] = value.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  return startOfDay(new Date(y, m - 1, d));
 }
 
 /**
@@ -80,46 +105,46 @@ export function SearchScreen() {
     }, [category, browseAll]),
   );
 
-  const days = useMemo(
-    () =>
-      Array.from({ length: 14 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() + i);
-        date.setHours(0, 0, 0, 0);
-        return date;
-      }),
-    [],
+  // Date-range filter (B-05): a single day or a start→end span. Coming from a
+  // free agenda slot, params.day preselects that day (and its hour).
+  const initialDay = useMemo(() => parseDayParam(params.day), [params.day]);
+  const [range, setRange] = useState<DateRange | null>(
+    initialDay ? { start: initialDay, end: initialDay } : null,
   );
-
-  // Coming from a free agenda slot: preselect that day/hour.
-  const initialDay = useMemo(() => {
-    if (!params.day) return null;
-    const index = days.findIndex(
-      (day) =>
-        `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}` ===
-        params.day,
-    );
-    return index >= 0 ? index : null;
-  }, [params.day, days]);
-
-  const [dayIndex, setDayIndex] = useState<number | null>(initialDay);
   const [hour, setHour] = useState<number | null>(
-    initialDay !== null && params.hour ? Number(params.hour) : null,
+    initialDay && params.hour ? Number(params.hour) : null,
   );
+  const [calOpen, setCalOpen] = useState(false);
+
+  const singleDay = range !== null && sameDay(range.start, range.end);
+
+  const today = startOfDay(new Date());
+  const tomorrow = startOfDay(new Date(today.getTime() + 86_400_000));
+  const isToday = singleDay && sameDay(range!.start, today);
+  const isTomorrow = singleDay && sameDay(range!.start, tomorrow);
+  // The calendar chip is "active" for any custom pick (a span, or a specific
+  // day that isn't the Hoje/Amanhã shortcuts).
+  const customRange = range !== null && !isToday && !isTomorrow;
+
+  const setDay = (day: Date) => {
+    setRange({ start: day, end: day });
+    setHour(null);
+  };
 
   const slot = useMemo(() => {
-    if (dayIndex === null) return undefined;
-    const day = days[dayIndex]!;
-    const startsAt = new Date(day);
-    const endsAt = new Date(day);
-    if (hour !== null) {
+    if (!range) return undefined;
+    const startsAt = startOfDay(range.start);
+    const endsAt = startOfDay(range.end);
+    // Hour only narrows a single day (a 1-hour window); a multi-day span
+    // covers each day fully, so it ignores the hour.
+    if (sameDay(range.start, range.end) && hour !== null) {
       startsAt.setHours(hour, 0, 0, 0);
       endsAt.setHours(hour + 1, 0, 0, 0);
     } else {
-      endsAt.setDate(endsAt.getDate() + 1);
+      endsAt.setDate(endsAt.getDate() + 1); // include the whole end day
     }
     return { startsAt: startsAt.toISOString(), endsAt: endsAt.toISOString() };
-  }, [dayIndex, hour, days]);
+  }, [range, hour]);
 
   // Region-scoped search (D-029): persisted; nearest gigs first.
   const { region, setRegion, loaded: regionLoaded } = useRegion();
@@ -212,48 +237,91 @@ export function SearchScreen() {
               <Pressable
                 accessibilityRole="button"
                 onPress={() => {
-                  setDayIndex(null);
+                  setRange(null);
                   setHour(null);
                 }}
                 style={[
                   styles.chip,
                   {
-                    backgroundColor: dayIndex === null ? theme.primary : theme.background,
-                    borderColor: dayIndex === null ? theme.primary : theme.line,
+                    backgroundColor: range === null ? theme.primary : theme.background,
+                    borderColor: range === null ? theme.primary : theme.line,
                   },
                 ]}>
                 <Text
                   style={[
                     styles.chipLabel,
-                    { color: dayIndex === null ? theme.onPrimary : theme.textSecondary },
+                    { color: range === null ? theme.onPrimary : theme.textSecondary },
                   ]}>
                   Qualquer dia
                 </Text>
               </Pressable>
-              {days.map((day, index) => (
-                <Pressable
-                  key={day.toISOString()}
-                  accessibilityRole="button"
-                  onPress={() => setDayIndex(index)}
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setDay(today)}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: isToday ? theme.primary : theme.background,
+                    borderColor: isToday ? theme.primary : theme.line,
+                  },
+                ]}>
+                <Text
                   style={[
-                    styles.chip,
-                    {
-                      backgroundColor: dayIndex === index ? theme.primary : theme.background,
-                      borderColor: dayIndex === index ? theme.primary : theme.line,
-                    },
+                    styles.chipLabel,
+                    { color: isToday ? theme.onPrimary : theme.textSecondary },
                   ]}>
-                  <Text
-                    style={[
-                      styles.chipLabel,
-                      { color: dayIndex === index ? theme.onPrimary : theme.textSecondary },
-                    ]}>
-                    {dayChipLabel(day, index)}
-                  </Text>
-                </Pressable>
-              ))}
+                  Hoje
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setDay(tomorrow)}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: isTomorrow ? theme.primary : theme.background,
+                    borderColor: isTomorrow ? theme.primary : theme.line,
+                  },
+                ]}>
+                <Text
+                  style={[
+                    styles.chipLabel,
+                    { color: isTomorrow ? theme.onPrimary : theme.textSecondary },
+                  ]}>
+                  Amanhã
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Escolher datas no calendário"
+                onPress={() => setCalOpen(true)}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: customRange ? theme.primary : theme.background,
+                    borderColor: customRange ? theme.primary : theme.line,
+                  },
+                ]}>
+                <Text
+                  style={[
+                    styles.chipLabel,
+                    { color: customRange ? theme.onPrimary : theme.textSecondary },
+                  ]}>
+                  {customRange ? `📅 ${rangeLabel(range!)}` : '📅 Escolher datas'}
+                </Text>
+              </Pressable>
             </View>
           </ScrollView>
-          {dayIndex !== null && (
+          <DateRangeCalendar
+            visible={calOpen}
+            range={range}
+            onConfirm={(picked) => {
+              setRange(picked);
+              setHour(null);
+            }}
+            onClose={() => setCalOpen(false)}
+          />
+          {singleDay && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.chipRow}>
                 <Pressable
@@ -354,7 +422,7 @@ export function SearchScreen() {
                 <Text style={[styles.feedback, { color: theme.textSecondary }]}>
                   Nenhuma vaga aberta até {region.radiusKm} km de {region.label}
                   {category ? ' nesta categoria' : ''}
-                  {dayIndex !== null ? ' nesse horário' : ''}.
+                  {range !== null ? ' nesse período' : ''}.
                 </Text>
                 <Pressable accessibilityRole="button" onPress={() => setRegionOpen(true)}>
                   <Text style={[styles.emptyRegionLink, { color: theme.primary }]}>
@@ -371,7 +439,7 @@ export function SearchScreen() {
               <View style={styles.emptyRegion}>
                 <Text style={[styles.feedback, { color: theme.textSecondary }]}>
                   Nenhuma vaga aberta{category ? ' nesta categoria' : ''}
-                  {dayIndex !== null ? ' nesse horário' : ''}. Volte mais tarde!
+                  {range !== null ? ' nesse período' : ''}. Volte mais tarde!
                 </Text>
                 <Pressable accessibilityRole="button" onPress={() => router.push('/post')}>
                   <Text style={[styles.emptyRegionLink, { color: theme.primary }]}>
