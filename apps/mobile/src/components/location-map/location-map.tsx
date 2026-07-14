@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
@@ -20,7 +20,13 @@ export function LocationMap({
   style,
 }: LocationMapProps) {
   const webviewRef = useRef<WebView>(null);
-  const lastSent = useRef({ lat, lng });
+  // Last center we PUSHED into the map from props. Kept separate from wherever
+  // the user has panned to — otherwise a parent re-render would compare the
+  // prop against the user's panned center and "recenter" back, snapping the
+  // map on every drag (V-01: only the gig view had this, since it has no
+  // onCenterChange to keep the prop in sync). Only a real prop change
+  // (a search pick) recenters now.
+  const lastPushed = useRef({ lat, lng });
 
   const html = useMemo(
     () => `<!DOCTYPE html><html><head>
@@ -36,10 +42,17 @@ export function LocationMap({
     zoom: ${zoom},
     interactive: ${interactive},
     attributionControl: { compact: true },
+    ${
+      // The approximate-region view is meant to explore a neighbourhood, not
+      // the whole country: clamp the zoom so a stray pinch can't zoom out to a
+      // blank country-wide view (V-01). The exact-location view is unclamped.
+      circleMeters ? 'minZoom: 11, maxZoom: 18,' : ''
+    }
   });
   ${
     circleMeters
       ? `map.on('load', () => {
+    if (map.getSource('area')) return; // draw the circle once
     // Polygon approximating a ${circleMeters} m circle anchored at the point,
     // so it stays over the place while the map is panned/zoomed.
     const cx = ${lng}, cy = ${lat}, r = ${circleMeters};
@@ -75,11 +88,19 @@ export function LocationMap({
     [],
   );
 
-  // External recenter (search pick): push into the WebView.
-  if (Math.abs(lastSent.current.lat - lat) > 1e-7 || Math.abs(lastSent.current.lng - lng) > 1e-7) {
-    lastSent.current = { lat, lng };
+  // Recenter ONLY when the incoming coordinates actually change (e.g. a search
+  // pick), inside an effect keyed on lat/lng — never as a render-time side
+  // effect. A bare re-render must not move the map, or the user's pan is undone.
+  useEffect(() => {
+    if (
+      Math.abs(lastPushed.current.lat - lat) < 1e-7 &&
+      Math.abs(lastPushed.current.lng - lng) < 1e-7
+    ) {
+      return;
+    }
+    lastPushed.current = { lat, lng };
     webviewRef.current?.postMessage(JSON.stringify({ jumpTo: { lat, lng, zoom } }));
-  }
+  }, [lat, lng, zoom]);
 
   return (
     <View style={style}>
@@ -88,14 +109,14 @@ export function LocationMap({
         originWhitelist={['*']}
         source={{ html }}
         // Android: let the map own its pan/pinch instead of the parent
-        // ScrollView stealing the gesture (B-09 — map inside the gig screen
-        // only caught a fraction of each drag). No-op on iOS.
+        // container stealing the gesture. No-op on iOS.
         nestedScrollEnabled
         overScrollMode="never"
         onMessage={(event) => {
           try {
             const data = JSON.parse(event.nativeEvent.data) as { lat: number; lng: number };
-            lastSent.current = { lat: data.lat, lng: data.lng };
+            // Do NOT touch lastPushed here — that's the user's pan, not a
+            // prop-driven recenter (see the ref comment above).
             onCenterChange?.(data.lat, data.lng);
           } catch {
             // ignore malformed messages

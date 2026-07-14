@@ -16,7 +16,22 @@
 
 ---
 
-## V-01 🔴 Mapa da vaga aberta trava, apaga e perde o zoom (crítico)
+## V-01 🟢 Mapa da vaga aberta trava, apaga e perde o zoom — CORRIGIDO
+> **Causa-raiz achada** (confirmada pela narração: "cada pequeno movimento é um
+> arrastar o mapa inteiro", ~50 arrastes). Os dois mapas usam o mesmo
+> `LocationMap` em modal cheio, mas o `LocationMap` tinha um **efeito de
+> recentralização em tempo de render**: a cada re-render da tela ele comparava a
+> posição atual com a prop e dava `jumpTo` de volta. Na **criação** existe
+> `onCenterChange` (a prop acompanha o arraste), então não recentraliza; na
+> **visualização** não há `onCenterChange`, então **cada re-render da tela da
+> vaga jogava o mapa de volta pro centro**, desfazendo o arraste.
+> **Correção:** recentralizar só quando `lat/lng` **mudam de verdade** (busca),
+> dentro de `useEffect` (nunca no corpo do render); o `onMessage` (arraste do
+> usuário) não mexe mais na referência. Também: **trava de zoom** (min 11 / max
+> 18) no mapa aproximado — impede o "zoom-out pro Brasil inteiro" que deixava a
+> tela em branco. `location-map.tsx`.
+
+### (histórico) descrição original
 - **Descrição:** no mapa **"Região do serviço"** (dentro de uma vaga já
   anunciada), ao arrastar/pinçar: o mapa fica **totalmente em branco** por
   ~15–20s, o círculo some, e volta **super afastado** (mostrando Brasília,
@@ -34,12 +49,12 @@
   nativa nova + build. Recomendo começar por (a).
 - **Severidade:** Alta (é a tela que o candidato usa pra situar a vaga).
 
-## V-02 🔴 Dois círculos no mapa aproximado
-- **Descrição:** o mapa da região aproximada desenha **dois círculos roxos**
-  sobrepostos, em vez de um só (~600 m).
-- **Causa provável:** o polígono do círculo é adicionado mais de uma vez (re-
-  render/`map.on('load')` disparando duas vezes, ou marker + área).
-- **Severidade:** Baixa (visual), mas passa impressão de bug.
+## V-02 🟢 Dois círculos no mapa aproximado — CORRIGIDO
+- **Descrição:** o mapa da região desenhava **dois círculos roxos** sobrepostos.
+- **Causa:** o `map.on('load')` podia redesenhar o círculo (recarga de estilo).
+- **Correção:** guarda `if (map.getSource('area')) return;` → desenha uma vez só.
+  (Se ainda aparecer, era efeito colateral do snap-back do V-01, já corrigido.)
+- **Severidade:** Baixa.
 
 ## V-03 🔴 Vaga própria mostra "Me candidatar" e "Denunciar"
 - **Descrição:** abrindo a **sua própria vaga** pela busca, o app mostra
@@ -84,6 +99,26 @@
   atuais → agora recusa com `price_too_high` (verificado e2e). As vagas acima
   do teto foram **expiradas** (saem da busca).
 - **Severidade:** Alta (era brecha de valor absurdo) — resolvido.
+
+## V-07 🔴 Alerta só aceita 1 categoria; não dá pra "todas"
+- **Descrição (David):** ao criar alerta, só dá pra escolher **uma** categoria;
+  não há como escolher **várias** nem **todas as categorias**.
+- **Correção planejada:** trocar `job_alerts.category_id` (uma) por
+  `category_ids uuid[]` (**vazio = todas**); UI com multi-seleção + botão
+  "Todas as categorias"; atualizar o trigger de matching. Migração 0044.
+- **Severidade:** Média (feature pedida).
+
+## V-08 🟡 Push não chega (falta FCM no Android)
+- **Descrição:** ao criar uma vaga que casa com o alerta do David, a
+  **notificação in-app (sino) é criada** (verificado), mas **nenhum push token**
+  do aparelho dele está registrado → o push do sistema não sai.
+- **Causa provável:** push no **Android** via Expo exige **FCM (Firebase)**
+  configurado nas credenciais do EAS. Sem isso, `getExpoPushTokenAsync` falha e
+  o token não é salvo. (Ou a permissão de notificação não foi concedida.)
+- **A fazer (config do David):** (1) confirmar que permitiu notificações; (2)
+  configurar **FCM** no projeto EAS (`eas credentials` → Android → FCM V1, com
+  um projeto Firebase). Detalhar em docs/10.
+- **Severidade:** Média (o sino já funciona; só o push do SO depende disso).
 
 ---
 
