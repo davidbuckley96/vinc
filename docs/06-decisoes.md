@@ -1017,6 +1017,20 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-063 — Agenda: candidaturas sobrepostas em colunas (Opção C)
+**Data:** 2026-07-14 · **Decidido por:** David (mock rodada 20, opção C)
+
+Quando várias candidaturas/compromissos caem no mesmo horário (B-26), a agenda
+mostra **todas**, em **colunas lado a lado** ao estilo Google Agenda — cada
+compromisso vira uma coluna e a altura reflete a duração. Antes, a agenda
+mostrava só o primeiro (`buildDaySegments` usava `.find()` por hora).
+Implementação: os compromissos que se sobrepõem são agrupados num *cluster* e
+distribuídos em colunas (coloração de intervalos — cada um na primeira coluna
+livre); um compromisso sem sobreposição continua ocupando a largura toda.
+Candidatura = cartão tracejado; vaga/trabalho confirmado = cartão roxo.
+Opções A (encaixado) e B (cartão agrupado) descartadas — o David preferiu ver
+a duração de cada um lado a lado.
+
 ## D-062 — Busca com filtros (Opção A) + região dinâmica por GPS
 **Data:** 2026-07-14 · **Decidido por:** David (mock rodada 19, opção A)
 

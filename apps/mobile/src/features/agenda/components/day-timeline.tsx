@@ -13,7 +13,9 @@ import type { AgendaCommitment } from '../mock';
 // Full day (D-053): serviços de madrugada existem, então a agenda mostra 0h–23h.
 const FIRST_HOUR = 0;
 const LAST_HOUR = 23;
-const ROW_HEIGHT = 52;
+// Pixels per hour inside a cluster block — the column heights encode each
+// commitment's duration (Option C, B-26).
+const HOUR_PX = 48;
 
 interface Props {
   commitments: AgendaCommitment[];
@@ -24,33 +26,80 @@ interface Props {
   readOnly?: boolean;
 }
 
+/** A commitment placed on the hour grid (start inclusive, end exclusive). */
+interface Placed {
+  commitment: AgendaCommitment;
+  startHour: number;
+  endHour: number;
+}
+
 /**
- * Day view: one row per hour. Busy hours show the commitment card; free hours
- * expand on tap into the two core actions (buscar serviço / anunciar vaga).
+ * A group of commitments that overlap in time (B-26), laid out as side-by-side
+ * columns (Google-Agenda style, David's choice — rodada 20 opção C). A single
+ * non-overlapping commitment is just a one-column cluster.
  */
+interface Cluster {
+  startHour: number;
+  endHour: number;
+  columns: Placed[][];
+}
+
 type DaySegment =
-  | { key: string; kind: 'busy'; hour: number; span: number; commitment: AgendaCommitment }
+  | { key: string; kind: 'cluster'; hour: number; span: number; cluster: Cluster }
   | { key: string; kind: 'free'; hour: number };
 
 /**
- * Pure: turns commitments into the day's rows. A multi-hour commitment is a
- * SINGLE segment covering its whole span (D-054), instead of a start card
- * plus faded "covered" rows. Kept out of render so the imperative walk
+ * Pure: turns commitments into the day's rows. Overlapping commitments are
+ * grouped into a cluster and split into columns so ALL of them show (B-26),
+ * instead of only the first one. Kept out of render so the imperative walk
  * doesn't trip the React Compiler's immutability rule.
  */
 function buildDaySegments(commitments: AgendaCommitment[]): DaySegment[] {
-  const startingAt = (hour: number) => commitments.find((c) => c.startsAt.getHours() === hour);
-  const spanHours = (c: AgendaCommitment) =>
-    Math.max(1, Math.round((c.endsAt.getTime() - c.startsAt.getTime()) / 3_600_000));
+  const placed: Placed[] = commitments
+    .map((commitment) => {
+      const startHour = commitment.startsAt.getHours();
+      const span = Math.max(
+        1,
+        Math.round((commitment.endsAt.getTime() - commitment.startsAt.getTime()) / 3_600_000),
+      );
+      // Clamp to the day so a cross-midnight gig just runs to 24h in this view.
+      return { commitment, startHour, endHour: Math.min(LAST_HOUR + 1, startHour + span) };
+    })
+    .sort((a, b) => a.startHour - b.startHour || a.endHour - b.endHour);
 
+  // Group into clusters of transitively-overlapping commitments.
+  const clusters: Cluster[] = [];
+  for (const item of placed) {
+    const current = clusters[clusters.length - 1];
+    if (current && item.startHour < current.endHour) {
+      current.endHour = Math.max(current.endHour, item.endHour);
+      // First column whose last commitment ends by this one's start; else a new one.
+      const column = current.columns.find(
+        (col) => col[col.length - 1]!.endHour <= item.startHour,
+      );
+      if (column) column.push(item);
+      else current.columns.push([item]);
+    } else {
+      clusters.push({ startHour: item.startHour, endHour: item.endHour, columns: [[item]] });
+    }
+  }
+
+  // Walk the day, emitting free hours and cluster blocks in order.
   const segments: DaySegment[] = [];
   let hour = FIRST_HOUR;
+  let next = 0;
   while (hour <= LAST_HOUR) {
-    const commitment = startingAt(hour);
-    if (commitment) {
-      const span = spanHours(commitment);
-      segments.push({ key: `c-${hour}`, kind: 'busy', hour, span, commitment });
-      hour += span;
+    const cluster = clusters[next];
+    if (cluster && cluster.startHour === hour) {
+      segments.push({
+        key: `cl-${hour}`,
+        kind: 'cluster',
+        hour,
+        span: cluster.endHour - cluster.startHour,
+        cluster,
+      });
+      hour = cluster.endHour;
+      next += 1;
     } else {
       segments.push({ key: `h-${hour}`, kind: 'free', hour });
       hour += 1;
@@ -73,54 +122,78 @@ export function DayTimeline({
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
       {segments.map((seg) => {
-        if (seg.kind === 'busy') {
-          const { commitment, span, hour } = seg;
-          const isCandidacy = commitment.kind === 'candidacy';
+        if (seg.kind === 'cluster') {
+          const { cluster, span, hour } = seg;
+          const blockHeight = span * HOUR_PX;
+          // Single column keeps the roomy full-width look; multiple columns
+          // (overlapping candidacies) share the width side by side (B-26).
+          const single = cluster.columns.length === 1;
           return (
             <View key={seg.key} style={styles.row}>
               <Text style={[styles.hour, { color: theme.textSecondary }]}>
                 {String(hour).padStart(2, '0')}:00
               </Text>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => onOpenCommitment(commitment)}
-                style={[
-                  styles.busy,
-                  { minHeight: ROW_HEIGHT + (span - 1) * 26 },
-                  isCandidacy
-                    ? {
-                        backgroundColor: theme.background,
-                        borderLeftColor: theme.dashedBorder,
-                        borderWidth: 1.5,
-                        borderColor: theme.dashedBorder,
-                        borderStyle: 'dashed',
-                      }
-                    : { backgroundColor: theme.primarySoft, borderLeftColor: theme.primary },
-                ]}>
-                <Text
-                  style={[
-                    styles.busyTitle,
-                    { color: isCandidacy ? theme.textSecondary : theme.primarySoftText },
-                  ]}>
-                  {commitment.title}
-                </Text>
-                <Text
-                  style={[
-                    styles.busyMeta,
-                    { color: isCandidacy ? theme.textSecondary : theme.primarySoftMeta },
-                  ]}>
-                  {formatHour(commitment.startsAt)}–{formatHour(commitment.endsAt)} ·{' '}
-                  {formatBRL(commitment.priceCents)}
-                  {commitment.counterpartRating
-                    ? ` · ★ ${commitment.counterpartRating.toLocaleString('pt-BR')}`
-                    : ''}
-                  {isCandidacy
-                    ? ' · candidatura enviada'
-                    : commitment.role === 'poster'
-                      ? ' · minha vaga'
-                      : ''}
-                </Text>
-              </Pressable>
+              <View style={[styles.clusterLane, { height: blockHeight }]}>
+                {cluster.columns.map((column, colIndex) => (
+                  <View key={colIndex} style={styles.clusterColumn}>
+                    {column.map((placed) => {
+                      const { commitment } = placed;
+                      const isCandidacy = commitment.kind === 'candidacy';
+                      const top = (placed.startHour - cluster.startHour) * HOUR_PX;
+                      const height = (placed.endHour - placed.startHour) * HOUR_PX - 6;
+                      return (
+                        <Pressable
+                          key={commitment.id}
+                          accessibilityRole="button"
+                          onPress={() => onOpenCommitment(commitment)}
+                          style={[
+                            styles.busy,
+                            { position: 'absolute', top, height, left: 0, right: 0 },
+                            isCandidacy
+                              ? {
+                                  backgroundColor: theme.background,
+                                  borderLeftColor: theme.dashedBorder,
+                                  borderWidth: 1.5,
+                                  borderColor: theme.dashedBorder,
+                                  borderStyle: 'dashed',
+                                }
+                              : { backgroundColor: theme.primarySoft, borderLeftColor: theme.primary },
+                          ]}>
+                          <Text
+                            numberOfLines={single ? 1 : 2}
+                            style={[
+                              styles.busyTitle,
+                              { color: isCandidacy ? theme.textSecondary : theme.primarySoftText },
+                            ]}>
+                            {commitment.title}
+                          </Text>
+                          <Text
+                            numberOfLines={single ? 1 : 2}
+                            style={[
+                              styles.busyMeta,
+                              { color: isCandidacy ? theme.textSecondary : theme.primarySoftMeta },
+                            ]}>
+                            {formatHour(commitment.startsAt)}–{formatHour(commitment.endsAt)}
+                            {single
+                              ? ` · ${formatBRL(commitment.priceCents)}${
+                                  commitment.counterpartRating
+                                    ? ` · ★ ${commitment.counterpartRating.toLocaleString('pt-BR')}`
+                                    : ''
+                                }${
+                                  isCandidacy
+                                    ? ' · candidatura enviada'
+                                    : commitment.role === 'poster'
+                                      ? ' · minha vaga'
+                                      : ''
+                                }`
+                              : ` · ${formatBRL(commitment.priceCents)}`}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                ))}
+              </View>
             </View>
           );
         }
@@ -205,12 +278,21 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     paddingTop: 4,
   },
-  busy: {
+  clusterLane: {
     flex: 1,
+    flexDirection: 'row',
+    gap: Spacing.one + 1,
+    marginBottom: Spacing.two,
+  },
+  clusterColumn: {
+    flex: 1,
+    position: 'relative',
+  },
+  busy: {
     borderRadius: Radius.medium,
     borderLeftWidth: 3,
     padding: Spacing.two + 3,
-    marginBottom: Spacing.two,
+    overflow: 'hidden',
   },
   busyTitle: {
     fontSize: 13.5,
