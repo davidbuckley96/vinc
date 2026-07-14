@@ -977,3 +977,21 @@ em vez do "toque duas vezes". Componente único `ReportSheet`, gravando em
 `reports.category` (motivo) e `reports.reason` (texto). A tabela genérica
 `reports` ganhou o alvo `review` (migração 0039). Denunciar uma avaliação
 injusta/ofensiva vira um item de moderação como os demais.
+
+## D-053 — Seletor de dia/hora na criação de vaga (Hoje/Amanhã/calendário + 24h)
+**Data:** 2026-07-14 · **Decidido por:** David
+
+Substitui os chips de dia ("qui 16, sex 17…") e o slider fixo de 6h–23h por:
+- **Dia:** botões **Hoje** e **Amanhã** + **📅 Outro dia** (abre um calendário
+  mensal puro em JS, sem dependência nativa; dias passados desabilitados).
+- **Hora:** dois campos ("Começa"/"Termina") que abrem um seletor de horas
+  cobrindo **as 24h** (madrugada inclusa); o término pode ir até 24h (=00:00
+  do dia seguinte), permitindo serviços que viram a noite.
+
+Correções embutidas (bugs do 2º teste do David): **(a)** horas que já
+passaram no dia de hoje não aparecem; **(b)** o dia é guardado como uma
+**data absoluta** (não um índice numa lista congelada) e o "agora" é lido a
+cada render, então a **virada de meia-noite** não cria mais vaga no dia que
+passou; **(c)** suporte a qualquer hora do dia. Componentes reutilizáveis
+`MonthCalendar` e `HourPicker`. A validação de `starts_in_past` (core +
+backend) segue como rede de segurança final.

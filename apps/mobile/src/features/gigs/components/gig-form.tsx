@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -19,7 +19,9 @@ import {
   type GigDraftError,
 } from '@vinc/core';
 
+import { HourPicker } from '@/components/hour-picker';
 import { LocationPicker, type PickedLocation } from '@/components/location-map';
+import { MonthCalendar } from '@/components/month-calendar';
 import { Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
 import { useTheme } from '@/hooks/use-theme';
@@ -41,15 +43,36 @@ const ERROR_MESSAGES: Record<GigDraftError, string> = {
   location_outside_brazil: 'O local precisa ser dentro do Brasil.',
 };
 
-const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
-const HOURS = Array.from({ length: 18 }, (_, i) => 6 + i); // 6h–23h
+const WEEKDAYS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+const MONTHS_SHORT = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+// Every hour of the day is allowed (D-053): serviços de madrugada existem.
+const START_HOURS = Array.from({ length: 24 }, (_, i) => i); // 0h–23h
+const fmtHour = (h: number) => `${String(h % 24).padStart(2, '0')}:00`;
 
-function dayLabel(date: Date, index: number): string {
-  if (index === 0) return 'Hoje';
-  if (index === 1) return 'Amanhã';
-  return `${WEEKDAYS[date.getDay()]} ${date.getDate()}`;
+function startOfDay(d: Date): Date {
+  const c = new Date(d);
+  c.setHours(0, 0, 0, 0);
+  return c;
 }
 
+function sameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+/** "Hoje", "Amanhã" or "seg, 21 jul" for the day chip/button. */
+function dayLabel(date: Date, now: Date): string {
+  const today = startOfDay(now);
+  const tomorrow = startOfDay(new Date(today.getTime() + 86400000));
+  if (sameDay(date, today)) return 'Hoje';
+  if (sameDay(date, tomorrow)) return 'Amanhã';
+  return `${WEEKDAYS[date.getDay()].slice(0, 3)}, ${date.getDate()} ${MONTHS_SHORT[date.getMonth()]}`;
+}
+
+/** hour may be 24 → next-day 00:00 (a gig ending at/after midnight). */
 function buildIso(day: Date, hour: number): string {
   const date = new Date(day);
   date.setHours(hour, 0, 0, 0);
@@ -92,27 +115,12 @@ export function GigForm({
   // The wallet balance shows up at PAYMENT time (D-021): a line in the fee
   // box tells the poster their balance covers (part of) this gig.
 
-  const days = useMemo(
-    () =>
-      Array.from({ length: 14 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() + i);
-        return date;
-      }),
-    [],
+  // Absolute day (midnight) instead of an index into a frozen list — safe
+  // across midnight (D-053): a stale "hoje" can't create a gig in the past.
+  const initialDate = useMemo(
+    () => startOfDay(initial ? new Date(initial.startsAt) : new Date(new Date().getTime() + 86400000)),
+    [initial],
   );
-
-  const initialDayIndex = useMemo(() => {
-    if (!initial) return 1;
-    const start = new Date(initial.startsAt);
-    const index = days.findIndex(
-      (day) =>
-        day.getFullYear() === start.getFullYear() &&
-        day.getMonth() === start.getMonth() &&
-        day.getDate() === start.getDate(),
-    );
-    return index >= 0 ? index : 1;
-  }, [initial, days]);
 
   const [categoryId, setCategoryId] = useState(initial?.categoryId ?? '');
   // Category tree (D-041): the top row picks the parent; a second row of
@@ -124,7 +132,10 @@ export function GigForm({
   const subcategories = allCategories.filter((item) => item.parentId === selectedParentId);
   const [title, setTitle] = useState(initial?.title ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
-  const [dayIndex, setDayIndex] = useState(initialDayIndex);
+  const [selectedDate, setSelectedDate] = useState<Date>(initialDate);
+  const [dayModalOpen, setDayModalOpen] = useState(false);
+  const [startModalOpen, setStartModalOpen] = useState(false);
+  const [endModalOpen, setEndModalOpen] = useState(false);
   const [startHour, setStartHour] = useState(
     initial ? new Date(initial.startsAt).getHours() : 14,
   );
@@ -138,30 +149,35 @@ export function GigForm({
   const [pickerOpen, setPickerOpen] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
-  const selectedDay = days[dayIndex] ?? days[0]!;
+  const selectedDay = selectedDate;
 
-  // No past hours (D-007, bug fix): on today, only hours strictly after the
-  // current one can start a gig; other days offer the full range.
-  const nowHour = new Date().getHours();
-  const isToday = (d: Date) =>
-    d.getFullYear() === new Date().getFullYear() &&
-    d.getMonth() === new Date().getMonth() &&
-    d.getDate() === new Date().getDate();
-  const startHoursFor = (d: Date) => HOURS.filter((h) => !isToday(d) || h > nowHour);
+  // No past hours (D-007/D-053): on today, a gig can only START in an hour
+  // strictly after the current one; other days offer the full 24h. `now` is
+  // read fresh on each render, so it stays correct even across midnight.
+  const now = new Date();
+  const nowHour = now.getHours();
+  const startHoursFor = (d: Date) =>
+    START_HOURS.filter((h) => !sameDay(d, now) || h > nowHour);
   const availableStartHours = startHoursFor(selectedDay);
+  // End can run up to 24 (= next-day midnight), so late-night gigs work.
+  const availableEndHours = Array.from({ length: 24 - startHour }, (_, i) => startHour + 1 + i);
+  const todayHasSlots = startHoursFor(startOfDay(now)).length > 0;
 
-  // Keep the selected start/end valid when the day (or "today") changes.
-  useEffect(() => {
-    if (availableStartHours.length === 0) return;
-    if (!availableStartHours.includes(startHour)) {
-      const first = availableStartHours[0]!;
+  // Change the day AND re-clamp start/end in the same handler (no effect):
+  // on a day whose remaining hours differ (e.g. switching to today late in
+  // the evening), move the start to the first still-valid hour.
+  const changeDay = (d: Date) => {
+    setSelectedDate(d);
+    const avail = startHoursFor(d);
+    if (avail.length === 0) return;
+    if (!avail.includes(startHour)) {
+      const first = avail[0]!;
       setStartHour(first);
-      setEndHour(Math.min(first + 1, 23));
+      setEndHour(Math.min(first + 1, 24));
     } else if (endHour <= startHour) {
-      setEndHour(Math.min(startHour + 1, 23));
+      setEndHour(Math.min(startHour + 1, 24));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dayIndex]);
+  };
 
   const pricing = computeGigPricing(priceCents);
   const hasPin = location !== null && !(location.lat === 0 && location.lng === 0);
@@ -292,56 +308,83 @@ export function GigForm({
       />
 
       {label('QUE DIA?')}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.chipRow}>
-          {days.map((day, index) => {
-            const dayFull = startHoursFor(day).length === 0; // today, too late
-            return (
-              <Pressable
-                key={day.toISOString()}
-                accessibilityRole="button"
-                disabled={dayFull}
-                onPress={() => setDayIndex(index)}
-                style={[chip(dayIndex === index), dayFull && { opacity: 0.4 }]}>
-                <Text style={chipLabel(dayIndex === index)}>{dayLabel(day, index)}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </ScrollView>
-
-      {label('DAS')}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.chipRow}>
-          {availableStartHours.map((hour) => (
+      {(() => {
+        const today = startOfDay(now);
+        const tomorrow = startOfDay(new Date(today.getTime() + 86400000));
+        const isCustom = !sameDay(selectedDay, today) && !sameDay(selectedDay, tomorrow);
+        return (
+          <View style={styles.dayRow}>
             <Pressable
-              key={hour}
               accessibilityRole="button"
-              onPress={() => {
-                setStartHour(hour);
-                if (hour >= endHour) setEndHour(Math.min(hour + 1, 23));
-              }}
-              style={chip(startHour === hour)}>
-              <Text style={chipLabel(startHour === hour)}>{hour}h</Text>
+              disabled={!todayHasSlots}
+              onPress={() => changeDay(startOfDay(new Date()))}
+              style={[chip(sameDay(selectedDay, today)), !todayHasSlots && { opacity: 0.4 }]}>
+              <Text style={chipLabel(sameDay(selectedDay, today))}>Hoje</Text>
             </Pressable>
-          ))}
-        </View>
-      </ScrollView>
-
-      {label('ATÉ')}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.chipRow}>
-          {HOURS.filter((hour) => hour > startHour).map((hour) => (
             <Pressable
-              key={hour}
               accessibilityRole="button"
-              onPress={() => setEndHour(hour)}
-              style={chip(endHour === hour)}>
-              <Text style={chipLabel(endHour === hour)}>{hour}h</Text>
+              onPress={() => changeDay(tomorrow)}
+              style={chip(sameDay(selectedDay, tomorrow))}>
+              <Text style={chipLabel(sameDay(selectedDay, tomorrow))}>Amanhã</Text>
             </Pressable>
-          ))}
-        </View>
-      </ScrollView>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setDayModalOpen(true)}
+              style={chip(isCustom)}>
+              <Text style={chipLabel(isCustom)}>
+                📅 {isCustom ? dayLabel(selectedDay, now) : 'Outro dia'}
+              </Text>
+            </Pressable>
+          </View>
+        );
+      })()}
+
+      {label('HORÁRIO')}
+      <View style={styles.timeRow}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Hora de início"
+          onPress={() => setStartModalOpen(true)}
+          style={[styles.timeField, { borderColor: theme.line, backgroundColor: theme.background }]}>
+          <Text style={[styles.timeSmall, { color: theme.textSecondary }]}>Começa</Text>
+          <Text style={[styles.timeBig, { color: theme.text }]}>{fmtHour(startHour)}</Text>
+        </Pressable>
+        <Text style={[styles.timeSep, { color: theme.textSecondary }]}>até</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Hora de término"
+          onPress={() => setEndModalOpen(true)}
+          style={[styles.timeField, { borderColor: theme.line, backgroundColor: theme.background }]}>
+          <Text style={[styles.timeSmall, { color: theme.textSecondary }]}>Termina</Text>
+          <Text style={[styles.timeBig, { color: theme.text }]}>{fmtHour(endHour)}</Text>
+        </Pressable>
+      </View>
+
+      <MonthCalendar
+        visible={dayModalOpen}
+        selected={selectedDay}
+        onSelect={(d) => changeDay(d)}
+        onClose={() => setDayModalOpen(false)}
+      />
+      <HourPicker
+        visible={startModalOpen}
+        title="A que horas começa?"
+        value={startHour}
+        hours={availableStartHours}
+        onSelect={(h) => {
+          setStartHour(h);
+          if (h >= endHour) setEndHour(Math.min(h + 1, 24));
+        }}
+        onClose={() => setStartModalOpen(false)}
+      />
+      <HourPicker
+        visible={endModalOpen}
+        title="A que horas termina?"
+        value={endHour}
+        hours={availableEndHours}
+        onSelect={(h) => setEndHour(h)}
+        onClose={() => setEndModalOpen(false)}
+      />
 
       {priceLocked ? (
         <>
@@ -507,6 +550,38 @@ const styles = StyleSheet.create({
   chipRow: {
     flexDirection: 'row',
     gap: Spacing.two - 2,
+  },
+  dayRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two - 2,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  timeField: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderRadius: Radius.medium,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: 10,
+    alignItems: 'center',
+    gap: 1,
+  },
+  timeSmall: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  timeBig: {
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  timeSep: {
+    fontSize: 13,
+    fontWeight: '700',
   },
   chip: {
     borderWidth: 1.5,
