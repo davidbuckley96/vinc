@@ -60,19 +60,12 @@
     publicar grátis, Pix na escolha, taxa só no serviço realizado,
     anti-spam e promo de lançamento (ver `06-decisoes.md` D-040;
     implementado e verificado e2e nos dois modos).
-25. 🟡 **Foto do candidato: visível na lista, ou só depois da escolha?**
-    (aberta 2026-07-14, rodada 21). No mock do perfil (B-30) o David
-    escolheu **"foto sempre visível"**, o que inclui a **lista de
-    candidatos**. Hoje a **D-024** esconde foto e nome completo até a
-    escolha **"por segurança e igualdade"** — evitar que o anunciante
-    escolha por aparência (discriminação por raça/gênero/idade). Isso
-    ecoa a **D-044**, que removeu o campo de gênero pelo mesmo motivo.
-    **Antes de reverter**, confirmar com o David, apresentando os
-    meios-termo: (a) foto só no **perfil de reputação** e depois da
-    escolha, candidato **anônimo na lista** (mantém D-024); (b) **foto
-    sem nome** na lista; (c) **foto cheia** na lista (reverte D-024).
-    Enquanto não decidido, a lista **segue anônima**. A foto no perfil de
-    reputação (fora da lista) pode ir andando sem conflito.
+25. ~~🟡 **Foto do candidato: visível na lista, ou só depois da escolha?**~~
+    ✅ Decidida em 2026-07-14 (rodada 21): David escolheu **foto cheia na
+    lista de candidatos**, com o trade-off de igualdade explicitado —
+    **revoga a anonimização de foto da D-024** (ver `06-decisoes.md` D-064).
+    O **nome completo** e o **contato** seguem escondidos até a escolha;
+    só a foto passa a aparecer. Foto imprópria → moderação por denúncia.
 
 ### Abuso e integridade (validado 2026-07-13 → D-046)
 

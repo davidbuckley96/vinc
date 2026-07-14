@@ -1034,13 +1034,17 @@ social). Decisões firmes:
   um selo "novas vagas" no app. Implementação em etapa própria (tabela
   `job_alerts` + matching + tela de criar/gerenciar).
 
-**Ponto aberto — foto na lista de candidatos (altera a D-024):** o David pediu
-"foto sempre visível", inclusive na lista de candidatos. Hoje a D-024 esconde
-foto e nome **"por segurança e igualdade"** (evita escolha por aparência —
-discriminação). Antes de reverter isso, confirmar com o David o trade-off (ver
-`docs/07` #— foto vs. anonimato) — pode haver meio-termo (foto no perfil de
-reputação, mas candidato ainda anônimo na lista; ou foto sem nome). Enquanto não
-confirmado, a lista de candidatos **segue anônima**.
+**Foto na lista de candidatos (revoga a anonimização de foto da D-024):** o
+David confirmou (2026-07-14), com o trade-off de igualdade explicitado, a
+**foto cheia na lista de candidatos**. Isso **revoga a parte da D-024** que
+escondia a foto "por segurança e igualdade" — a partir daqui o anunciante vê a
+foto do candidato antes de escolher. Riscos aceitos e mitigações: (a) o **nome
+completo** e o **contato** continuam bloqueados até a escolha (anticircunvenção,
+D-024/anti-abuso seguem valendo — só a foto passa a aparecer); (b) foto imprópria
+entra na **moderação por denúncia** já existente; (c) reforçar na comunicação que
+a escolha deve ser por reputação. A nota de privacidade da lista
+("foto e nome aparecem só depois da escolha") será atualizada para refletir só o
+nome. Decisão informada do David — supera o item docs/07 #25.
 
 ## D-063 — Agenda: candidaturas sobrepostas em colunas (Opção C)
 **Data:** 2026-07-14 · **Decidido por:** David (mock rodada 20, opção C)
