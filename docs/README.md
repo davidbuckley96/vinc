@@ -19,6 +19,7 @@ conversas.
 | 09 | [suporte-e-moderacao.md](09-suporte-e-moderacao.md) | Suporte, assistente Vi e moderação (arquitetura + fases) | Ao trabalhar em suporte/denúncias |
 | 10 | [infra-cicd-observabilidade.md](10-infra-cicd-observabilidade.md) | Infra, CI/CD, observabilidade e escalabilidade | Ao mexer em deploy/infra |
 | 11 | [bugs-e-melhorias.md](11-bugs-e-melhorias.md) | Roadmap de bugs/melhorias do 2º ciclo de testes (antes/depois) | Ao corrigir os itens B-01…B-30 |
+| 12 | [feedback-video-aparelho.md](12-feedback-video-aparelho.md) | 3º ciclo: feedback do vídeo no APK real (V-01…V-06) | Ao corrigir os itens do teste no aparelho |
 
 ## Regras de manutenção
 
