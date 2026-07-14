@@ -31,8 +31,11 @@ export function ManageAlertsScreen() {
   const toggle = useSetAlertActive();
   const remove = useDeleteAlert();
 
-  const categoryName = (id: string) =>
-    categories.data?.find((c) => c.id === id)?.name ?? 'Serviço';
+  const categoryLabel = (ids: string[]) => {
+    if (ids.length === 0) return 'Todas as categorias';
+    const names = ids.map((id) => categories.data?.find((c) => c.id === id)?.name ?? 'Serviço');
+    return names.join(', ');
+  };
 
   const list = alerts.data ?? [];
 
@@ -73,8 +76,8 @@ export function ManageAlertsScreen() {
             <View key={alert.id} style={[styles.card, { borderColor: theme.line }]}>
               <View style={styles.cardTop}>
                 <View style={styles.cardInfo}>
-                  <Text style={[styles.cardTitle, { color: theme.text }]}>
-                    {categoryName(alert.categoryId)}
+                  <Text style={[styles.cardTitle, { color: theme.text }]} numberOfLines={1}>
+                    {categoryLabel(alert.categoryIds)}
                   </Text>
                   <Text style={[styles.cardMeta, { color: theme.textSecondary }]}>
                     {alertSummary(alert)}

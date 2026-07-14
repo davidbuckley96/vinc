@@ -12,7 +12,8 @@ export interface AlertRegion {
 
 export interface JobAlert {
   id: string;
-  categoryId: string;
+  /** Categorias do alerta; **vazio = todas** (V-07). */
+  categoryIds: string[];
   /** Dias da semana (0=domingo … 6=sábado); vazio = qualquer dia. */
   days: number[];
   /** Vazio = qualquer horário. */
@@ -24,7 +25,8 @@ export interface JobAlert {
 }
 
 export interface JobAlertInput {
-  categoryId: string;
+  /** Vazio = todas as categorias (V-07). */
+  categoryIds: string[];
   days: number[];
   timeBands: TimeBand[];
   region: AlertRegion | null;
@@ -33,7 +35,7 @@ export interface JobAlertInput {
 
 interface AlertRow {
   id: string;
-  category_id: string;
+  category_ids: string[] | null;
   days: number[] | null;
   time_bands: string[] | null;
   region_lat: number | null;
@@ -47,7 +49,7 @@ interface AlertRow {
 function rowToAlert(row: AlertRow): JobAlert {
   return {
     id: row.id,
-    categoryId: row.category_id,
+    categoryIds: row.category_ids ?? [],
     days: row.days ?? [],
     timeBands: (row.time_bands ?? []) as TimeBand[],
     region:
@@ -87,7 +89,7 @@ export async function createAlert(
     .from("job_alerts")
     .insert({
       user_id: userId,
-      category_id: input.categoryId,
+      category_ids: input.categoryIds,
       days: input.days,
       time_bands: input.timeBands,
       region_lat: input.region?.lat ?? null,

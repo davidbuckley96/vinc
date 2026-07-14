@@ -34,7 +34,8 @@ export function CreateAlertScreen() {
   const categories = useCategories();
   const create = useCreateAlert();
 
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  // Categorias do alerta; vazio = TODAS (V-07). Começa em "todas".
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [days, setDays] = useState<number[]>([]);
   const [bands, setBands] = useState<TimeBand[]>([]);
   const [region, setRegion] = useState<Region | null>(null);
@@ -43,6 +44,12 @@ export function CreateAlertScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const roots = (categories.data ?? []).filter((c) => !c.parentId);
+  const allCategories = categoryIds.length === 0;
+
+  const toggleCategory = (id: string) =>
+    setCategoryIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
 
   const toggleDay = (d: number) =>
     setDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
@@ -51,12 +58,9 @@ export function CreateAlertScreen() {
 
   const save = async () => {
     setError(null);
-    if (!categoryId) {
-      setError('Escolha um serviço para o alerta.');
-      return;
-    }
+    // Nenhuma categoria = todas (V-07) — sempre válido.
     const result = await create.mutateAsync({
-      categoryId,
+      categoryIds,
       days,
       timeBands: bands,
       region: region
@@ -89,16 +93,29 @@ export function CreateAlertScreen() {
             Avisamos quando surgir uma vaga que combina com o que você escolher.
           </Text>
 
-          <Text style={[styles.label, { color: theme.textSecondary }]}>SERVIÇO</Text>
+          <Text style={[styles.label, { color: theme.textSecondary }]}>
+            SERVIÇOS (ESCOLHA UM OU MAIS)
+          </Text>
           {categories.isLoading && <ActivityIndicator color={theme.primary} />}
           <View style={styles.chips}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setCategoryIds([])}
+              style={[
+                styles.chip,
+                { backgroundColor: allCategories ? theme.primary : theme.background, borderColor: allCategories ? theme.primary : theme.line },
+              ]}>
+              <Text style={[styles.chipLabel, { color: allCategories ? theme.onPrimary : theme.textSecondary }]}>
+                Todas as categorias
+              </Text>
+            </Pressable>
             {roots.map((cat) => {
-              const on = categoryId === cat.id;
+              const on = categoryIds.includes(cat.id);
               return (
                 <Pressable
                   key={cat.id}
                   accessibilityRole="button"
-                  onPress={() => setCategoryId(cat.id)}
+                  onPress={() => toggleCategory(cat.id)}
                   style={[
                     styles.chip,
                     { backgroundColor: on ? theme.primary : theme.background, borderColor: on ? theme.primary : theme.line },
