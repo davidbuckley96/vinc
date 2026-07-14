@@ -208,7 +208,7 @@ Limitações descobertas (a resolver antes do vídeo completo):
   5h. **Precisa de mock de UI para aprovação.**
 - **Severidade:** Média.
 
-### B-27 ⚪ Agenda: navegar meses à frente e ver meses anteriores 🔴
+### B-27 ⚪ Agenda: navegar meses à frente e ver meses anteriores 🟢
 - **Descrição:** poder ver meses futuros (anunciar/candidatar com antecedência)
   e meses passados (só visualizar dias com serviços feitos, sem candidatar).
 - **Severidade:** Média.

@@ -33,6 +33,10 @@ export function AgendaScreen() {
   const unread = useUnreadNotifications();
   const commitments = agenda.data ?? [];
   const dayCommitments = commitments.filter((c) => isSameDay(c.startsAt, selectedDate));
+  // Past day (B-27): só visualização — não dá para buscar/anunciar no passado.
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const isPastDay = selectedDate < startOfToday && !isSameDay(selectedDate, startOfToday);
 
   const openDay = (date: Date) => {
     setSelectedDate(date);
@@ -85,6 +89,7 @@ export function AgendaScreen() {
         {view === 'day' && (
           <DayTimeline
             commitments={dayCommitments}
+            readOnly={isPastDay}
             onSearchSlot={(hour) => {
               const day = new Date(selectedDate);
               const pad = (n: number) => String(n).padStart(2, '0');

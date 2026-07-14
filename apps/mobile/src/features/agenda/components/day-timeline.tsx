@@ -20,6 +20,8 @@ interface Props {
   onSearchSlot: (hour: number) => void;
   onPostSlot: (hour: number) => void;
   onOpenCommitment: (commitment: AgendaCommitment) => void;
+  /** Past day (B-27): só visualização — não dá para buscar/anunciar no passado. */
+  readOnly?: boolean;
 }
 
 /**
@@ -57,7 +59,13 @@ function buildDaySegments(commitments: AgendaCommitment[]): DaySegment[] {
   return segments;
 }
 
-export function DayTimeline({ commitments, onSearchSlot, onPostSlot, onOpenCommitment }: Props) {
+export function DayTimeline({
+  commitments,
+  onSearchSlot,
+  onPostSlot,
+  onOpenCommitment,
+  readOnly = false,
+}: Props) {
   const theme = useTheme();
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const segments = buildDaySegments(commitments);
@@ -119,6 +127,19 @@ export function DayTimeline({ commitments, onSearchSlot, onPostSlot, onOpenCommi
 
         const { hour } = seg;
         const selected = selectedHour === hour;
+        // Past day (B-27): free hours are just shown, not actionable.
+        if (readOnly) {
+          return (
+            <View key={seg.key} style={styles.row}>
+              <Text style={[styles.hour, { color: theme.textSecondary }]}>
+                {String(hour).padStart(2, '0')}:00
+              </Text>
+              <View style={[styles.free, { borderColor: theme.line, opacity: 0.5 }]}>
+                <Text style={[styles.freeLabel, { color: theme.textSecondary }]}>livre</Text>
+              </View>
+            </View>
+          );
+        }
         return (
           <View key={seg.key} style={styles.row}>
             <Text style={[styles.hour, { color: theme.textSecondary }]}>
