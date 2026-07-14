@@ -12,6 +12,8 @@ export function LocationMap({
   zoom,
   interactive = false,
   onCenterChange,
+  circleMeters,
+  marker = false,
   style,
 }: LocationMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -33,6 +35,26 @@ export function LocationMap({
       const center = map.getCenter();
       centerChangeRef.current?.(center.lat, center.lng);
     });
+    if (circleMeters) {
+      map.on('load', () => {
+        const coords: [number, number][] = [];
+        for (let i = 0; i <= 64; i++) {
+          const a = (i / 64) * 2 * Math.PI;
+          const dx = (circleMeters * Math.cos(a)) / (111320 * Math.cos((lat * Math.PI) / 180));
+          const dy = (circleMeters * Math.sin(a)) / 110540;
+          coords.push([lng + dx, lat + dy]);
+        }
+        map.addSource('area', {
+          type: 'geojson',
+          data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [coords] } },
+        });
+        map.addLayer({ id: 'area-fill', type: 'fill', source: 'area', paint: { 'fill-color': '#7C3AED', 'fill-opacity': 0.16 } });
+        map.addLayer({ id: 'area-line', type: 'line', source: 'area', paint: { 'line-color': '#7C3AED', 'line-width': 2 } });
+      });
+    }
+    if (marker) {
+      new maplibregl.Marker({ color: '#7C3AED' }).setLngLat([lng, lat]).addTo(map);
+    }
     mapRef.current = map;
     return () => {
       mapRef.current = null;

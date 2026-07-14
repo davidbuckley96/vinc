@@ -1004,3 +1004,15 @@ Na agenda do dia, um serviço/vaga que ocupa mais de 1h passa a ser **um bloco
 repetidos. A grade também passa a cobrir **as 24h** (0h–23h), para caber
 serviços de madrugada (D-053). A montagem das linhas é uma função pura
 (`buildDaySegments`) fora do render.
+
+## D-055 — Mapa da vaga navegável (tela cheia) com o raio/pino ancorado
+**Data:** 2026-07-14 · **Decidido por:** David
+
+Tocar no local de uma vaga abre agora um **mapa em tela cheia navegável**
+(pan/zoom), em vez de uma prévia estática. O **raio** (local aproximado) ou o
+**pino** (local exato, para quem já foi escolhido) é desenhado **dentro do
+mapa**, ancorado à coordenada — fica sobre o lugar mesmo enquanto o usuário
+arrasta o mapa. Assim quem não conhece a região consegue se situar antes de
+se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
+aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
+`circleMeters` e `marker` (nativo via WebView/MapLibre e web).

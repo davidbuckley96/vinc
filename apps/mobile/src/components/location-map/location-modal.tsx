@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Radius, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 import { LocationMap } from './location-map';
@@ -12,133 +13,115 @@ interface LocationModalProps {
   lng: number;
   address: string;
   /**
-   * Approximate mode (D-028): a translucent circle instead of a pin —
+   * Approximate mode (D-028): a translucent radius circle instead of a pin —
    * the point shown is already fuzzed, and a pin would read as exact.
    */
   approximate?: boolean;
   onClose: () => void;
 }
 
+// Radius of the shown area for an approximate pin (matches the 250–600 m
+// server-side fuzz, D-028) — comfortably covers where the place really is.
+const APPROX_RADIUS_M = 600;
+
 /**
- * Viewing modal (docs/02 §2.1): tapping a gig's address opens the map
- * with the pin and a close button — same in every screen.
+ * Full-screen NAVIGABLE map (D-055): the person can pan/zoom to understand
+ * where a gig is — the radius circle (approximate) or the pin (exact) stays
+ * anchored to the place as the map moves. Replaces the old static preview.
  */
 export function LocationModal({ visible, lat, lng, address, approximate, onClose }: LocationModalProps) {
   const theme = useTheme();
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable
-          style={[styles.card, { backgroundColor: theme.background }]}
-          onPress={(event) => event.stopPropagation()}>
-          <View style={styles.mapWrap}>
+    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+      <View style={[styles.root, { backgroundColor: theme.background }]}>
+        <View style={styles.column}>
+          <View style={[styles.header, { backgroundColor: theme.primary }]}>
+            <SafeAreaView edges={['top']}>
+              <View style={styles.headerRow}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Fechar o mapa"
+                  onPress={onClose}
+                  hitSlop={12}>
+                  <Ionicons name="close" size={24} color={theme.onPrimary} />
+                </Pressable>
+                <Text style={[styles.headerTitle, { color: theme.onPrimary }]} numberOfLines={1}>
+                  {approximate ? 'Região do serviço' : 'Local do serviço'}
+                </Text>
+              </View>
+            </SafeAreaView>
+          </View>
+
+          <View style={styles.mapArea}>
             <LocationMap
               lat={lat}
               lng={lng}
-              zoom={approximate ? 14 : 15}
+              zoom={approximate ? 14 : 16}
+              interactive
+              circleMeters={approximate ? APPROX_RADIUS_M : undefined}
+              marker={!approximate}
               style={StyleSheet.absoluteFill}
             />
-            <View pointerEvents="none" style={styles.pinWrap}>
-              {approximate ? (
-                <View style={[styles.circle, { borderColor: theme.primary }]} />
-              ) : (
-                <Ionicons
-                  name="location-sharp"
-                  size={40}
-                  color={theme.primary}
-                  style={styles.pin}
-                />
-              )}
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Fechar o mapa"
-              onPress={onClose}
-              style={[styles.close, { backgroundColor: theme.background }]}>
-              <Ionicons name="close" size={18} color={theme.text} />
-            </Pressable>
           </View>
-          <View style={styles.foot}>
-            <Text style={[styles.address, { color: theme.text }]}>{address}</Text>
-            {approximate && (
-              <Text style={[styles.approxNote, { color: theme.textSecondary }]}>
-                Local aproximado — o endereço exato aparece quando você é escolhido.
+
+          <SafeAreaView edges={['bottom']}>
+            <View style={[styles.foot, { borderTopColor: theme.line }]}>
+              <Text style={[styles.address, { color: theme.text }]}>{address}</Text>
+              <Text style={[styles.note, { color: theme.textSecondary }]}>
+                {approximate
+                  ? 'Local aproximado — o endereço exato aparece quando você é escolhido. Arraste o mapa para explorar a região.'
+                  : 'Arraste o mapa para explorar. Toque em fechar quando terminar.'}
               </Text>
-            )}
-          </View>
-        </Pressable>
-      </Pressable>
+            </View>
+          </SafeAreaView>
+        </View>
+      </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
+  root: {
     flex: 1,
-    backgroundColor: 'rgba(12,10,18,0.5)',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.three,
   },
-  card: {
+  column: {
+    flex: 1,
     width: '100%',
-    maxWidth: 420,
-    borderRadius: Radius.xlarge - 4,
-    overflow: 'hidden',
+    maxWidth: MaxContentWidth,
   },
-  mapWrap: {
-    height: 280,
+  header: {
+    borderBottomLeftRadius: Radius.xlarge,
+    borderBottomRightRadius: Radius.xlarge,
   },
-  pinWrap: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
+  headerRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.two,
+    paddingBottom: Spacing.three,
   },
-  pin: {
-    transform: [{ translateY: -20 }],
-    textShadowColor: 'rgba(0,0,0,0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    flex: 1,
   },
-  // ~140 px at zoom 14 ≈ 1.3 km wide — comfortably covers the 250–600 m
-  // fuzz applied to the pin (D-028).
-  circle: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 2,
-    backgroundColor: 'rgba(124, 58, 237, 0.16)',
-  },
-  close: {
-    position: 'absolute',
-    top: Spacing.two,
-    right: Spacing.two,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 5,
+  mapArea: {
+    flex: 1,
   },
   foot: {
     padding: Spacing.three,
+    borderTopWidth: 1,
+    gap: 4,
   },
   address: {
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '700',
   },
-  approxNote: {
+  note: {
     fontSize: 12,
     lineHeight: 17,
-    marginTop: 4,
   },
 });

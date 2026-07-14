@@ -15,6 +15,8 @@ export function LocationMap({
   zoom,
   interactive = false,
   onCenterChange,
+  circleMeters,
+  marker = false,
   style,
 }: LocationMapProps) {
   const webviewRef = useRef<WebView>(null);
@@ -35,6 +37,26 @@ export function LocationMap({
     interactive: ${interactive},
     attributionControl: { compact: true },
   });
+  ${
+    circleMeters
+      ? `map.on('load', () => {
+    // Polygon approximating a ${circleMeters} m circle anchored at the point,
+    // so it stays over the place while the map is panned/zoomed.
+    const cx = ${lng}, cy = ${lat}, r = ${circleMeters};
+    const coords = [];
+    for (let i = 0; i <= 64; i++) {
+      const a = (i / 64) * 2 * Math.PI;
+      const dx = (r * Math.cos(a)) / (111320 * Math.cos(cy * Math.PI / 180));
+      const dy = (r * Math.sin(a)) / 110540;
+      coords.push([cx + dx, cy + dy]);
+    }
+    map.addSource('area', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'Polygon', coordinates: [coords] } } });
+    map.addLayer({ id: 'area-fill', type: 'fill', source: 'area', paint: { 'fill-color': '#7C3AED', 'fill-opacity': 0.16 } });
+    map.addLayer({ id: 'area-line', type: 'line', source: 'area', paint: { 'line-color': '#7C3AED', 'line-width': 2 } });
+  });`
+      : ''
+  }
+  ${marker ? `new maplibregl.Marker({ color: '#7C3AED' }).setLngLat([${lng}, ${lat}]).addTo(map);` : ''}
   map.on('moveend', () => {
     const c = map.getCenter();
     window.ReactNativeWebView?.postMessage(JSON.stringify({ lat: c.lat, lng: c.lng }));

@@ -17,6 +17,14 @@ export interface LocationMapProps {
   /** Picker mode: map can be dragged and reports its center. */
   interactive?: boolean;
   onCenterChange?: (lat: number, lng: number) => void;
+  /**
+   * Draw a translucent circle of this radius (meters) anchored at lat/lng —
+   * used for the approximate-location view (D-055): it stays on the place as
+   * the user pans/zooms, instead of a screen-fixed overlay.
+   */
+  circleMeters?: number;
+  /** Drop a pin anchored at lat/lng (exact-location view). */
+  marker?: boolean;
   /** Container style (RN). The map fills it. */
   style?: object;
 }
