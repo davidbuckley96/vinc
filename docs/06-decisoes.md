@@ -1037,10 +1037,10 @@ aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
   dos candidatos. **Reforço no banco:** trigger `block_edit_with_candidates`
   (migração 0041) bloqueia a alteração dos campos de conteúdo mesmo se o edge
   function não estiver atualizado — **verificado e2e** (editar `starts_at` de
-  uma vaga com candidato → recusado, linha intacta). *Obs.: o deploy do edge
-  function `update-gig` neste sandbox falha (CLI precisa de Docker/proxy); a
-  versão nova, que dá a mensagem específica, precisa ser deployada pelo David
-  ou num ambiente com deploy — enquanto isso o trigger garante a regra.*
+  uma vaga com candidato → recusado, linha intacta). O edge function
+  `update-gig` (que dá a mensagem específica "já há gente candidatada…") foi
+  **deployado pela Management API** (o CLI não funciona no sandbox por
+  Docker/proxy; o `deploy-fn.sh` multipart resolve). Deploy + trigger juntos.
 
 ## D-059 — Localização: abre na região do usuário, rejeita o mar, busca melhor
 **Data:** 2026-07-14 · **Decidido por:** David
