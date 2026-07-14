@@ -1017,6 +1017,17 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-057 — Teto de valor por vaga (provisório R$ 10.000)
+**Data:** 2026-07-14 · **Decidido por:** Claude (provisório — confirmar com David)
+
+Vagas passam a ter um **valor máximo** (`GIG_MAX_PRICE_CENTS`, hoje
+R$ 10.000,00) além do mínimo de R$ 10 (D-019). Motivos: evitar valores
+absurdos (ex.: 8h por R$ 50.000) e dar **mensagem específica** ("O valor
+máximo de uma vaga é R$ 10.000,00") em vez do erro genérico que aparecia com
+entradas gigantes (ex.: 10 milhões) — bugs B-18/B-19. Validado no core (com
+teste) e, por tabela, no backend (mesma `validateGigDraft`). **O número exato
+do teto precisa ser confirmado pelo David** (talvez menor, ou por categoria).
+
 ## D-056 — Primeiro uso: rótulo mais claro + fim do loop do "Depois eu vejo"
 **Data:** 2026-07-14 · **Decidido por:** David (reporte) + Claude
 

@@ -28,6 +28,7 @@ export type GigDraftError =
   | "ends_before_starts"
   | "price_required"
   | "price_too_low"
+  | "price_too_high"
   | "address_required"
   | "location_invalid"
   | "location_outside_brazil";
@@ -40,6 +41,12 @@ export const GIG_DESCRIPTION_MAX = 2000;
  * postings (e.g. using gigs as ads) and matches the fine floor.
  */
 export const GIG_MIN_PRICE_CENTS = 1000;
+/**
+ * Upper bound per gig (D-057, provisório — confirmar valor com o David):
+ * evita valores absurdos (ex.: 8h por R$ 50.000) e o erro genérico em
+ * entradas gigantes (ex.: 10 milhões). R$ 10.000,00.
+ */
+export const GIG_MAX_PRICE_CENTS = 1_000_000;
 
 /**
  * Brazil bounding box (padded), the backend's coarse "is it in Brazil"
@@ -72,6 +79,8 @@ export function validateGigDraft(draft: GigDraft, now: Date): GigDraftError[] {
     errors.push("price_required");
   } else if (draft.priceCents < GIG_MIN_PRICE_CENTS) {
     errors.push("price_too_low");
+  } else if (draft.priceCents > GIG_MAX_PRICE_CENTS) {
+    errors.push("price_too_high");
   }
   if (!draft.address.trim()) errors.push("address_required");
   const hasLat = draft.lat !== undefined && draft.lat !== null;

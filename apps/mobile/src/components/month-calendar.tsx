@@ -52,6 +52,10 @@ export function MonthCalendar({ visible, selected, minDate, onSelect, onClose }:
   const cells: (Date | null)[] = [];
   for (let i = 0; i < leadingBlanks; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(view.year, view.month, d));
+  // Always fill to 6 weeks (42 cells) so the grid height is constant — a month
+  // needing 6 rows (e.g. jan/2027) must not shove the nav buttons around and
+  // cause mis-taps or an accidental close (B-20).
+  while (cells.length < 42) cells.push(null);
 
   // Don't let the user page back before the floor month.
   const canGoPrev =

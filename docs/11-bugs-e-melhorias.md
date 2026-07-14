@@ -12,12 +12,23 @@
 - 🔵 **Precisa de mock/aprovação de UI** antes de implementar (regra do projeto)
 - ⚪ **Feature nova** (não é bug; entra no roadmap de produto)
 
-## Como comprovo (ambiente de reprodução)
-O app roda no meu sandbox como **Expo Web** dentro de um navegador headless
-(Playwright + Chromium), de onde tiro as imagens antes/depois e gravo o vídeo.
-Itens **exclusivos do Android nativo** — marcados com 📱 — não se reproduzem no
-web e a prova em vídeo depende do aparelho do David; nesses eu corrijo pela
-causa-raiz no código e explico. Imagens ficam em `docs/design/testes-2026-07/`.
+## Como comprovo (ambiente de reprodução) — validado 2026-07-14
+O app **compila e roda** no meu sandbox como **Expo Web** (`expo export`
++ servidor estático) dentro de um navegador headless (Playwright + Chromium),
+com viewport de celular. Já capturei telas reais (ver `harness-app-rodando.png`
+e `antes-B02-busca-titulo.png`). Imagens em `docs/design/testes-2026-07/`.
+
+Limitações descobertas (a resolver antes do vídeo completo):
+- **Itens 📱 nativos do Android** (mapa/gesto B-09, back de hardware B-04,
+  OAuth localhost B-01) **não** se reproduzem no web — corrijo pela causa-raiz e
+  a prova em vídeo depende do aparelho do David.
+- **Fluxos que dependem do backend** (login real, criar vaga no banco, busca de
+  endereço no Nominatim) exigem que o Chromium headless use o **proxy de saída**
+  do sandbox; sem isso as chamadas externas ficam pendendo. Para telas de
+  UI/lógica **client-side** (a maioria) rodo em **modo demonstração** (com
+  mocks), navego livremente e capturo antes/depois. Próximo passo do harness:
+  (a) forçar modo demo no build de teste **ou** (b) configurar o proxy no
+  navegador para dirigir os fluxos reais e gravar o vídeo.
 
 ---
 
@@ -36,10 +47,13 @@ causa-raiz no código e explico. Imagens ficam em `docs/design/testes-2026-07/`.
 
 ## Área 2 — Busca e navegação
 
-### B-02 Título da aba Buscar impróprio 🔴
+### B-02 Título da aba Buscar impróprio 🟢
 - **Descrição:** ao escolher "Quero fazer bicos" vai para a busca, cujo título
   é "O que você quer fazer?". Deveria ser algo como **"Procurar trabalhos"**.
 - **Severidade:** Baixa (texto).
+- **Correção:** título → **"Procurar trabalhos"** (`search-screen.tsx`).
+  Antes: `antes-B02-busca-titulo.png` (reproduzido no harness). Depois pendente
+  do harness com modo demo/proxy estável.
 
 ### B-03 Falta "todas as categorias" na busca 🔴
 - **Descrição:** a busca por categorias não tem uma opção para ver **todas** as
@@ -60,7 +74,7 @@ causa-raiz no código e explico. Imagens ficam em `docs/design/testes-2026-07/`.
 - **Nota:** precisa de mock de UI (faixa de datas) para aprovação.
 - **Severidade:** Média.
 
-### B-06 Filtro de hora na busca só vai de 6h–23h 🔴
+### B-06 Filtro de hora na busca só vai de 6h–23h 🟢
 - **Descrição:** o filtro de hora deveria cobrir **24h** (ex.: "qualquer dia,
   às 03h"), como já ficou na criação de vaga (D-053).
 - **Severidade:** Média.
@@ -129,23 +143,23 @@ causa-raiz no código e explico. Imagens ficam em `docs/design/testes-2026-07/`.
   (jornada — motivo trabalhista).
 - **Severidade:** Média.
 
-### B-17 Taxa "+ R$ x" desalinha a UI 🔴
+### B-17 Taxa "+ R$ x" desalinha a UI 🟢
 - **Descrição:** o "+ " antes do valor da taxa quebra o alinhamento dos
   centavos; deixar só "R$ x", mantendo o alinhamento entre vagas de valores
   diferentes.
 - **Severidade:** Baixa (visual).
 
-### B-18 Falta valor máximo por vaga 🔴
+### B-18 Falta valor máximo por vaga 🟢
 - **Descrição:** vagas não deveriam ter valores absurdos (ex.: 8h por 50.000).
   Definir um teto sensato (a validar com o David).
 - **Severidade:** Média.
 
-### B-19 Erro genérico em valores muito altos (≥ 10 mi) 🔴
+### B-19 Erro genérico em valores muito altos (≥ 10 mi) 🟢
 - **Descrição:** valores a partir de ~10 milhões dão "Não foi possível publicar.
   Verifique os dados…", sem dizer o motivo. Precisa de mensagem específica.
 - **Severidade:** Baixa (relacionado a B-18).
 
-### B-20 Calendário quebra com meses de 6 semanas 🔴
+### B-20 Calendário quebra com meses de 6 semanas 🟢
 - **Descrição:** meses com 5 semanas (dez/2026) e 6 semanas (jan/2027) mudam a
   altura do calendário, movendo os botões de avançar/recuar de posição —
   causando cliques errados ou fechar o calendário sem querer.

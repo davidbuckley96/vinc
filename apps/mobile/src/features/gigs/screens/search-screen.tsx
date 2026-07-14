@@ -22,7 +22,7 @@ import { useCategories, useOpenGigs } from '../hooks';
 import { useRegion } from '../region';
 
 const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
-const HOURS = Array.from({ length: 18 }, (_, i) => 6 + i); // 6h–23h
+const HOURS = Array.from({ length: 24 }, (_, i) => i); // 0h–23h (B-06)
 
 function dayChipLabel(date: Date, index: number): string {
   if (index === 0) return 'Hoje';
@@ -148,7 +148,7 @@ export function SearchScreen() {
                 </Pressable>
               ) : (
                 <Text style={[styles.headerTitle, { color: theme.onPrimary }]}>
-                  O que você quer fazer?
+                  Procurar trabalhos
                 </Text>
               )}
             </View>

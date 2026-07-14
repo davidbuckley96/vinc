@@ -38,6 +38,7 @@ const ERROR_MESSAGES: Record<GigDraftError, string> = {
   ends_before_starts: 'O fim precisa ser depois do início.',
   price_required: 'Diga quanto vai pagar.',
   price_too_low: 'O valor mínimo de uma vaga é R$ 10,00.',
+  price_too_high: 'O valor máximo de uma vaga é R$ 10.000,00.',
   address_required: 'Escolha o local do serviço no mapa.',
   location_invalid: 'Não foi possível marcar o local. Escolha de novo no mapa.',
   location_outside_brazil: 'O local precisa ser dentro do Brasil.',
@@ -431,7 +432,7 @@ export function GigForm({
                   Taxa de serviço
                 </Text>
                 <Text style={[styles.feeValue, { color: theme.primarySoftText }]}>
-                  + {formatBRL(pricing.feeCents)}
+                  {formatBRL(pricing.feeCents)}
                 </Text>
               </View>
               <View style={styles.feeRow}>

@@ -69,6 +69,15 @@ describe("validateGigDraft", () => {
     expect(validateGigDraft({ ...VALID, priceCents: 1000 }, NOW)).toEqual([]);
   });
 
+  it("rejects gigs above the max price (D-057)", () => {
+    expect(validateGigDraft({ ...VALID, priceCents: 1_000_001 }, NOW)).toContain("price_too_high");
+    expect(validateGigDraft({ ...VALID, priceCents: 1_000_000 }, NOW)).toEqual([]);
+    // A huge input (e.g. 10 million reais) gets a SPECIFIC error, not generic.
+    expect(validateGigDraft({ ...VALID, priceCents: 1_000_000_000 }, NOW)).toContain(
+      "price_too_high",
+    );
+  });
+
   it("validates the map pin when present (D-023)", () => {
     expect(validateGigDraft({ ...VALID, lat: -8.05, lng: -34.88 }, NOW)).toEqual([]);
     expect(validateGigDraft({ ...VALID, lat: -8.05 }, NOW)).toContain("location_invalid");
