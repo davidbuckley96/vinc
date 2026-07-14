@@ -1016,3 +1016,17 @@ arrasta o mapa. Assim quem não conhece a região consegue se situar antes de
 se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
+
+## D-056 — Primeiro uso: rótulo mais claro + fim do loop do "Depois eu vejo"
+**Data:** 2026-07-14 · **Decidido por:** David (reporte) + Claude
+
+Dois ajustes na tela de boas-vindas (D-048):
+- **Rótulo:** "Preciso de uma ajuda" (que parecia botão de suporte/FAQ) vira
+  **"Quero contratar um serviço"**; a outra opção fica "Quero fazer bicos e
+  ganhar dinheiro". Deixa claro que é a área de anunciar/buscar, não suporte.
+- **Bug de navegação:** ao tocar "Depois eu vejo" (ou qualquer opção) o app
+  voltava para a mesma tela e prendia o usuário até reiniciar. Causa: o
+  `WelcomeGate` relia um estado `seen` que ficava desatualizado depois de
+  `markWelcomeSeen`, e reencaminhava para `/welcome` em loop. Correção: o gate
+  agora só redireciona **uma vez por sessão** (ref-guard); o flag persistido
+  cuida das próximas aberturas.

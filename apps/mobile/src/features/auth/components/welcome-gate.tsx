@@ -1,5 +1,5 @@
 import { usePathname, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { usePayoutAccount } from '@/features/wallet/hooks';
 
@@ -19,6 +19,11 @@ export function WelcomeGate() {
   const router = useRouter();
 
   const [seen, setSeen] = useState<boolean | null>(null);
+  // Redirect to /welcome at most ONCE per session. Without this, tapping
+  // "Depois eu vejo" (or any choice) persists the flag but this component's
+  // `seen` state stays stale (false), so the gate would immediately bounce
+  // the user back to /welcome — an inescapable loop until an app restart.
+  const redirected = useRef(false);
 
   useEffect(() => {
     if (!userId) {
@@ -40,10 +45,12 @@ export function WelcomeGate() {
   useEffect(() => {
     if (
       ready &&
+      !redirected.current &&
       pathname !== '/welcome' &&
       pathname !== '/complete-signup' &&
       pathname !== '/auth'
     ) {
+      redirected.current = true;
       router.replace('/welcome');
     }
   }, [ready, pathname, router]);

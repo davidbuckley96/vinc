@@ -52,14 +52,14 @@ export function WelcomeScreen() {
             theme={theme}
             primary
             icon="megaphone"
-            title="Preciso de uma ajuda"
-            subtitle="Anuncie um serviço e escolha quem faz. Publicar é grátis."
+            title="Quero contratar um serviço"
+            subtitle="Anuncie o que precisa e escolha quem faz. Publicar é grátis."
             onPress={() => go('/post')}
           />
           <Choice
             theme={theme}
             icon="briefcase"
-            title="Quero fazer bicos"
+            title="Quero fazer bicos e ganhar dinheiro"
             subtitle="Encontre serviços perto de você e receba pelo app."
             onPress={() => go('/search')}
           />
