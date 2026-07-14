@@ -127,17 +127,17 @@ Limitações descobertas (a resolver antes do vídeo completo):
 
 ## Área 4 — Criação de vaga
 
-### B-14 Publicar vaga → redirecionar para a vaga aberta 🔴
+### B-14 Publicar vaga → redirecionar para a vaga aberta 🟢
 - **Descrição:** ao publicar, deveria ir para a página da vaga recém-criada.
 - **Severidade:** Média.
 
-### B-15 Formulário mantém estado ao trocar de aba 🔴
+### B-15 Formulário mantém estado ao trocar de aba 🟢
 - **Descrição:** anunciar → ir para Carteira → voltar em Anunciar: volta na
   mesma tela, com a mensagem "vaga publicada…" e o mesmo local. Deveria começar
   em branco.
 - **Severidade:** Média.
 
-### B-16 Serviços que viram o dia + limite de 8h 🔴
+### B-16 Serviços que viram o dia + limite de 8h 🟢
 - **Descrição:** serviço 22h–03h só é possível abrindo duas vagas. Deveria dar
   para escolher o **dia de término**. **Regra:** duração máxima de **8h**
   (jornada — motivo trabalhista).
@@ -175,7 +175,7 @@ Limitações descobertas (a resolver antes do vídeo completo):
 
 ## Área 5 — Denúncia e moderação
 
-### B-22 "Outro motivo" exige texto 🔴
+### B-22 "Outro motivo" exige texto 🟢
 - **Descrição:** denunciar por "outro motivo" só deveria ser permitido se o
   motivo for especificado no texto.
 - **Severidade:** Baixa.

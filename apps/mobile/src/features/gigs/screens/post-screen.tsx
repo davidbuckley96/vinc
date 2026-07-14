@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useNavigation, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -19,12 +19,27 @@ import { useCreateGig } from '../hooks';
 export function PostScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const navigation = useNavigation();
   const { status } = useSession();
   const createGig = useCreateGig();
 
   const [feedback, setFeedback] = useState<GigFormFeedback | null>(null);
   // Remounts the form (clearing every field) after a successful publish.
   const [formKey, setFormKey] = useState(0);
+
+  // Tapping the "Anunciar" tab always opens a FRESH form (B-15): the old
+  // state (a filled-in location, a previous success message) shouldn't come
+  // back when returning to the tab from Carteira etc.
+  useEffect(() => {
+    const tabNav = navigation as unknown as {
+      addListener: (event: 'tabPress', cb: () => void) => () => void;
+    };
+    const unsubscribe = tabNav.addListener('tabPress', () => {
+      setFeedback(null);
+      setFormKey((key) => key + 1);
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const publish = async (draft: GigDraft) => {
     setFeedback(null);
@@ -52,6 +67,13 @@ export function PostScreen() {
         });
         return;
       }
+      // Publicou → vai direto para a vaga recém-criada (B-14). O formulário é
+      // remontado para começar limpo na próxima vez que a aba for aberta.
+      setFormKey((key) => key + 1);
+      if (outcome.gigId) {
+        router.replace(`/gig/${outcome.gigId}`);
+        return;
+      }
       const pricing = computeGigPricing(draft.priceCents);
       setFeedback({
         kind: 'success',
@@ -60,7 +82,6 @@ export function PostScreen() {
             ? 'Modo demonstração: a vaga seria publicada agora.'
             : `Vaga publicada de graça! Você só paga os ${formatBRL(pricing.totalCents)} quando escolher um candidato.`,
       });
-      setFormKey((key) => key + 1);
     } catch {
       setFeedback({
         kind: 'error',

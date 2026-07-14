@@ -1017,6 +1017,18 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-058 — Serviço pode virar o dia, mas com jornada máxima de 8h
+**Data:** 2026-07-14 · **Decidido por:** David
+
+Uma vaga pode terminar na **madrugada do dia seguinte** (ex.: babá 22h→03h),
+escolhendo o horário de término que passa da meia-noite — sem precisar abrir
+duas vagas (B-16). Ao mesmo tempo, a **duração máxima é 8h**
+(`GIG_MAX_DURATION_HOURS`), por motivo de jornada de trabalho. Implementado no
+seletor de hora (fim vai de +1h a +8h, marcando "(+1 dia)") e validado no core
+(`validateGigDraft` → `duration_too_long`, com testes), logo o backend
+(`create-gig`) também recusa. O redirecionamento pós-publicação (B-14) e o
+reset do formulário ao reabrir a aba (B-15) entram no mesmo lote.
+
 ## D-057 — Teto de valor por vaga (provisório R$ 10.000)
 **Data:** 2026-07-14 · **Decidido por:** Claude (provisório — confirmar com David)
 

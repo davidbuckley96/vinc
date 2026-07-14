@@ -14,7 +14,9 @@ interface Props {
   onClose: () => void;
 }
 
-const pad = (h: number) => `${String(h).padStart(2, '0')}:00`;
+// h ≥ 24 = madrugada do dia seguinte (serviço que vira o dia — D-058).
+const pad = (h: number) =>
+  h >= 24 ? `${String(h - 24).padStart(2, '0')}:00 (dia seguinte)` : `${String(h).padStart(2, '0')}:00`;
 
 /**
  * Scrollable 24h hour picker (D-053) — replaces the fixed 6h–23h slider so

@@ -47,6 +47,10 @@ export function ReportSheet({
   const [selected, setSelected] = useState<string | null>(null);
   const [detail, setDetail] = useState('');
 
+  // "Outro motivo" só vale se a pessoa escrever qual é (B-22).
+  const needsText = selected === 'outro';
+  const canSubmit = !!selected && !pending && (!needsText || detail.trim().length > 0);
+
   const close = () => {
     setSelected(null);
     setDetail('');
@@ -54,8 +58,8 @@ export function ReportSheet({
   };
 
   const submit = () => {
-    if (!selected || pending) return;
-    onSubmit(selected, detail.trim());
+    if (!canSubmit) return;
+    onSubmit(selected!, detail.trim());
     setSelected(null);
     setDetail('');
   };
@@ -105,9 +109,13 @@ export function ReportSheet({
             <TextInput
               style={[
                 styles.detail,
-                { borderColor: theme.line, color: theme.text, backgroundColor: theme.background },
+                {
+                  borderColor: needsText && !detail.trim() ? theme.danger : theme.line,
+                  color: theme.text,
+                  backgroundColor: theme.background,
+                },
               ]}
-              placeholder="Quer explicar melhor? (opcional)"
+              placeholder={needsText ? 'Descreva o motivo (obrigatório)' : 'Quer explicar melhor? (opcional)'}
               placeholderTextColor={theme.textSecondary}
               value={detail}
               onChangeText={setDetail}
@@ -117,11 +125,11 @@ export function ReportSheet({
 
             <Pressable
               accessibilityRole="button"
-              disabled={!selected || pending}
+              disabled={!canSubmit}
               onPress={submit}
               style={[
                 styles.submit,
-                { backgroundColor: selected ? theme.danger : theme.backgroundSelected },
+                { backgroundColor: canSubmit ? theme.danger : theme.backgroundSelected },
               ]}>
               {pending ? (
                 <ActivityIndicator color={theme.onPrimary} />
@@ -129,7 +137,7 @@ export function ReportSheet({
                 <Text
                   style={[
                     styles.submitLabel,
-                    { color: selected ? theme.onPrimary : theme.textSecondary },
+                    { color: canSubmit ? theme.onPrimary : theme.textSecondary },
                   ]}>
                   Enviar denúncia
                 </Text>

@@ -26,6 +26,7 @@ export type GigDraftError =
   | "description_too_long"
   | "starts_in_past"
   | "ends_before_starts"
+  | "duration_too_long"
   | "price_required"
   | "price_too_low"
   | "price_too_high"
@@ -47,6 +48,11 @@ export const GIG_MIN_PRICE_CENTS = 1000;
  * entradas gigantes (ex.: 10 milhões). R$ 10.000,00.
  */
 export const GIG_MAX_PRICE_CENTS = 1_000_000;
+/**
+ * Máximo de horas de um serviço (D-058): jornada de trabalho. Permite virar
+ * o dia (ex.: babá 22h–03h = 5h), mas nunca passar de 8h por motivo legal.
+ */
+export const GIG_MAX_DURATION_HOURS = 8;
 
 /**
  * Brazil bounding box (padded), the backend's coarse "is it in Brazil"
@@ -74,7 +80,12 @@ export function validateGigDraft(draft: GigDraft, now: Date): GigDraftError[] {
   if (title.length > GIG_TITLE_MAX) errors.push("title_too_long");
   if (draft.description.length > GIG_DESCRIPTION_MAX) errors.push("description_too_long");
   if (new Date(draft.startsAt) <= now) errors.push("starts_in_past");
-  if (draft.endsAt <= draft.startsAt) errors.push("ends_before_starts");
+  if (draft.endsAt <= draft.startsAt) {
+    errors.push("ends_before_starts");
+  } else {
+    const hours = (new Date(draft.endsAt).getTime() - new Date(draft.startsAt).getTime()) / 3_600_000;
+    if (hours > GIG_MAX_DURATION_HOURS) errors.push("duration_too_long");
+  }
   if (!Number.isInteger(draft.priceCents) || draft.priceCents <= 0) {
     errors.push("price_required");
   } else if (draft.priceCents < GIG_MIN_PRICE_CENTS) {

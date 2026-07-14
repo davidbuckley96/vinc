@@ -14,6 +14,7 @@ import {
   computeGigPricing,
   deriveAreaLabel,
   formatBRL,
+  GIG_MAX_DURATION_HOURS,
   validateGigDraft,
   type GigDraft,
   type GigDraftError,
@@ -36,6 +37,7 @@ const ERROR_MESSAGES: Record<GigDraftError, string> = {
   description_too_long: 'A descrição está longa demais.',
   starts_in_past: 'Escolha um horário no futuro.',
   ends_before_starts: 'O fim precisa ser depois do início.',
+  duration_too_long: 'O serviço pode durar no máximo 8 horas.',
   price_required: 'Diga quanto vai pagar.',
   price_too_low: 'O valor mínimo de uma vaga é R$ 10,00.',
   price_too_high: 'O valor máximo de uma vaga é R$ 10.000,00.',
@@ -48,7 +50,9 @@ const WEEKDAYS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', '
 const MONTHS_SHORT = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 // Every hour of the day is allowed (D-053): serviços de madrugada existem.
 const START_HOURS = Array.from({ length: 24 }, (_, i) => i); // 0h–23h
-const fmtHour = (h: number) => `${String(h % 24).padStart(2, '0')}:00`;
+// h ≥ 24 = madrugada do dia seguinte (serviço que vira o dia — D-058).
+const fmtHour = (h: number) =>
+  h >= 24 ? `${String(h - 24).padStart(2, '0')}:00 (+1 dia)` : `${String(h).padStart(2, '0')}:00`;
 
 function startOfDay(d: Date): Date {
   const c = new Date(d);
@@ -140,7 +144,20 @@ export function GigForm({
   const [startHour, setStartHour] = useState(
     initial ? new Date(initial.startsAt).getHours() : 14,
   );
-  const [endHour, setEndHour] = useState(initial ? new Date(initial.endsAt).getHours() : 17);
+  // endHour is measured from the START day's midnight, so a service that
+  // crosses midnight has endHour ≥ 24 (e.g. 22h→03h = start 22, end 27).
+  const [endHour, setEndHour] = useState(
+    initial
+      ? new Date(initial.startsAt).getHours() +
+          Math.max(
+            1,
+            Math.round(
+              (new Date(initial.endsAt).getTime() - new Date(initial.startsAt).getTime()) /
+                3_600_000,
+            ),
+          )
+      : 17,
+  );
   const [priceCents, setPriceCents] = useState(initial?.priceCents ?? 0);
   const [location, setLocation] = useState<PickedLocation | null>(
     initial?.address
@@ -160,8 +177,9 @@ export function GigForm({
   const startHoursFor = (d: Date) =>
     START_HOURS.filter((h) => !sameDay(d, now) || h > nowHour);
   const availableStartHours = startHoursFor(selectedDay);
-  // End can run up to 24 (= next-day midnight), so late-night gigs work.
-  const availableEndHours = Array.from({ length: 24 - startHour }, (_, i) => startHour + 1 + i);
+  // End runs from +1h to +8h after the start (D-058): serviços podem virar o
+  // dia (h ≥ 24 = madrugada seguinte), mas nunca passar de 8h de jornada.
+  const availableEndHours = Array.from({ length: 8 }, (_, i) => startHour + 1 + i);
   const todayHasSlots = startHoursFor(startOfDay(now)).length > 0;
 
   // Change the day AND re-clamp start/end in the same handler (no effect):
@@ -174,9 +192,9 @@ export function GigForm({
     if (!avail.includes(startHour)) {
       const first = avail[0]!;
       setStartHour(first);
-      setEndHour(Math.min(first + 1, 24));
-    } else if (endHour <= startHour) {
-      setEndHour(Math.min(startHour + 1, 24));
+      setEndHour(first + 1);
+    } else if (endHour <= startHour || endHour > startHour + GIG_MAX_DURATION_HOURS) {
+      setEndHour(startHour + 1);
     }
   };
 
@@ -374,7 +392,7 @@ export function GigForm({
         hours={availableStartHours}
         onSelect={(h) => {
           setStartHour(h);
-          if (h >= endHour) setEndHour(Math.min(h + 1, 24));
+          if (h >= endHour || endHour > h + GIG_MAX_DURATION_HOURS) setEndHour(h + 1);
         }}
         onClose={() => setStartModalOpen(false)}
       />

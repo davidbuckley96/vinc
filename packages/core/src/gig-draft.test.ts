@@ -64,6 +64,24 @@ describe("validateGigDraft", () => {
     ).toContain("ends_before_starts");
   });
 
+  it("rejects a service longer than 8 hours (D-058)", () => {
+    // 14:00 → 23:00 = 9h
+    expect(
+      validateGigDraft({ ...VALID, endsAt: "2026-07-03T23:00:00Z" }, NOW),
+    ).toContain("duration_too_long");
+    // 14:00 → 22:00 = 8h exactly is allowed
+    expect(validateGigDraft({ ...VALID, endsAt: "2026-07-03T22:00:00Z" }, NOW)).toEqual([]);
+  });
+
+  it("accepts a service that crosses midnight within 8h (babá 22h→03h)", () => {
+    expect(
+      validateGigDraft(
+        { ...VALID, startsAt: "2026-07-03T22:00:00Z", endsAt: "2026-07-04T03:00:00Z" },
+        NOW,
+      ),
+    ).toEqual([]);
+  });
+
   it("rejects gigs paying less than R$ 10 (D-019)", () => {
     expect(validateGigDraft({ ...VALID, priceCents: 999 }, NOW)).toContain("price_too_low");
     expect(validateGigDraft({ ...VALID, priceCents: 1000 }, NOW)).toEqual([]);
