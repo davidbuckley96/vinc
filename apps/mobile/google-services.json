@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1091488305684",
+    "project_id": "vinc-e2963",
+    "storage_bucket": "vinc-e2963.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1091488305684:android:d57530febcedb0003b8d01",
+        "android_client_info": {
+          "package_name": "com.vinc.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfWCN2VZLzQ8bca5i5M_qGughSlmq7VDY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
