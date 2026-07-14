@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -33,6 +34,8 @@ export function ProfileScreen() {
 
   const name = stats.data?.name ?? userName ?? 'Visitante';
   const initial = name.trim().charAt(0).toUpperCase();
+  const avatarUrl = stats.data?.avatarUrl ?? null;
+  const city = stats.data?.city ?? null;
   const signedOut = status === 'signedOut';
 
   return (
@@ -46,12 +49,23 @@ export function ProfileScreen() {
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
           <View style={styles.who}>
-            <View style={[styles.avatar, { backgroundColor: theme.primarySoft }]}>
-              <Text style={[styles.avatarLabel, { color: theme.primarySoftText }]}>
-                {initial}
-              </Text>
+            {/* Layout A (D-064): foto grande sobreposta ao cabeçalho roxo. */}
+            <View style={[styles.avatar, { backgroundColor: theme.primarySoft, borderColor: theme.background }]}>
+              {avatarUrl ? (
+                <Image source={{ uri: avatarUrl }} style={styles.avatarImg} contentFit="cover" />
+              ) : (
+                <Text style={[styles.avatarLabel, { color: theme.primarySoftText }]}>
+                  {initial}
+                </Text>
+              )}
             </View>
             <Text style={[styles.name, { color: theme.text }]}>{name}</Text>
+            {!!city && (
+              <View style={styles.cityRow}>
+                <Ionicons name="location-outline" size={14} color={theme.textSecondary} />
+                <Text style={[styles.meta, { color: theme.textSecondary }]}>{city}</Text>
+              </View>
+            )}
             {session?.user.email && (
               <Text style={[styles.meta, { color: theme.textSecondary }]}>
                 {session.user.email}
@@ -146,13 +160,16 @@ const styles = StyleSheet.create({
   header: {
     borderBottomLeftRadius: Radius.xlarge,
     borderBottomRightRadius: Radius.xlarge,
+    // Extra purple area below the title acts as the profile "cover" (layout A),
+    // so the photo can overlap it.
+    paddingBottom: Spacing.four,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '800',
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.two,
-    paddingBottom: Spacing.three,
+    paddingBottom: Spacing.two,
   },
   scroll: {
     flex: 1,
@@ -165,18 +182,29 @@ const styles = StyleSheet.create({
   who: {
     alignItems: 'center',
     gap: 3,
-    marginTop: Spacing.one,
+    marginTop: -46, // pull the photo up so it overlaps the purple header (layout A)
   },
   avatar: {
-    width: 72,
-    height: 72,
+    width: 88,
+    height: 88,
     borderRadius: Radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: 4,
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
   },
   avatarLabel: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
+  },
+  cityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
   },
   name: {
     fontSize: 18,

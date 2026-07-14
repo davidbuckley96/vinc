@@ -4,6 +4,7 @@ export const DEMO_PROFILE_STATS: ProfileStats = {
   id: 'demo-user',
   name: 'Maria da Silva',
   avatarUrl: null,
+  city: 'Aracaju, SE',
   avgRating: 4.9,
   reviewCount: 87,
   workerAvgRating: 4.9,

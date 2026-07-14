@@ -4,6 +4,7 @@ import {
   fetchMyAgenda,
   fetchMyProfile,
   updateMyProfile,
+  uploadAvatar,
   type AgendaEntry,
   type EditableProfile,
   type UpdateProfileResult,
@@ -49,12 +50,37 @@ export function useUpdateProfile() {
   const { session } = useSession();
   const userId = session?.user.id ?? null;
   return useMutation({
-    mutationFn: async (input: EditableProfile): Promise<UpdateProfileResult> => {
+    mutationFn: async (
+      input: Pick<EditableProfile, 'name' | 'bio' | 'city'>,
+    ): Promise<UpdateProfileResult> => {
       if (!supabase || !userId) return 'updated'; // demo mode: pretend success
       return updateMyProfile(supabase, userId, input);
     },
     onSuccess: (result) => {
       if (result !== 'updated') return;
+      queryClient.invalidateQueries({ queryKey: ['my-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['profile-stats'] });
+    },
+  });
+}
+
+/**
+ * Uploads a new profile photo (B-30/D-064): reads the picked image and pushes
+ * it to the public `avatars` bucket, saving the URL on the profile. Returns
+ * the new URL or null on failure.
+ */
+export function useUploadAvatar() {
+  const queryClient = useQueryClient();
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
+  return useMutation({
+    mutationFn: async (input: { uri: string; mime: string }): Promise<string | null> => {
+      if (!supabase || !userId) return null;
+      const blob = await (await fetch(input.uri)).blob();
+      return uploadAvatar(supabase, userId, blob, input.mime);
+    },
+    onSuccess: (url) => {
+      if (!url) return;
       queryClient.invalidateQueries({ queryKey: ['my-profile'] });
       queryClient.invalidateQueries({ queryKey: ['profile-stats'] });
     },

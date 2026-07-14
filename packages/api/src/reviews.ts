@@ -6,6 +6,8 @@ export interface ProfileStats {
   id: string;
   name: string;
   avatarUrl: string | null;
+  /** Cidade/UF de exibição (B-30/D-064), quando preenchida. */
+  city: string | null;
   avgRating: number | null;
   reviewCount: number;
   workerAvgRating: number | null;
@@ -50,6 +52,7 @@ export async function fetchProfileStats(
     id: data.id,
     name: firstName(data.name) || "Usuário",
     avatarUrl: data.avatar_url,
+    city: (data.city as string | null) ?? null,
     avgRating: data.avg_rating === null ? null : Number(data.avg_rating),
     reviewCount: Number(data.review_count ?? 0),
     workerAvgRating: data.worker_avg_rating === null ? null : Number(data.worker_avg_rating),

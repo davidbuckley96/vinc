@@ -273,8 +273,17 @@ Limitações descobertas (a resolver antes do vídeo completo):
   na lista de candidatos reverteria a D-024 ("segurança e igualdade") — a
   confirmar com o David (docs/07 #25) antes de implementar; até lá a lista
   segue anônima.
-- **Implementação (etapas, na Fase 4):** (1) foto + cidade no perfil de
-  reputação; (2) tabela `job_alerts` + matching + tela criar/gerenciar alerta.
+- **Implementação (etapas):**
+  - **Fatia 1 — foto + cidade no perfil 🟢** (migração 0042: coluna `city`,
+    view `profile_stats` e bucket público `avatars`; Edge Function
+    `update-profile` v3 modera a cidade; upload via `expo-image-picker` +
+    `uploadAvatar`; perfil no layout A com foto sobreposta + cidade no editar
+    perfil / perfil próprio / perfil público). Back verificado e2e (cidade
+    salva + moderação); **upload de foto valida no aparelho** (dep nativa).
+  - **Fatia 2 — foto na lista de candidatos** (D-064): incluir `avatar_url` na
+    Edge Function `get-candidates` + mostrar no cartão. Pendente.
+  - **Fatia 3 — alertas de vaga:** tabela `job_alerts` + matching + tela
+    criar/gerenciar. Pendente.
 - **Severidade:** Média (feature).
 
 ---
