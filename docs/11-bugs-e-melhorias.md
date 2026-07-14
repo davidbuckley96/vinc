@@ -102,24 +102,24 @@ Limitações descobertas (a resolver antes do vídeo completo):
   container. É nativo — no web (MapLibre direto) não ocorre.
 - **Severidade:** Alta (mapa inutilizável na vaga aberta).
 
-### B-10 Busca de endereço não sugere e não move o pino; início no meio do Brasil 🔴
+### B-10 Busca de endereço não sugere e não move o pino; início no meio do Brasil 🟢
 - **Descrição:** digitar "rua 36 norte" não mostra sugestões; confirmar um
   endereço não move o pino (como o Google Maps faria); o mapa abre sempre no
   centro do Brasil, em vez da região do usuário.
 - **Severidade:** Alta (fluxo central de criação de vaga).
 
-### B-11 Aceita local inválido (oceano / fora do Brasil) 🔴
+### B-11 Aceita local inválido (oceano / fora do Brasil) 🟢
 - **Descrição:** ainda dá para confirmar um ponto no oceano/fora do Brasil.
 - **Prova exigida:** vídeo mostrando que a busca funciona **e** que local
   inválido/fora do Brasil é recusado.
 - **Severidade:** Alta.
 
-### B-12 Botão do local deve mostrar o endereço + "abrir"→"mudar" 🔴
+### B-12 Botão do local deve mostrar o endereço + "abrir"→"mudar" 🟢
 - **Descrição:** depois de escolher, o botão deveria mostrar o endereço em vez
   de "Escolher local no mapa"; o texto "abrir" deveria virar "mudar".
 - **Severidade:** Baixa.
 
-### B-13 Endereço (bairro + cidade) no card de prévia da vaga 🔴
+### B-13 Endereço (bairro + cidade) no card de prévia da vaga 🟢
 - **Descrição:** o card de prévia deveria mostrar ao menos bairro e cidade.
 - **Severidade:** Baixa.
 

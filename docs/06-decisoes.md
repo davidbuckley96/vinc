@@ -1017,6 +1017,25 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-059 — Localização: abre na região do usuário, rejeita o mar, busca melhor
+**Data:** 2026-07-14 · **Decidido por:** David
+
+Correções no seletor de local (B-10/B-11/B-12/B-13):
+- **Abre na região do usuário** (GPS) em vez do meio do Brasil (B-10).
+- **Rejeita o mar e locais fora do Brasil** de forma correta (B-11): o reverse
+  geocode agora distingue *endereço* × *sem endereço (mar)* × *erro de rede*
+  (`reverseGeocodeDetailed`). O bounding box do Brasil sozinho aceitava água
+  costeira; agora, "sem endereço" (mar) e país ≠ Brasil bloqueiam a confirmação,
+  enquanto um erro de rede cai de volta no bbox (nunca bloqueia um pino válido).
+  Verificado: um ponto no Atlântico dentro do bbox retorna "sem endereço".
+- **Busca** dispara ao digitar **e ao enviar** (Enter), com estado "nenhum
+  endereço encontrado" (B-10). *Ressalva:* o Nominatim público proíbe
+  autocomplete e limita a 1 req/s — a busca fica confiável de verdade só com o
+  provedor de geocodificação de produção (já no roadmap, docs/11 B-10).
+- **Botão do local** já mostrava o endereço e "mudar" (B-12) e o **card de
+  prévia** já mostra bairro/cidade (B-13) — ambos passam a funcionar de fato
+  agora que o reverse devolve um endereço real.
+
 ## D-058 — Serviço pode virar o dia, mas com jornada máxima de 8h
 **Data:** 2026-07-14 · **Decidido por:** David
 

@@ -39,6 +39,17 @@ export interface ReverseResult {
   inBrazil: boolean;
 }
 
+/**
+ * Reverse-geocode outcome (D-059): distinguishing "resolved to an address"
+ * from "the provider says there's nothing here" (ocean/no-man's-land) from
+ * "the request failed" (network) lets the picker reject the sea without
+ * blocking a valid pin when the network hiccups.
+ */
+export type ReverseOutcome =
+  | { kind: 'address'; label: string; inBrazil: boolean }
+  | { kind: 'no_address' } // Nominatim responded but there's no address (sea, etc.)
+  | { kind: 'error' }; // network / HTTP failure — ambiguous
+
 interface NominatimRow {
   lat: string;
   lon: string;
@@ -77,20 +88,24 @@ export async function searchAddress(query: string): Promise<GeoResult[]> {
   }
 }
 
-export async function reverseGeocode(lat: number, lng: number): Promise<ReverseResult | null> {
+/** Full outcome (address / no_address / error) — used by the map picker. */
+export async function reverseGeocodeDetailed(lat: number, lng: number): Promise<ReverseOutcome> {
   const response = await fetchJson(
     `${NOMINATIM}/reverse?format=jsonv2&addressdetails=1&lat=${lat}&lon=${lng}`,
   );
-  if (!response || !response.ok) return null;
+  if (!response || !response.ok) return { kind: 'error' };
   try {
     const row = (await response.json()) as NominatimRow & { error?: string };
-    // Ocean / no-man's-land: Nominatim returns an error and no address.
-    if (row.error || !row.address) return null;
-    return {
-      label: shortLabel(row),
-      inBrazil: row.address.country_code === 'br',
-    };
+    // Ocean / no-man's-land: Nominatim responds but with an error / no address.
+    if (row.error || !row.address) return { kind: 'no_address' };
+    return { kind: 'address', label: shortLabel(row), inBrazil: row.address.country_code === 'br' };
   } catch {
-    return null;
+    return { kind: 'error' };
   }
+}
+
+/** Convenience wrapper: just the label + inBrazil, or null (kept for callers). */
+export async function reverseGeocode(lat: number, lng: number): Promise<ReverseResult | null> {
+  const outcome = await reverseGeocodeDetailed(lat, lng);
+  return outcome.kind === 'address' ? { label: outcome.label, inBrazil: outcome.inBrazil } : null;
 }

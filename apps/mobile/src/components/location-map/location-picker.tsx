@@ -14,8 +14,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { insideBrazilBbox } from '@vinc/core';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
+import { locateDevice } from '@/features/gigs/region';
 import { useTheme } from '@/hooks/use-theme';
-import { reverseGeocode, searchAddress, type GeoResult } from '@/lib/geocoding';
+import { reverseGeocodeDetailed, searchAddress, type GeoResult } from '@/lib/geocoding';
 
 import { BRAZIL_CENTER } from './config';
 import { LocationMap } from './location-map';
@@ -52,61 +53,101 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
   const [interacted, setInteracted] = useState(Boolean(start));
   const [label, setLabel] = useState<string | null>(start?.address ?? null);
   const [reading, setReading] = useState(false);
+  // What the reverse lookup said about the pin (D-059): 'ocean'/'foreign'
+  // block the confirm; 'error' (network) falls back to the offline bbox so a
+  // valid pin is never wrongly blocked.
+  type PointStatus = 'unknown' | 'brazil' | 'foreign' | 'ocean' | 'error';
+  const [pointStatus, setPointStatus] = useState<PointStatus>(start ? 'brazil' : 'unknown');
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<GeoResult[]>([]);
   const [searching, setSearching] = useState(false);
+  const [noResults, setNoResults] = useState(false);
 
   const reverseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const located = useRef(false);
 
   useEffect(() => () => {
     if (reverseTimer.current) clearTimeout(reverseTimer.current);
   }, []);
 
-  // Whether the pin is in Brazil is decided OFFLINE by the bounding box
-  // (same guard the backend uses) — never by the network. This way a slow
-  // or blocked reverse-geocode can't wrongly reject a valid pin (the old
-  // "Escolha um local dentro do Brasil" false-block). The network lookup
-  // only fills in the human-readable address label, as a convenience.
-  const inBrazil = insideBrazilBbox(center.lat, center.lng);
+  // Open the map on the user's own region (B-10) instead of the middle of
+  // Brazil: try the device GPS once when the picker opens without a pin.
+  useEffect(() => {
+    if (!visible || start || located.current) return;
+    located.current = true;
+    locateDevice().then((result) => {
+      if (result.ok) setCenter({ lat: result.lat, lng: result.lng, zoom: 15 });
+    });
+  }, [visible, start]);
 
-  const moved = (lat: number, lng: number) => {
-    setCenter((current) => ({ ...current, lat, lng }));
-    setInteracted(true);
+  const inBbox = insideBrazilBbox(center.lat, center.lng);
+
+  const runReverse = (lat: number, lng: number) => {
     setReading(true);
     if (reverseTimer.current) clearTimeout(reverseTimer.current);
     reverseTimer.current = setTimeout(async () => {
-      const found = await reverseGeocode(lat, lng);
-      setLabel(found?.label ?? 'Ponto marcado no mapa');
+      const outcome = await reverseGeocodeDetailed(lat, lng);
+      if (outcome.kind === 'address') {
+        setLabel(outcome.label);
+        setPointStatus(outcome.inBrazil ? 'brazil' : 'foreign');
+      } else if (outcome.kind === 'no_address') {
+        setLabel(null);
+        setPointStatus('ocean');
+      } else {
+        setLabel('Ponto marcado no mapa');
+        setPointStatus('error'); // network — bbox decides
+      }
       setReading(false);
     }, 700);
   };
 
-  // Search AS the person types (debounced) — no need to press "buscar".
+  const moved = (lat: number, lng: number) => {
+    setCenter((current) => ({ ...current, lat, lng }));
+    setInteracted(true);
+    runReverse(lat, lng);
+  };
+
+  // Search the address as the person types (debounced) AND on submit.
+  const runSearch = async (raw: string) => {
+    const q = raw.trim();
+    if (q.length < 3) {
+      setResults([]);
+      setNoResults(false);
+      return;
+    }
+    setSearching(true);
+    const found = await searchAddress(q);
+    setResults(found);
+    setNoResults(found.length === 0);
+    setSearching(false);
+  };
+
   useEffect(() => {
     const q = query.trim();
     if (q.length < 3) {
       setResults([]);
+      setNoResults(false);
       return;
     }
-    setSearching(true);
-    const timer = setTimeout(async () => {
-      setResults(await searchAddress(q));
-      setSearching(false);
-    }, 450);
+    const timer = setTimeout(() => runSearch(q), 500);
     return () => clearTimeout(timer);
   }, [query]);
 
   const pickResult = (result: GeoResult) => {
     setResults([]);
+    setNoResults(false);
     setQuery('');
     setCenter({ lat: result.lat, lng: result.lng, zoom: 16 });
     setLabel(result.label);
     setInteracted(true);
+    setPointStatus('brazil'); // search is scoped to Brazil (countrycodes=br)
     setReading(false);
   };
 
-  const canConfirm = interacted && inBrazil && !reading;
+  // Ocean / foreign always block; a network error falls back to the bbox.
+  const blocked = pointStatus === 'ocean' || pointStatus === 'foreign' || !inBbox;
+  const canConfirm = interacted && !reading && !blocked;
 
   const confirm = () => {
     if (!canConfirm) return;
@@ -163,6 +204,7 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
                   placeholderTextColor={theme.textSecondary}
                   value={query}
                   onChangeText={setQuery}
+                  onSubmitEditing={() => runSearch(query)}
                   returnKeyType="search"
                 />
                 {searching && <ActivityIndicator size="small" color={theme.primary} />}
@@ -183,20 +225,29 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
                   ))}
                 </View>
               )}
+              {noResults && !searching && (
+                <View style={[styles.results, { backgroundColor: theme.background }]}>
+                  <Text style={[styles.noResults, { color: theme.textSecondary }]}>
+                    Nenhum endereço encontrado. Tente outro termo ou arraste o mapa.
+                  </Text>
+                </View>
+              )}
             </View>
 
             <View style={[styles.confirmBar, { backgroundColor: theme.background }]}>
               <Text
                 style={[
                   styles.address,
-                  { color: interacted && !inBrazil && !reading ? theme.danger : theme.text },
+                  { color: interacted && blocked && !reading ? theme.danger : theme.text },
                 ]}
                 numberOfLines={2}>
                 {reading
                   ? 'Lendo o endereço…'
-                  : interacted && !inBrazil
-                    ? 'Escolha um local dentro do Brasil.'
-                    : (label ?? 'Busque um endereço ou arraste o mapa até o local')}
+                  : pointStatus === 'ocean'
+                    ? 'Escolha um ponto em terra, com endereço (não o mar).'
+                    : interacted && blocked
+                      ? 'Escolha um local dentro do Brasil.'
+                      : (label ?? 'Busque um endereço ou arraste o mapa até o local')}
               </Text>
               <Text style={[styles.hint, { color: theme.textSecondary }]}>
                 arraste o mapa para ajustar o pino
@@ -318,6 +369,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontWeight: '600',
+  },
+  noResults: {
+    fontSize: 12.5,
+    padding: Spacing.two + 2,
+    lineHeight: 17,
   },
   confirmBar: {
     position: 'absolute',
