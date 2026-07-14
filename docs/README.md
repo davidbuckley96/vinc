@@ -17,6 +17,8 @@ conversas.
 | 07 | [duvidas-abertas.md](07-duvidas-abertas.md) | Questões pendentes do David | Antes de perguntar algo (pode já estar registrado) |
 | 08 | [pesquisa-cobranca-taxa.md](08-pesquisa-cobranca-taxa.md) | Pesquisa: quando cobrar a taxa (cold start × ads externos) | Ao decidir o modelo de cobrança (dúvida #24) |
 | 09 | [suporte-e-moderacao.md](09-suporte-e-moderacao.md) | Suporte, assistente Vi e moderação (arquitetura + fases) | Ao trabalhar em suporte/denúncias |
+| 10 | [infra-cicd-observabilidade.md](10-infra-cicd-observabilidade.md) | Infra, CI/CD, observabilidade e escalabilidade | Ao mexer em deploy/infra |
+| 11 | [bugs-e-melhorias.md](11-bugs-e-melhorias.md) | Roadmap de bugs/melhorias do 2º ciclo de testes (antes/depois) | Ao corrigir os itens B-01…B-30 |
 
 ## Regras de manutenção
 
