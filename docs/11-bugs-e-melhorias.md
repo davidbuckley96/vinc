@@ -60,7 +60,7 @@ Limitações descobertas (a resolver antes do vídeo completo):
   categorias de uma vez.
 - **Severidade:** Média.
 
-### B-04 📱 Botão "voltar" do celular numa categoria vai pra home 🔴
+### B-04 📱 Botão "voltar" do celular numa categoria vai pra home 🟢 (verificar no aparelho)
 - **Descrição:** dentro de uma categoria, o botão voltar do Android leva à
   página inicial, em vez de voltar para a lista de categorias (como faz a seta
   do cabeçalho). O drill-down de categoria é estado interno, não uma rota, então

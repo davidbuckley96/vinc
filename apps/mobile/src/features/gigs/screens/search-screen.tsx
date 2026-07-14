@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  BackHandler,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -61,6 +62,23 @@ export function SearchScreen() {
     });
     return unsubscribe;
   }, [navigation]);
+
+  // Android hardware back (B-04): if drilled into a category / "todas as vagas",
+  // back returns to the category list instead of leaving the tab.
+  useFocusEffect(
+    useCallback(() => {
+      const onBack = () => {
+        if (category || browseAll) {
+          setCategory(null);
+          setBrowseAll(false);
+          return true; // handled — don't leave the tab
+        }
+        return false;
+      };
+      const sub = BackHandler.addEventListener('hardwareBackPress', onBack);
+      return () => sub.remove();
+    }, [category, browseAll]),
+  );
 
   const days = useMemo(
     () =>
