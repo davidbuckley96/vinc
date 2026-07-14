@@ -189,3 +189,23 @@ por **métricas reais**. Ressalvas honestas: em escala grande **paga-se mais**
 (compute + réplicas) e há **acoplamento ao Supabase** (Postgres é portável;
 Auth/Realtime/Functions são "sabor Supabase" — o core desacoplado reduz a dor
 de uma eventual saída).
+
+## 10. Login com Google (OAuth) — config no painel (B-01)
+
+O **código do app já está pronto** (PKCE nativo com deep link + troca de code;
+ver `auth-actions.ts` e `supabase.ts`). O erro "localhost recusado" é sempre
+**allowlist de redirect faltando** nos painéis. Passos (David):
+
+1. **Supabase → Authentication → URL Configuration → Redirect URLs:** adicionar
+   - `vinc://auth` (app instalado — o scheme é `vinc`, ver `app.json`);
+   - a URL do site web publicado (produção) e, se for testar no Expo Go, a URL
+     `exp://…` que o Expo mostra ao rodar.
+2. **Supabase → Authentication → Providers → Google:** habilitar e colar o
+   **Client ID** e **Client Secret** gerados no Google.
+3. **Google Cloud Console → APIs e Serviços → Credenciais → OAuth 2.0 →
+   Authorized redirect URIs:** adicionar o callback do Supabase
+   `https://gexzpkbqodoyoxudzklb.supabase.co/auth/v1/callback`.
+
+Feito isso, o botão "Entrar com Google" volta ao app pelo `vinc://auth` (nativo)
+ou pela origem do site (web), sem cair no `localhost`. Nada disso é código — é
+configuração de projeto, por isso não entra em commit.

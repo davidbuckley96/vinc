@@ -87,6 +87,11 @@ export function LocationMap({
         ref={webviewRef}
         originWhitelist={['*']}
         source={{ html }}
+        // Android: let the map own its pan/pinch instead of the parent
+        // ScrollView stealing the gesture (B-09 — map inside the gig screen
+        // only caught a fraction of each drag). No-op on iOS.
+        nestedScrollEnabled
+        overScrollMode="never"
         onMessage={(event) => {
           try {
             const data = JSON.parse(event.nativeEvent.data) as { lat: number; lng: number };

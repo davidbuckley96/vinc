@@ -34,13 +34,27 @@ Limitações descobertas (a resolver antes do vídeo completo):
 
 ## Área 1 — Autenticação
 
-### B-01 📱 Login/cadastro com Google → "localhost recusado" 🔴
+### B-01 📱 Login/cadastro com Google → "localhost recusado" 🟡 (falta config do David)
 - **Descrição:** ao entrar/cadastrar com Google, cai numa página "não é
   possível acessar esse site — a conexão com localhost foi recusada". Pelo
   e-mail/senha no próprio app funciona.
-- **Causa provável:** a URL de redirect do OAuth aponta para `localhost` (fluxo
-  de dev), em vez de usar o deep link do app (`vinc://` / proxy do Expo). É
-  configuração de OAuth + `redirectTo` no `signInWithOAuth`, não lógica de UI.
+- **Causa:** o código do app **já está correto** — no nativo usa PKCE com deep
+  link do app (`Linking.createURL('/auth')` → `vinc://auth`),
+  `openAuthSessionAsync` e `exchangeCodeForSession` (`auth-actions.ts`); o
+  cliente usa `flowType: 'pkce'` (`supabase.ts`). O "localhost recusado"
+  aparece quando o **redirect final não está na allowlist** do Supabase/Google,
+  então o navegador cai no `localhost` do dev.
+- **Falta (config do David, não é código):**
+  1. **Supabase → Authentication → URL Configuration → Redirect URLs:** incluir
+     `vinc://auth` (app), a URL do site web publicado e, para testar no Expo Go,
+     a URL do proxy (`exp://…`).
+  2. **Supabase → Authentication → Providers → Google:** habilitar e colar o
+     Client ID/Secret do Google.
+  3. **Google Cloud Console → Credenciais → OAuth 2.0 → Authorized redirect
+     URIs:** incluir o callback do Supabase
+     `https://gexzpkbqodoyoxudzklb.supabase.co/auth/v1/callback`.
+  Depois disso o fluxo nativo (`vinc://auth`) e o web funcionam sem cair no
+  localhost. Detalhado em `docs/10-infra-cicd-observabilidade.md`.
 - **Severidade:** Alta (bloqueia um caminho de login).
 
 ---
@@ -104,13 +118,18 @@ Limitações descobertas (a resolver antes do vídeo completo):
 
 ## Área 3 — Mapa e localização
 
-### B-09 📱 Mapa da vaga aberta captura só ~1% do gesto 🔴
+### B-09 📱 Mapa da vaga aberta captura só ~1% do gesto 🟢 (verificar no aparelho)
 - **Descrição:** no mapa de uma vaga já aberta, arrastar/pinçar move só uma
   fração e trava; precisa repetir o gesto várias vezes. Ao anunciar/escolher a
   própria vaga não acontece.
-- **Causa provável:** o `LocationModal` navegável (D-055) usa `react-native-webview`
-  no Android; os gestos do mapa dentro do WebView disputam com o gesto do
-  container. É nativo — no web (MapLibre direto) não ocorre.
+- **Causa:** o mapa (`react-native-webview` no Android) fica dentro do
+  `ScrollView` da tela da vaga; o gesto de arrastar era "roubado" pelo scroll
+  do container — por isso só na vaga aberta (o mapa de escolher é modal cheio,
+  fora de um scroll).
+- **Correção:** `nestedScrollEnabled` + `overScrollMode="never"` no `WebView`
+  (`location-map.tsx`) — no Android o mapa passa a ganhar o próprio gesto de
+  pan/zoom em vez do scroll pai. No-op no iOS/web. **Verificar no aparelho**
+  (não reproduzível no harness web, que usa MapLibre direto sem WebView).
 - **Severidade:** Alta (mapa inutilizável na vaga aberta).
 
 ### B-10 Busca de endereço não sugere e não move o pino; início no meio do Brasil 🟢
