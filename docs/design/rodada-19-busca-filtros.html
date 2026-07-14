@@ -1,0 +1,114 @@
+<meta charset="utf-8">
+<title>Rodada 19 — Busca com filtros (B-05, B-07, B-08)</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --ok:#059669; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:36px 24px;margin:0}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:900px;line-height:1.55}
+  .row{display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start}
+  .option{width:320px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;margin-bottom:8px;background:var(--lilas);color:var(--roxo)}
+  .option h3{margin:2px 0 4px;font-size:16px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 0 14px}
+  .phone{width:320px;height:640px;border-radius:34px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .top{background:var(--roxo);color:#fff;padding:16px 16px 14px}
+  .top .t{font-size:17px;font-weight:800}
+  .body{flex:1;overflow:hidden;background:#fff;padding:12px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+  .chip{font-size:12px;font-weight:700;padding:7px 12px;border-radius:99px;border:1.5px solid var(--line);color:var(--ink2);background:#fff;white-space:nowrap}
+  .chip.on{background:var(--roxo);border-color:var(--roxo);color:#fff}
+  .chip.icon::before{content:"▾";margin-left:6px;font-size:10px;opacity:.7}
+  .fbtn{display:flex;align-items:center;gap:8px;justify-content:center;border:1.5px solid var(--roxo);color:var(--roxo);font-weight:800;font-size:13px;padding:10px;border-radius:12px;margin-bottom:12px}
+  .sheet{border:1.5px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+  .sheet h4{margin:0 0 8px;font-size:12px;letter-spacing:.4px;color:var(--ink2)}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .cal .d{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12px;border-radius:8px;color:var(--ink)}
+  .cal .d.mut{color:#c3c7cf}
+  .cal .d.range{background:var(--lilas)}
+  .cal .d.start,.cal .d.end{background:var(--roxo);color:#fff;font-weight:800}
+  .card{border:1.5px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:9px}
+  .card .h{display:flex;justify-content:space-between;font-weight:800;font-size:14px}
+  .card .m{font-size:11.5px;color:var(--ink2);margin-top:2px}
+  .price{color:var(--roxo);font-weight:800}
+  .seg{display:flex;gap:6px;margin-bottom:10px}
+  .seg .s{flex:1;text-align:center;font-size:12px;font-weight:700;padding:7px;border-radius:10px;border:1.5px solid var(--line);color:var(--ink2)}
+  .seg .s.on{background:var(--roxo);border-color:var(--roxo);color:#fff}
+  .search{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;font-size:13px;color:var(--ink2);margin-bottom:12px}
+  .note{font-size:12px;color:var(--ink2);line-height:1.5;background:#FAFAFC;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:18px;max-width:900px}
+  b{color:var(--ink)}
+</style>
+
+<h1>Rodada 19 — Nova busca com filtros</h1>
+<p class="sub">Reúne <b>B-05</b> (filtro de datas em faixa: dia início + dia fim; 2× no mesmo dia = só ele),
+<b>B-07</b> (raio de distância) e <b>B-08</b> (buscar por região por nome).
+Escolha o modelo do <b>controle dos filtros</b>. O calendário de faixa e os cartões de vaga são iguais nos dois.</p>
+
+<div class="row">
+
+  <!-- OPÇÃO A -->
+  <div class="option">
+    <span class="tag">Opção A</span>
+    <h3>Chips de filtro na tela</h3>
+    <p>Uma linha de chips (Quando · Hora · Distância · Região). Tocar num chip abre só aquele filtro logo abaixo. Rápido, tudo à vista.</p>
+    <div class="phone">
+      <div class="top"><div class="t">Procurar trabalhos</div></div>
+      <div class="body">
+        <div class="chips">
+          <span class="chip icon on">📅 Seg 21 – Qua 23</span>
+          <span class="chip icon">🕐 Qualquer hora</span>
+          <span class="chip icon">📍 10 km</span>
+          <span class="chip icon">🗺 Ceilândia</span>
+        </div>
+        <div class="sheet">
+          <h4>QUANDO — toque no início e no fim</h4>
+          <div class="seg"><div class="s">Hoje</div><div class="s">Amanhã</div><div class="s on">Escolher faixa</div></div>
+          <div class="cal">
+            <div class="d mut">18</div><div class="d mut">19</div><div class="d mut">20</div>
+            <div class="d start">21</div><div class="d range">22</div><div class="d end">23</div><div class="d">24</div>
+            <div class="d">25</div><div class="d">26</div><div class="d">27</div><div class="d">28</div><div class="d">29</div><div class="d">30</div><div class="d">31</div>
+          </div>
+        </div>
+        <div class="card"><div class="h"><span>Faxina apartamento</span><span class="price">R$ 120,00</span></div><div class="m">Serviços domésticos · qua 22 · 14h–17h · Ceilândia · 4 km</div></div>
+        <div class="card"><div class="h"><span>Babá 2 crianças</span><span class="price">R$ 160,00</span></div><div class="m">Cuidados · seg 21 · 22h–03h(+1) · Ceilândia · 8 km</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPÇÃO B -->
+  <div class="option">
+    <span class="tag">Opção B</span>
+    <h3>Botão "Filtros" + folha</h3>
+    <p>Um botão único "Filtros" abre uma folha com tudo junto (data em faixa, hora, distância, região). Tela de resultados mais limpa; um toque a mais para filtrar.</p>
+    <div class="phone">
+      <div class="top"><div class="t">Procurar trabalhos</div></div>
+      <div class="body">
+        <div class="fbtn">⚙ Filtros · <span style="color:var(--ink2);font-weight:600">Seg 21–Qua 23 · 10 km · Ceilândia</span></div>
+        <div class="sheet">
+          <h4>FAIXA DE DIAS</h4>
+          <div class="cal">
+            <div class="d mut">18</div><div class="d mut">19</div><div class="d mut">20</div>
+            <div class="d start">21</div><div class="d range">22</div><div class="d end">23</div><div class="d">24</div>
+            <div class="d">25</div><div class="d">26</div><div class="d">27</div><div class="d">28</div><div class="d">29</div><div class="d">30</div><div class="d">31</div>
+          </div>
+          <h4 style="margin-top:12px">HORA — qualquer dia, às…</h4>
+          <div class="chips"><span class="chip">Qualquer</span><span class="chip on">03h</span><span class="chip">08h</span><span class="chip">14h</span><span class="chip">20h</span></div>
+          <h4 style="margin-top:12px">DISTÂNCIA</h4>
+          <div class="seg"><div class="s">5 km</div><div class="s on">10 km</div><div class="s">30 km</div><div class="s">Sem limite</div></div>
+          <h4 style="margin-top:12px">REGIÃO</h4>
+          <div class="search">🔎 Ceilândia, DF</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <b>Detalhes que valem nos dois:</b><br>
+  • <b>Faixa de datas (B-05):</b> toca no dia de início e depois no de fim; tocar 2× no mesmo dia = só aquele dia.<br>
+  • <b>Hora (já corrigido, B-06):</b> cobre 24h — dá para "qualquer dia, às 03h".<br>
+  • <b>Distância (B-07):</b> 5/10/30 km ou "sem limite" (vê vagas mais distantes).<br>
+  • <b>Região (B-08):</b> digitar o nome ("SP", "Ceilândia") centra a busca ali, além do raio.<br>
+  • Cada cartão mostra a distância (ex.: "4 km") para dar noção de perto/longe.
+</div>
