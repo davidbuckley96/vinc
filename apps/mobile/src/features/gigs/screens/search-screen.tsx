@@ -404,6 +404,24 @@ export function SearchScreen() {
                   </Pressable>
                 ))}
               </View>
+              {/* Alertas de vagas também na busca (pedido do David): quem procura
+                  pode pedir para ser avisado quando surgir a vaga certa. */}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Alertas de vagas"
+                onPress={() => router.push('/alerts')}
+                style={[styles.alertsCard, { backgroundColor: theme.primarySoft, borderColor: theme.primary }]}>
+                <Ionicons name="notifications" size={19} color={theme.primarySoftText} />
+                <View style={styles.alertsText}>
+                  <Text style={[styles.alertsTitle, { color: theme.primarySoftText }]}>
+                    Alertas de vagas
+                  </Text>
+                  <Text style={[styles.alertsHint, { color: theme.primarySoftMeta }]}>
+                    Avisamos quando surgir uma vaga do seu jeito.
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={theme.primarySoftMeta} />
+              </Pressable>
               <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
                 VAGAS RECENTES
               </Text>
@@ -429,6 +447,11 @@ export function SearchScreen() {
                     Aumentar o raio ou mudar o local ›
                   </Text>
                 </Pressable>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/alerts')}>
+                  <Text style={[styles.emptyRegionLink, { color: theme.primary }]}>
+                    🔔 Criar um alerta e te avisamos quando surgir ›
+                  </Text>
+                </Pressable>
                 <Pressable accessibilityRole="button" onPress={() => router.push('/post')}>
                   <Text style={[styles.emptyRegionLink, { color: theme.primary }]}>
                     Precisa de um serviço? Seja o primeiro a anunciar aqui — é grátis ›
@@ -441,6 +464,11 @@ export function SearchScreen() {
                   Nenhuma vaga aberta{category ? ' nesta categoria' : ''}
                   {range !== null ? ' nesse período' : ''}. Volte mais tarde!
                 </Text>
+                <Pressable accessibilityRole="button" onPress={() => router.push('/alerts')}>
+                  <Text style={[styles.emptyRegionLink, { color: theme.primary }]}>
+                    🔔 Criar um alerta e te avisamos quando surgir ›
+                  </Text>
+                </Pressable>
                 <Pressable accessibilityRole="button" onPress={() => router.push('/post')}>
                   <Text style={[styles.emptyRegionLink, { color: theme.primary }]}>
                     Precisa de um serviço? Anunciar é grátis ›
@@ -546,6 +574,19 @@ const styles = StyleSheet.create({
     borderRadius: Radius.medium,
     paddingVertical: 12,
   },
+  alertsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1.5,
+    borderRadius: Radius.large,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginTop: Spacing.one,
+  },
+  alertsText: { flex: 1, gap: 1 },
+  alertsTitle: { fontSize: 14, fontWeight: '800' },
+  alertsHint: { fontSize: 11.5, lineHeight: 15 },
   allButtonLabel: {
     fontSize: 14,
     fontWeight: '800',
