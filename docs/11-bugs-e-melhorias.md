@@ -79,14 +79,20 @@ Limitações descobertas (a resolver antes do vídeo completo):
   às 03h"), como já ficou na criação de vaga (D-053).
 - **Severidade:** Média.
 
-### B-07 ⚪ Filtro de localização por raio (x/y/z km) na busca 🔴
+### B-07 Filtro de localização por raio (x/y/z km) na busca 🟢
 - **Descrição:** poder ver vagas dentro de um raio (ex.: 5/10/30 km); sem filtro,
   ver vagas mais distantes. (Já existe `useRegion`/raio no back — expor na UI.)
+- **Fix (D-062):** raios 5/10/30/50/100 km expostos como chips no `RegionModal`.
 - **Severidade:** Média.
 
-### B-08 ⚪ Buscar vagas por região específica (ex.: "SP", "Ceilândia") 🔴
+### B-08 Buscar vagas por região específica (ex.: "SP", "Ceilândia") 🟢
 - **Descrição:** poder pesquisar vagas numa região por nome, não só pelo raio
   em torno da posição atual.
+- **Fix (D-062):** campo de busca de bairro/cidade no `RegionModal` com
+  sugestões **dinâmicas enviesadas pelo GPS** (`searchRegions` com viewbox
+  ~75 km ao redor da posição atual) — nada hard-coded. "Centro" perto de
+  Aracaju devolve o centro de Aracaju; perto do Rio, o do Rio (verificado
+  via API). Sem localização, é busca Brasil inteiro.
 - **Severidade:** Média.
 
 ---

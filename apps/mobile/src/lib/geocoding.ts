@@ -71,6 +71,33 @@ function shortLabel(row: NominatimRow): string {
   return head || tail || row.display_name?.split(',').slice(0, 3).join(',') || 'Local no mapa';
 }
 
+/**
+ * Region/place search biased toward the user's location (B-08, D-062): a
+ * viewbox around `near` makes the results LOCALLY relevant and dynamic — no
+ * hard-coded lists. Typing "centro" in Aracaju surfaces Aracaju's centro
+ * first; in Rio, Rio's. Without `near` it's a plain Brazil-wide search.
+ */
+export async function searchRegions(
+  query: string,
+  near?: { lat: number; lng: number },
+): Promise<GeoResult[]> {
+  let viewbox = '';
+  if (near) {
+    const d = 0.7; // ~75 km box — prioritizes the user's surroundings
+    viewbox = `&viewbox=${near.lng - d},${near.lat + d},${near.lng + d},${near.lat - d}&bounded=0`;
+  }
+  const response = await fetchJson(
+    `${NOMINATIM}/search?format=jsonv2&addressdetails=1&countrycodes=br&limit=6&q=${encodeURIComponent(query)}${viewbox}`,
+  );
+  if (!response || !response.ok) return [];
+  try {
+    const rows = (await response.json()) as NominatimRow[];
+    return rows.map((row) => ({ lat: Number(row.lat), lng: Number(row.lon), label: shortLabel(row) }));
+  } catch {
+    return [];
+  }
+}
+
 export async function searchAddress(query: string): Promise<GeoResult[]> {
   const response = await fetchJson(
     `${NOMINATIM}/search?format=jsonv2&addressdetails=1&countrycodes=br&limit=5&q=${encodeURIComponent(query)}`,

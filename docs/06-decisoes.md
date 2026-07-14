@@ -1017,6 +1017,22 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-062 — Busca com filtros (Opção A) + região dinâmica por GPS
+**Data:** 2026-07-14 · **Decidido por:** David (mock rodada 19, opção A)
+
+A busca ganha filtros no modelo **chips na tela** (Opção A do mock): Quando ·
+Hora · Distância · Região. Implementado por partes:
+- **Distância (B-07):** raios 5/10/30/50/100 km (já existiam no seletor de
+  região; ficam acessíveis pela barra de região).
+- **Região por nome (B-08):** campo de busca de bairro/cidade com **sugestões
+  dinâmicas enviesadas pela localização atual** (`searchRegions` com viewbox
+  ~75 km ao redor do GPS) — **nada hard-coded**: "centro" perto de Aracaju
+  devolve o centro de Aracaju; perto do Rio, o do Rio (verificado). Sem
+  bias, é busca Brasil inteiro.
+- **Hora (B-06):** já cobre 24h.
+- **Faixa de datas (B-05):** pendente — calendário de início+fim (2× no mesmo
+  dia = só ele) + reorganização dos filtros em chips na tela de busca.
+
 ## D-061 — Novo usuário começa com nota 5 + selo; "ver todas as vagas"
 **Data:** 2026-07-14 · **Decidido por:** David
 
