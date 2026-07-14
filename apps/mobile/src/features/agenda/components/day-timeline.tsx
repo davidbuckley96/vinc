@@ -10,8 +10,10 @@ import { useTheme } from '@/hooks/use-theme';
 import { formatHour } from '../dates';
 import type { AgendaCommitment } from '../mock';
 
-const FIRST_HOUR = 6;
+// Full day (D-053): serviços de madrugada existem, então a agenda mostra 0h–23h.
+const FIRST_HOUR = 0;
 const LAST_HOUR = 23;
+const ROW_HEIGHT = 52;
 
 interface Props {
   commitments: AgendaCommitment[];
@@ -24,36 +26,60 @@ interface Props {
  * Day view: one row per hour. Busy hours show the commitment card; free hours
  * expand on tap into the two core actions (buscar serviço / anunciar vaga).
  */
+type DaySegment =
+  | { key: string; kind: 'busy'; hour: number; span: number; commitment: AgendaCommitment }
+  | { key: string; kind: 'free'; hour: number };
+
+/**
+ * Pure: turns commitments into the day's rows. A multi-hour commitment is a
+ * SINGLE segment covering its whole span (D-054), instead of a start card
+ * plus faded "covered" rows. Kept out of render so the imperative walk
+ * doesn't trip the React Compiler's immutability rule.
+ */
+function buildDaySegments(commitments: AgendaCommitment[]): DaySegment[] {
+  const startingAt = (hour: number) => commitments.find((c) => c.startsAt.getHours() === hour);
+  const spanHours = (c: AgendaCommitment) =>
+    Math.max(1, Math.round((c.endsAt.getTime() - c.startsAt.getTime()) / 3_600_000));
+
+  const segments: DaySegment[] = [];
+  let hour = FIRST_HOUR;
+  while (hour <= LAST_HOUR) {
+    const commitment = startingAt(hour);
+    if (commitment) {
+      const span = spanHours(commitment);
+      segments.push({ key: `c-${hour}`, kind: 'busy', hour, span, commitment });
+      hour += span;
+    } else {
+      segments.push({ key: `h-${hour}`, kind: 'free', hour });
+      hour += 1;
+    }
+  }
+  return segments;
+}
+
 export function DayTimeline({ commitments, onSearchSlot, onPostSlot, onOpenCommitment }: Props) {
   const theme = useTheme();
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
-
-  const hours = Array.from({ length: LAST_HOUR - FIRST_HOUR + 1 }, (_, i) => FIRST_HOUR + i);
-  const startingAt = (hour: number) =>
-    commitments.find((c) => c.startsAt.getHours() === hour);
-  const coveredBy = (hour: number) =>
-    commitments.find((c) => hour > c.startsAt.getHours() && hour < c.endsAt.getHours());
+  const segments = buildDaySegments(commitments);
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      {hours.map((hour) => {
-        const commitment = startingAt(hour);
-        const covering = coveredBy(hour);
-        const selected = selectedHour === hour;
-
-        return (
-          <View key={hour} style={styles.row}>
-            <Text style={[styles.hour, { color: theme.textSecondary }]}>
-              {String(hour).padStart(2, '0')}:00
-            </Text>
-
-            {commitment ? (
+      {segments.map((seg) => {
+        if (seg.kind === 'busy') {
+          const { commitment, span, hour } = seg;
+          const isCandidacy = commitment.kind === 'candidacy';
+          return (
+            <View key={seg.key} style={styles.row}>
+              <Text style={[styles.hour, { color: theme.textSecondary }]}>
+                {String(hour).padStart(2, '0')}:00
+              </Text>
               <Pressable
                 accessibilityRole="button"
                 onPress={() => onOpenCommitment(commitment)}
                 style={[
                   styles.busy,
-                  commitment.kind === 'candidacy'
+                  { minHeight: ROW_HEIGHT + (span - 1) * 26 },
+                  isCandidacy
                     ? {
                         backgroundColor: theme.background,
                         borderLeftColor: theme.dashedBorder,
@@ -66,40 +92,39 @@ export function DayTimeline({ commitments, onSearchSlot, onPostSlot, onOpenCommi
                 <Text
                   style={[
                     styles.busyTitle,
-                    {
-                      color:
-                        commitment.kind === 'candidacy'
-                          ? theme.textSecondary
-                          : theme.primarySoftText,
-                    },
+                    { color: isCandidacy ? theme.textSecondary : theme.primarySoftText },
                   ]}>
                   {commitment.title}
                 </Text>
                 <Text
                   style={[
                     styles.busyMeta,
-                    {
-                      color:
-                        commitment.kind === 'candidacy'
-                          ? theme.textSecondary
-                          : theme.primarySoftMeta,
-                    },
+                    { color: isCandidacy ? theme.textSecondary : theme.primarySoftMeta },
                   ]}>
                   {formatHour(commitment.startsAt)}–{formatHour(commitment.endsAt)} ·{' '}
                   {formatBRL(commitment.priceCents)}
                   {commitment.counterpartRating
                     ? ` · ★ ${commitment.counterpartRating.toLocaleString('pt-BR')}`
                     : ''}
-                  {commitment.kind === 'candidacy'
+                  {isCandidacy
                     ? ' · candidatura enviada'
                     : commitment.role === 'poster'
                       ? ' · minha vaga'
                       : ''}
                 </Text>
               </Pressable>
-            ) : covering ? (
-              <View style={[styles.covered, { backgroundColor: theme.primarySoft }]} />
-            ) : selected ? (
+            </View>
+          );
+        }
+
+        const { hour } = seg;
+        const selected = selectedHour === hour;
+        return (
+          <View key={seg.key} style={styles.row}>
+            <Text style={[styles.hour, { color: theme.textSecondary }]}>
+              {String(hour).padStart(2, '0')}:00
+            </Text>
+            {selected ? (
               <View style={styles.actions}>
                 <Pressable
                   accessibilityRole="button"
@@ -119,9 +144,7 @@ export function DayTimeline({ commitments, onSearchSlot, onPostSlot, onOpenCommi
                     { borderColor: theme.primary, backgroundColor: theme.background },
                   ]}>
                   <Ionicons name="megaphone-outline" size={16} color={theme.primary} />
-                  <Text style={[styles.actionLabel, { color: theme.primary }]}>
-                    Anunciar vaga
-                  </Text>
+                  <Text style={[styles.actionLabel, { color: theme.primary }]}>Anunciar vaga</Text>
                 </Pressable>
               </View>
             ) : (
@@ -175,12 +198,6 @@ const styles = StyleSheet.create({
   busyMeta: {
     fontSize: 11.5,
     marginTop: 1,
-  },
-  covered: {
-    flex: 1,
-    borderRadius: Radius.small,
-    opacity: 0.45,
-    marginBottom: Spacing.two,
   },
   free: {
     flex: 1,

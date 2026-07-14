@@ -995,3 +995,12 @@ cada render, então a **virada de meia-noite** não cria mais vaga no dia que
 passou; **(c)** suporte a qualquer hora do dia. Componentes reutilizáveis
 `MonthCalendar` e `HourPicker`. A validação de `starts_in_past` (core +
 backend) segue como rede de segurança final.
+
+## D-054 — Agenda: bloco único por compromisso + dia completo (0h–23h)
+**Data:** 2026-07-14 · **Decidido por:** David
+
+Na agenda do dia, um serviço/vaga que ocupa mais de 1h passa a ser **um bloco
+único** (altura proporcional à duração) em vez de vários quadrados "ocupado"
+repetidos. A grade também passa a cobrir **as 24h** (0h–23h), para caber
+serviços de madrugada (D-053). A montagem das linhas é uma função pura
+(`buildDaySegments`) fora do render.
