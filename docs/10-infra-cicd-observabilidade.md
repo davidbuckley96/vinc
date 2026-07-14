@@ -219,3 +219,17 @@ O único item não verificável daqui é o *Authorized redirect URI* no Google
 Console; como o erro observado foi "localhost recusado" (e não
 "redirect_uri_mismatch"), o callback do Supabase já está lá. **O APK deve
 autenticar com Google sem ajustes adicionais.**
+
+## 11. Push no Android (FCM) — config (V-08)
+
+O push do Android via Expo exige **FCM (Firebase)**. Estado/receita:
+- **Projeto Firebase:** `vinc-e2963`; app Android `com.vinc.app`.
+- **API FCM V1:** ativada. A **chave de conta de serviço** (JSON privado —
+  SEGREDO) foi enviada ao **EAS** (`eas credentials` → Android → Google Service
+  Account → FCM V1). Vive só no EAS; **nunca** vai pro git
+  (`.gitignore`: `*firebase-adminsdk*.json`).
+- **`google-services.json`** (config do cliente, **não** é segredo) fica em
+  `apps/mobile/google-services.json` e é **comitado** — o `app.json` aponta pra
+  ele (`android.googleServicesFile`). O build precisa dele.
+- Depois disso: **rebuild** (`preview`) → abrir o app → **permitir
+  notificações** → o token registra em `push_tokens` → push passa a chegar.

@@ -13,6 +13,7 @@
     },
     "android": {
       "package": "com.vinc.app",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#6D28D9",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

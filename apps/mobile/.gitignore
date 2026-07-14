@@ -41,3 +41,9 @@ example
 # generated native folders
 /ios
 /android
+
+# FCM service account key (segredo — já vive no EAS, NUNCA comitar).
+# Atenção: google-services.json NÃO é segredo e DEVE ser comitado (o build
+# precisa dele), por isso não é ignorado aqui.
+*firebase-adminsdk*.json
+vinc-*-firebase-adminsdk-*.json
