@@ -165,7 +165,7 @@ Limitações descobertas (a resolver antes do vídeo completo):
   causando cliques errados ou fechar o calendário sem querer.
 - **Severidade:** Média (usabilidade).
 
-### B-21 "3 vagas abertas" deve ser link + voltar preserva o rascunho 🔴
+### B-21 "3 vagas abertas" deve ser link + voltar preserva o rascunho 🟢
 - **Descrição:** ao atingir o limite e mandar cancelar uma para publicar outra,
   o "3 vagas abertas" deveria ser um **link** para o perfil com todas as vagas
   (para apagar). E voltar deveria retornar à vaga em criação sem refazer tudo.
@@ -217,7 +217,7 @@ Limitações descobertas (a resolver antes do vídeo completo):
 
 ## Área 7 — Perfil
 
-### B-28 Perfil: gerenciar candidaturas e vagas abertas 🔴
+### B-28 Perfil: gerenciar candidaturas e vagas abertas 🟢
 - **Descrição:** o perfil deveria listar candidaturas e vagas abertas do usuário,
   para gerenciar/excluir.
 - **Severidade:** Média.

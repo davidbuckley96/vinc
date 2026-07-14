@@ -1,6 +1,6 @@
 import { useNavigation, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { computeGigPricing, formatBRL, suspensionUntilLabel, type GigDraft } from '@vinc/core';
@@ -26,6 +26,9 @@ export function PostScreen() {
   const [feedback, setFeedback] = useState<GigFormFeedback | null>(null);
   // Remounts the form (clearing every field) after a successful publish.
   const [formKey, setFormKey] = useState(0);
+  // Hit the open-gigs limit (B-21): show a link to manage them; the draft
+  // stays intact (form isn't reset), so voltar do perfil não perde nada.
+  const [limitHit, setLimitHit] = useState(false);
 
   // Tapping the "Anunciar" tab always opens a FRESH form (B-15): the old
   // state (a filled-in location, a previous success message) shouldn't come
@@ -36,6 +39,7 @@ export function PostScreen() {
     };
     const unsubscribe = tabNav.addListener('tabPress', () => {
       setFeedback(null);
+      setLimitHit(false);
       setFormKey((key) => key + 1);
     });
     return unsubscribe;
@@ -43,6 +47,7 @@ export function PostScreen() {
 
   const publish = async (draft: GigDraft) => {
     setFeedback(null);
+    setLimitHit(false);
     if (status === 'signedOut') {
       router.push('/auth');
       return;
@@ -50,6 +55,7 @@ export function PostScreen() {
     try {
       const outcome = await createGig.mutateAsync(draft);
       if (outcome.code !== 'created') {
+        if (outcome.code === 'too_many_open_gigs') setLimitHit(true);
         setFeedback({
           kind: 'error',
           text:
@@ -62,7 +68,7 @@ export function PostScreen() {
                   : outcome.code === 'suspended'
                     ? `Sua conta está suspensa temporariamente${suspensionUntilLabel(outcome.until)}. Você poderá anunciar quando a suspensão terminar.`
                     : outcome.code === 'too_many_open_gigs'
-                      ? `Você já tem ${outcome.limit ?? 3} vagas abertas. Conclua ou exclua uma para anunciar outra.`
+                      ? `Você já tem ${outcome.limit ?? 3} vagas abertas. Exclua uma no seu perfil para anunciar outra — seu rascunho continua aqui.`
                       : 'Não foi possível publicar. Verifique os dados e tente de novo.',
         });
         return;
@@ -99,6 +105,17 @@ export function PostScreen() {
           </SafeAreaView>
         </View>
 
+        {limitHit && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/(tabs)/profile')}
+            style={[styles.limitLink, { backgroundColor: theme.dangerSoft }]}>
+            <Text style={[styles.limitLinkText, { color: theme.danger }]}>
+              Ver e excluir minhas vagas abertas ›
+            </Text>
+          </Pressable>
+        )}
+
         <GigForm
           key={formKey}
           submitLabel="Publicar vaga"
@@ -131,5 +148,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.two,
     paddingBottom: Spacing.three,
+  },
+  limitLink: {
+    marginHorizontal: Spacing.three,
+    marginTop: Spacing.two,
+    borderRadius: Radius.medium,
+    paddingVertical: 11,
+    paddingHorizontal: Spacing.three,
+    alignItems: 'center',
+  },
+  limitLinkText: {
+    fontSize: 13.5,
+    fontWeight: '800',
   },
 });

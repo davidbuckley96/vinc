@@ -9,6 +9,7 @@ import { useSession } from '@/features/auth/session-context';
 import { useProfileStats } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
+import { MyActivity } from '../components/my-activity';
 import { ProfileView } from '../components/profile-view';
 import { useMyProfile } from '../hooks';
 
@@ -76,6 +77,7 @@ export function ProfileScreen() {
           ) : (
             <>
               <ProfileView userId={userId} role={role} fallbackName="Você" />
+              {status === 'signedIn' && <MyActivity />}
               {status === 'signedIn' && (
                 <Pressable
                   accessibilityRole="button"
