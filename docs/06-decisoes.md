@@ -1017,6 +1017,17 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-061 — Novo usuário começa com nota 5 + selo; "ver todas as vagas"
+**Data:** 2026-07-14 · **Decidido por:** David
+
+- **Novo usuário = nota 5 (B-29):** quem ainda não recebeu avaliações aparece
+  com **★ 5,0** (benefício da dúvida, em vez de "sem nota", que parecia ruim),
+  sempre com o selo **"🌱 Novo usuário"** — no card do candidato (para quem
+  escolhe) e no perfil. A média real substitui o 5 assim que houver avaliações.
+- **Ver todas as vagas (B-03):** a busca ganha um botão "Ver todas as vagas"
+  que lista as vagas de **todas as categorias** juntas (além dos blocos por
+  categoria).
+
 ## D-060 — Coerência da denúncia e da edição de vaga
 **Data:** 2026-07-14 · **Decidido por:** David
 

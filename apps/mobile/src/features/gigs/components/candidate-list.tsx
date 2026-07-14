@@ -117,11 +117,18 @@ export function CandidateList({ gigId, enabled }: CandidateListProps) {
                       </Text>
                     </View>
                   )}
+                  {candidate.reviewCount === 0 && (
+                    <View style={[styles.newBadge, { backgroundColor: theme.primarySoft }]}>
+                      <Text style={[styles.priorityLabel, { color: theme.primarySoftText }]}>
+                        🌱 Novo usuário
+                      </Text>
+                    </View>
+                  )}
                 </View>
                 <Text style={[styles.meta, { color: theme.textSecondary }]}>
-                  {candidate.avgRating !== null
+                  {candidate.reviewCount > 0 && candidate.avgRating !== null
                     ? `★ ${candidate.avgRating.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} (${candidate.reviewCount} ${candidate.reviewCount === 1 ? 'avaliação' : 'avaliações'}) · ${candidate.completedServices} serviços`
-                    : 'sem avaliações ainda · novo no Vinc'}
+                    : '★ 5,0 · ainda sem avaliações'}
                 </Text>
                 {candidate.priority && (
                   <Text style={[styles.priorityHint, { color: theme.primarySoftMeta }]}>
@@ -252,6 +259,11 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   priorityBadge: {
+    borderRadius: Radius.pill,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  newBadge: {
     borderRadius: Radius.pill,
     paddingHorizontal: 8,
     paddingVertical: 2,

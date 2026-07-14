@@ -41,6 +41,8 @@ export function SearchScreen() {
   const navigation = useNavigation();
   const params = useLocalSearchParams<{ day?: string; hour?: string }>();
   const [category, setCategory] = useState<Category | null>(null);
+  // "Ver todas as vagas" (B-03): lista as vagas de todas as categorias juntas.
+  const [browseAll, setBrowseAll] = useState(false);
   const categories = useCategories();
 
   // Tapping the "Buscar" tab always returns to the top of search (root
@@ -55,6 +57,7 @@ export function SearchScreen() {
     };
     const unsubscribe = tabNav.addListener('tabPress', () => {
       setCategory(null);
+      setBrowseAll(false);
     });
     return unsubscribe;
   }, [navigation]);
@@ -141,15 +144,18 @@ export function SearchScreen() {
         <View style={[styles.header, { backgroundColor: theme.primary }]}>
           <SafeAreaView edges={['top']}>
             <View style={styles.headerRow}>
-              {category ? (
+              {category || browseAll ? (
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Voltar para as categorias"
-                  onPress={() => setCategory(null)}
+                  onPress={() => {
+                    setCategory(null);
+                    setBrowseAll(false);
+                  }}
                   style={styles.back}>
                   <Ionicons name="chevron-back" size={22} color={theme.onPrimary} />
                   <Text style={[styles.headerTitle, { color: theme.onPrimary }]} numberOfLines={1}>
-                    {category.name}
+                    {category ? category.name : 'Todas as vagas'}
                   </Text>
                 </Pressable>
               ) : (
@@ -277,7 +283,7 @@ export function SearchScreen() {
         </View>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-          {!category && (
+          {!category && !browseAll && (
             <>
               {categories.isLoading && <ActivityIndicator color={theme.primary} />}
               {categories.isError && (
@@ -285,6 +291,15 @@ export function SearchScreen() {
                   Não foi possível carregar as categorias. Verifique sua conexão.
                 </Text>
               )}
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setBrowseAll(true)}
+                style={[styles.allButton, { backgroundColor: theme.primary }]}>
+                <Ionicons name="apps" size={17} color={theme.onPrimary} />
+                <Text style={[styles.allButtonLabel, { color: theme.onPrimary }]}>
+                  Ver todas as vagas
+                </Text>
+              </Pressable>
               <View style={styles.grid}>
                 {categories.data?.filter((item) => !item.parentId).map((item) => (
                   <Pressable
@@ -436,6 +451,18 @@ const styles = StyleSheet.create({
   content: {
     padding: Spacing.three,
     gap: Spacing.two + 2,
+  },
+  allButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: Radius.medium,
+    paddingVertical: 12,
+  },
+  allButtonLabel: {
+    fontSize: 14,
+    fontWeight: '800',
   },
   grid: {
     flexDirection: 'row',

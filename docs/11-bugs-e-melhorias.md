@@ -55,7 +55,7 @@ Limitações descobertas (a resolver antes do vídeo completo):
   Antes: `antes-B02-busca-titulo.png` (reproduzido no harness). Depois pendente
   do harness com modo demo/proxy estável.
 
-### B-03 Falta "todas as categorias" na busca 🔴
+### B-03 Falta "todas as categorias" na busca 🟢
 - **Descrição:** a busca por categorias não tem uma opção para ver **todas** as
   categorias de uma vez.
 - **Severidade:** Média.
@@ -222,7 +222,7 @@ Limitações descobertas (a resolver antes do vídeo completo):
   para gerenciar/excluir.
 - **Severidade:** Média.
 
-### B-29 Cliente sem avaliações: nota 5 + selo "novo usuário" 🔴
+### B-29 Cliente sem avaliações: nota 5 + selo "novo usuário" 🟢
 - **Descrição:** quem ainda não tem avaliações deveria aparecer com nota **5**,
   mas com um selo "novo usuário" visível para quem está escolhendo.
 - **Severidade:** Baixa.

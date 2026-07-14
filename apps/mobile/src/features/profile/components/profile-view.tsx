@@ -59,11 +59,14 @@ export function ProfileView({ userId, fallbackName }: Props) {
   return (
     <View style={styles.root}>
       <View style={[styles.ratingCard, { backgroundColor: theme.primarySoft }]}>
-        <Text style={[styles.roleLabel, { color: theme.primarySoftMeta }]}>AVALIAÇÃO GERAL</Text>
+        <Text style={[styles.roleLabel, { color: theme.primarySoftMeta }]}>
+          {reviewCount === 0 ? '🌱 NOVO USUÁRIO' : 'AVALIAÇÃO GERAL'}
+        </Text>
         <Text style={[styles.bigRating, { color: theme.primarySoftText }]}>
-          {avg != null
-            ? `★ ${avg.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}`
-            : 'Sem nota ainda'}
+          {/* Novo usuário começa com nota máxima (benefício da dúvida) — B-29. */}
+          {reviewCount === 0
+            ? '★ 5,0'
+            : `★ ${(avg ?? 5).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}`}
         </Text>
         <View style={styles.totalsRow}>
           <Totals value={reviewCount} label={reviewCount === 1 ? 'avaliação' : 'avaliações'} theme={theme} />
