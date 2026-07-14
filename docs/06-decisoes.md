@@ -1037,8 +1037,10 @@ social). Decisões firmes:
 **Estado:** Fatia 1 (foto + cidade no perfil) implementada — migração 0042
 (coluna `city`, view `profile_stats`, bucket `avatars`), `update-profile` v3
 (modera a cidade), upload via `expo-image-picker`, perfil no layout A. Back
-verificado e2e; upload da foto valida no aparelho. Fatias 2 (foto na lista) e 3
-(alertas) pendentes.
+verificado e2e; upload da foto valida no aparelho. Fatia 2 (foto na lista de
+candidatos) implementada — `get-candidates` v17 devolve `avatarUrl`, cartão
+mostra a foto, nome completo/contato seguem ocultos até a escolha (verificado
+e2e). Fatia 3 (alertas) pendente.
 
 **Foto na lista de candidatos (revoga a anonimização de foto da D-024):** o
 David confirmou (2026-07-14), com o trade-off de igualdade explicitado, a

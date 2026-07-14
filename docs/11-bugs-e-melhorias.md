@@ -34,7 +34,7 @@ Limitações descobertas (a resolver antes do vídeo completo):
 
 ## Área 1 — Autenticação
 
-### B-01 📱 Login/cadastro com Google → "localhost recusado" 🟡 (falta config do David)
+### B-01 📱 Login/cadastro com Google → "localhost recusado" 🟢 (config verificada; provar no APK)
 - **Descrição:** ao entrar/cadastrar com Google, cai numa página "não é
   possível acessar esse site — a conexão com localhost foi recusada". Pelo
   e-mail/senha no próprio app funciona.
@@ -280,8 +280,10 @@ Limitações descobertas (a resolver antes do vídeo completo):
     `uploadAvatar`; perfil no layout A com foto sobreposta + cidade no editar
     perfil / perfil próprio / perfil público). Back verificado e2e (cidade
     salva + moderação); **upload de foto valida no aparelho** (dep nativa).
-  - **Fatia 2 — foto na lista de candidatos** (D-064): incluir `avatar_url` na
-    Edge Function `get-candidates` + mostrar no cartão. Pendente.
+  - **Fatia 2 — foto na lista de candidatos 🟢** (D-064): `get-candidates` v17
+    devolve `avatarUrl`; o cartão do candidato mostra a foto; nota de
+    privacidade atualizada (só nome completo/contato ficam ocultos até a
+    escolha). Verificado e2e (foto passa; nome completo segue oculto).
   - **Fatia 3 — alertas de vaga:** tabela `job_alerts` + matching + tela
     criar/gerenciar. Pendente.
 - **Severidade:** Média (feature).

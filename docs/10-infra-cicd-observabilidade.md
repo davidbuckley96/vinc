@@ -209,3 +209,13 @@ ver `auth-actions.ts` e `supabase.ts`). O erro "localhost recusado" é sempre
 Feito isso, o botão "Entrar com Google" volta ao app pelo `vinc://auth` (nativo)
 ou pela origem do site (web), sem cair no `localhost`. Nada disso é código — é
 configuração de projeto, por isso não entra em commit.
+
+**Estado verificado (2026-07-14, via Management API):** Google provider
+**ativado** com Client ID/Secret preenchidos; `uri_allow_list` reforçada para
+`vinc://auth,vinc://auth/**,vinc://**` (cobre variações de caminho/barra do deep
+link). `site_url` ainda é `http://localhost:3000` — é só um *fallback* e não
+afeta o fluxo nativo (o app manda `redirectTo=vinc://auth`, que está liberado).
+O único item não verificável daqui é o *Authorized redirect URI* no Google
+Console; como o erro observado foi "localhost recusado" (e não
+"redirect_uri_mismatch"), o callback do Supabase já está lá. **O APK deve
+autenticar com Google sem ajustes adicionais.**

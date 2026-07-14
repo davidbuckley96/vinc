@@ -220,11 +220,14 @@ export async function applyGig(
   return (data as { code?: ApplyGigResult })?.code ?? "network_error";
 }
 
-/** Anonymized candidate of an open gig (D-024) — no real user id. */
+/** Candidate of an open gig (D-024, amended by D-064) — first name + photo,
+ *  but no real user id or full name until chosen. */
 export interface Candidate {
   candidacyId: string;
   appliedAt: string;
   firstName: string;
+  /** Foto do candidato (D-064) — visível já na lista. */
+  avatarUrl: string | null;
   avgRating: number | null;
   reviewCount: number;
   completedServices: number;

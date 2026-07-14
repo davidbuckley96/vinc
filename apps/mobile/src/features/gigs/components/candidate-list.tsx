@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -105,7 +106,15 @@ export function CandidateList({ gigId, enabled }: CandidateListProps) {
             style={[styles.card, { borderColor: theme.line, backgroundColor: theme.background }]}>
             <View style={styles.cardTop}>
               <View style={[styles.avatar, { backgroundColor: theme.primarySoft }]}>
-                <Ionicons name="person" size={19} color={theme.primarySoftText} />
+                {candidate.avatarUrl ? (
+                  <Image
+                    source={{ uri: candidate.avatarUrl }}
+                    style={styles.avatarImg}
+                    contentFit="cover"
+                  />
+                ) : (
+                  <Ionicons name="person" size={19} color={theme.primarySoftText} />
+                )}
               </View>
               <View style={styles.cardInfo}>
                 <View style={styles.nameRow}>
@@ -197,7 +206,8 @@ export function CandidateList({ gigId, enabled }: CandidateListProps) {
 
       {list.length > 0 && (
         <Text style={[styles.privacyNote, { color: theme.textSecondary }]}>
-          Por segurança e igualdade, foto e nome completo aparecem só depois da escolha.
+          O nome completo e o contato aparecem só depois da escolha. Escolha pela
+          reputação e pelas avaliações.
         </Text>
       )}
     </View>
@@ -245,6 +255,11 @@ const styles = StyleSheet.create({
     borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
   },
   cardInfo: {
     flex: 1,

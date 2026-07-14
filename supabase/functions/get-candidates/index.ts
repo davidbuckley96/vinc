@@ -1,10 +1,10 @@
 // Edge Function: get-candidates
-// Anonymized candidate list for the poster of an open gig (D-024). By
-// design the client NEVER receives the worker's user id, full name or
-// photo — only what matters for the service: first name, worker
-// reputation, completed services and the most frequent recent praise
-// tags. The candidacy id is a random per-gig uuid, useless for building a
-// profile URL. RLS gives posters no direct SELECT on gig_candidacies.
+// Candidate list for the poster of an open gig (D-024, amended by D-064).
+// The client still NEVER receives the worker's user id or full name — only
+// the first name, the PHOTO (D-064), worker reputation, completed services
+// and the most frequent recent praise tags. The candidacy id is a random
+// per-gig uuid, useless for building a profile URL. RLS gives posters no
+// direct SELECT on gig_candidacies.
 //
 // Deploy: Management API multipart (see docs/05 roadmap).
 
@@ -79,7 +79,7 @@ Deno.serve(async (request) => {
   const candidates = [];
   for (const candidacy of candidacies ?? []) {
     const [{ data: profile }, { data: stats }, { data: reviews }] = await Promise.all([
-      admin.from("profiles").select("name").eq("id", candidacy.worker_id).maybeSingle(),
+      admin.from("profiles").select("name, avatar_url").eq("id", candidacy.worker_id).maybeSingle(),
       admin
         .from("profile_stats")
         .select("worker_avg_rating, worker_review_count, completed_as_worker")
@@ -111,6 +111,7 @@ Deno.serve(async (request) => {
       candidacyId: candidacy.id,
       appliedAt: candidacy.created_at,
       firstName: (profile?.name ?? "Prestador").trim().split(/\s+/)[0],
+      avatarUrl: profile?.avatar_url ?? null,
       avgRating: stats?.worker_avg_rating ?? null,
       reviewCount: stats?.worker_review_count ?? 0,
       completedServices: stats?.completed_as_worker ?? 0,
