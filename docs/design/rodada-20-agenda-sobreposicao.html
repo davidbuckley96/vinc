@@ -1,0 +1,162 @@
+<meta charset="utf-8">
+<title>Rodada 20 — Agenda: candidaturas no mesmo horário (B-26)</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --lilas:#F1EBFD; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --ok:#059669; --tracejado:#B9A9E6; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:36px 24px;margin:0}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:940px;line-height:1.55}
+  .row{display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start}
+  .option{width:320px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;margin-bottom:8px;background:var(--lilas);color:var(--roxo)}
+  .option h3{margin:2px 0 4px;font-size:16px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 0 14px;min-height:54px}
+  .phone{width:320px;height:600px;border-radius:34px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .top{background:var(--roxo);color:#fff;padding:15px 16px}
+  .top .t{font-size:16px;font-weight:800}
+  .top .d{font-size:11.5px;opacity:.85;margin-top:1px}
+  .body{flex:1;overflow:hidden;background:#fff;padding:12px 12px 0}
+  .tl{display:flex;gap:10px}
+  .hours{display:flex;flex-direction:column;width:34px;flex-shrink:0}
+  .hours span{font-size:10.5px;color:var(--ink2);text-align:right;height:46px}
+  .lane{flex:1;position:relative}
+  /* Cartões de compromisso */
+  .card{border-radius:11px;padding:8px 10px;margin-bottom:7px}
+  .own{background:var(--lilas);border-left:3px solid var(--roxo)}
+  .own .h{font-weight:800;font-size:12.5px;color:var(--roxo-deep)}
+  .own .m{font-size:10.5px;color:var(--roxo)}
+  .cand{background:#fff;border:1.5px dashed var(--tracejado)}
+  .cand .h{font-weight:700;font-size:12.5px;color:var(--ink2)}
+  .cand .m{font-size:10.5px;color:var(--ink2)}
+  .free{border:1.5px dashed #DBD2F0;border-radius:11px;height:40px;display:flex;align-items:center;justify-content:center;color:#9a8fb8;font-size:11.5px;font-weight:600;margin-bottom:7px}
+  .plus{display:inline-flex;align-items:center;gap:4px;background:var(--roxo);color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:99px;margin-top:2px}
+  .note{font-size:12px;color:var(--ink2);line-height:1.55;background:#FAFAFC;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:22px;max-width:940px}
+  b{color:var(--ink)}
+  /* Opção A — sobreposição (2h dentro de 5h) */
+  .stack{position:relative;margin-bottom:7px}
+  .big{background:var(--lilas);border-left:3px solid var(--roxo);border-radius:11px;padding:8px 10px;min-height:150px}
+  .inset{position:absolute;left:16px;right:10px;background:#fff;border:1.5px dashed var(--tracejado);border-radius:10px;padding:6px 9px}
+  /* Opção C — colunas */
+  .cols{display:flex;gap:6px}
+  .col{flex:1}
+  .colcard{border-radius:10px;padding:7px 8px;font-size:11.5px}
+</style>
+
+<h1>Rodada 20 — Candidaturas no mesmo horário na agenda</h1>
+<p class="sub"><b>B-26:</b> quando você se candidata a <b>várias vagas que caem no mesmo horário</b>,
+hoje a agenda mostra só uma. Deve mostrar <b>todas</b>. Escolha como exibir a sobreposição.
+Cenário nos três: às 14h você tem <b>1 vaga sua confirmada (14h–19h)</b> e <b>3 candidaturas enviadas</b>
+que batem nesse intervalo (14h–16h, 15h–17h e 14h–15h). Candidatura = cartão <b>tracejado</b>; vaga confirmada = cartão <b>roxo</b>.</p>
+
+<div class="row">
+
+  <!-- OPÇÃO A -->
+  <div class="option">
+    <span class="tag">Opção A</span>
+    <h3>Sobreposição visual (menor "dentro" do maior)</h3>
+    <p>O cartão de 5h fica grande e os menores aparecem encaixados dentro dele, recuados. Se não couberem, um "+2" abre o resto. Fiel ao pedido, mas pode apertar em telas pequenas.</p>
+    <div class="phone">
+      <div class="top"><div class="t">Olá, Ana! 👋</div><div class="d">terça, 14 de julho</div></div>
+      <div class="body">
+        <div class="tl">
+          <div class="hours"><span>13:00</span><span>14:00</span><span>15:00</span><span>16:00</span><span>17:00</span></div>
+          <div class="lane">
+            <div class="free">Horário livre</div>
+            <div class="stack">
+              <div class="big">
+                <div class="h" style="font-weight:800;font-size:12.5px;color:var(--roxo-deep)">Faxina — minha vaga</div>
+                <div class="m" style="font-size:10.5px;color:var(--roxo)">14h–19h · R$ 250,00</div>
+                <div class="inset" style="top:38px">
+                  <div class="h">Babá 2 crianças · candidatura</div>
+                  <div class="m">14h–16h · R$ 160,00</div>
+                </div>
+                <div class="inset" style="top:92px">
+                  <div class="h">Ajudante de mudança · candidatura</div>
+                  <div class="m">15h–17h · R$ 120,00</div>
+                  <span class="plus">+1 candidatura</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPÇÃO B -->
+  <div class="option">
+    <span class="tag">Opção B (recomendada)</span>
+    <h3>Cartão agrupado "3 candidaturas"</h3>
+    <p>A vaga confirmada aparece normal. As candidaturas do intervalo viram um único cartão "3 candidaturas neste horário ›" que abre a lista. Mais simples e limpo — 1 toque para ver todas.</p>
+    <div class="phone">
+      <div class="top"><div class="t">Olá, Ana! 👋</div><div class="d">terça, 14 de julho</div></div>
+      <div class="body">
+        <div class="tl">
+          <div class="hours"><span>13:00</span><span>14:00</span><span>15:00</span><span>16:00</span><span>17:00</span></div>
+          <div class="lane">
+            <div class="free">Horário livre</div>
+            <div class="card own" style="min-height:96px">
+              <div class="h">Faxina — minha vaga</div>
+              <div class="m">14h–19h · R$ 250,00</div>
+            </div>
+            <div class="card cand" style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div class="h">3 candidaturas neste horário</div>
+                <div class="m">14h–17h · toque para ver todas</div>
+              </div>
+              <span style="color:var(--roxo);font-weight:800;font-size:16px">›</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPÇÃO C -->
+  <div class="option">
+    <span class="tag">Opção C</span>
+    <h3>Colunas lado a lado (estilo Google Agenda)</h3>
+    <p>Cada compromisso vira uma coluna; o mais longo fica mais alto. Bom para ver a duração de cada um de relance, mas os cartões ficam estreitos e o texto some — arriscado para leitura fácil.</p>
+    <div class="phone">
+      <div class="top"><div class="t">Olá, Ana! 👋</div><div class="d">terça, 14 de julho</div></div>
+      <div class="body">
+        <div class="tl">
+          <div class="hours"><span>13:00</span><span>14:00</span><span>15:00</span><span>16:00</span><span>17:00</span></div>
+          <div class="lane">
+            <div class="free">Horário livre</div>
+            <div class="cols">
+              <div class="col">
+                <div class="colcard own" style="min-height:220px">
+                  <div class="h" style="font-weight:800;color:var(--roxo-deep)">Faxina</div>
+                  <div class="m" style="color:var(--roxo)">14–19h</div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="colcard cand" style="min-height:88px;margin-bottom:6px">
+                  <div class="h">Babá</div><div class="m">14–16h</div>
+                </div>
+                <div class="colcard cand" style="min-height:40px">
+                  <div class="h">Faxina rápida</div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="colcard cand" style="min-height:88px;margin-top:44px">
+                  <div class="h">Mudança</div><div class="m">15–17h</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <b>Vale nas três:</b><br>
+  • Só <b>candidaturas pendentes</b> se sobrepõem — depois de escolhido para uma, as outras do horário deixam de valer.<br>
+  • Cartão <b>tracejado</b> = candidatura enviada; cartão <b>roxo</b> = vaga sua / trabalho confirmado.<br>
+  • Tocar em qualquer candidatura abre a vaga; tocar no "+N" (A) ou no cartão agrupado (B) abre a lista completa.<br>
+  • <b>Minha recomendação:</b> Opção B — mais simples e legível (requisito do produto), sem apertar cartões. A "sobreposição encaixada" que você descreveu fica bonita, mas some texto em telas pequenas.
+</div>

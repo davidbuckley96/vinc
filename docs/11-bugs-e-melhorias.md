@@ -231,11 +231,16 @@ Limitações descobertas (a resolver antes do vídeo completo):
 
 ## Área 6 — Agenda
 
-### B-26 🔵 Candidaturas no mesmo horário: mostrar todas 🔴
+### B-26 🔵 Candidaturas no mesmo horário: mostrar todas 🟠 (mock pronto — aguarda David)
 - **Descrição:** candidatando-se a várias vagas no mesmo horário, a agenda mostra
   só uma. Deveria mostrar todas — com um "+3" clicável quando não couberem.
   Cuidado: card de 5h é maior que de 2h; um card de 2h deve caber "dentro" do de
   5h. **Precisa de mock de UI para aprovação.**
+- **Causa:** `buildDaySegments` (`day-timeline.tsx`) usa `.find()` por hora —
+  pega só o primeiro compromisso que começa naquela hora.
+- **Mock:** `docs/design/rodada-20-agenda-sobreposicao.html` — 3 opções
+  (A sobreposição encaixada · **B cartão agrupado "3 candidaturas", recomendada**
+  · C colunas). Aguardando a escolha do David para implementar.
 - **Severidade:** Média.
 
 ### B-27 ⚪ Agenda: navegar meses à frente e ver meses anteriores 🟢
@@ -257,19 +262,35 @@ Limitações descobertas (a resolver antes do vídeo completo):
   mas com um selo "novo usuário" visível para quem está escolhendo.
 - **Severidade:** Baixa.
 
-### B-30 ⚪ Perfil: foto, localização e alertas de vagas (estilo LinkedIn) 🔴
+### B-30 ⚪ Perfil: foto, localização e alertas de vagas (estilo LinkedIn) 🟣 (movido para o roadmap)
 - **Descrição:** adicionar foto, definir localização e criar alertas de vagas
   para serviços/horários/dias específicos.
+- **Encaminhamento:** é uma feature maior (não um bug) — movida para o roadmap
+  (docs/05, Fase 4). Precisa de rodada de design e decisão de escopo com o David
+  (foto → moderação de imagem; alertas → matching + push já existente).
 - **Severidade:** Média (feature).
 
 ---
 
 ## Ordem sugerida de ataque
 1. **Correções rápidas e de alto impacto no fluxo de vaga:** B-17 (taxa), B-12,
-   B-13, B-14, B-15, B-02, B-19+B-18 (valor), B-20 (calendário).
-2. **Localização (crítico):** B-10, B-11 (com vídeo), B-16 (vira o dia + 8h).
-3. **Denúncia/moderação coerente:** B-22, B-23, B-24, B-25.
+   B-13, B-14, B-15, B-02, B-19+B-18 (valor), B-20 (calendário). ✅ concluído
+2. **Localização (crítico):** B-10, B-11, B-16 (vira o dia + 8h). ✅ concluído
+3. **Denúncia/moderação coerente:** B-22, B-23, B-24, B-25. ✅ concluído
 4. **Busca com filtros:** B-06, B-07, B-08, B-05, B-03. ✅ concluído
-5. **Agenda e perfil:** B-26 (mock), B-27, B-28, B-29.
-6. **Nativos (prova no aparelho do David):** B-01, B-04, B-09.
-7. **Features maiores:** B-30.
+5. **Agenda e perfil:** B-27, B-28, B-29 ✅ concluído · B-26 (mock rodada 20 pronto — aguarda escolha do David).
+6. **Nativos (prova no aparelho do David):** B-04 ✅ · B-09 (código aplicado, verificar no aparelho) · B-01 (código ok, falta config do painel do David).
+7. **Features maiores:** B-30 → movido para o roadmap (docs/05, Fase 4).
+
+## Estado final (2026-07-14)
+**27 dos 30 pontos entregues em código** (B-02..B-08, B-10..B-29 exceto os
+nativos). Restam, todos dependendo do David:
+- **B-26** — mock pronto (rodada 20); falta o David escolher a opção para eu
+  implementar.
+- **B-09** — mitigação de gesto aplicada no código; **verificar no aparelho**
+  (não reproduzível no harness web).
+- **B-01** — código do OAuth já correto; falta o David configurar a allowlist
+  de redirect no Supabase/Google (passos em docs/10 §10).
+- **B-30** — feature maior, movida para o roadmap.
+
+O vídeo de comprovação será gravado pelo David (decisão dele nesta rodada).

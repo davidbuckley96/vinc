@@ -59,6 +59,11 @@
 - [ ] Prioridade de usuário como recurso premium (expansão do D-034 — ideia do David)
 - [ ] Geolocalização e busca por proximidade/mapa
 - [ ] Filtros avançados, recomendações, favoritos
+- [ ] **Perfil rico + alertas de vagas (B-30, estilo LinkedIn):** foto de perfil,
+  localização definida e **alertas** de vagas por serviço/horário/dia (push
+  quando surgir uma vaga que combina). Feature maior — precisa de rodada de
+  design e decisão de escopo com o David (foto = moderação de imagem; alertas =
+  matching + push já existente). Catalogado em docs/11 B-30.
 - [ ] **Termos de uso + política de privacidade** (pedido do David 2026-07-13):
   escrever os documentos (intermediação, multa/cláusula penal, taxa, LGPD —
   ver checklist 6 para o escopo jurídico) e a tela de aceite no cadastro
