@@ -17,7 +17,12 @@ import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 import { useMarkNotificationsRead, useNotifications } from '../hooks';
-import { dayGroupLabel, NOTIFICATION_PRESENTATIONS, timeLabel } from '../labels';
+import {
+  dayGroupLabel,
+  NOTIFICATION_PRESENTATIONS,
+  SUPERSEDED_RELEASE_PRESENTATION,
+  timeLabel,
+} from '../labels';
 
 /**
  * Notification center — round 12, option A: one plain list grouped by
@@ -46,6 +51,40 @@ export function NotificationsScreen() {
       else result.push({ label, items: [item] });
     }
     return result;
+  }, [notifications.data]);
+
+  // F-11 (docs/14): "pagamento liberado" é um evento real, mas quando o
+  // anunciante contesta DEPOIS (dentro da retenção de 7 dias) a liberação é
+  // pausada. A notificação antiga ficava dizendo "liberado na sua carteira"
+  // como se valesse. Aqui marcamos cada `payment_released` que foi superado por
+  // um `dispute_opened` posterior AINDA sem `dispute_resolved` — a mensagem vira
+  // "em análise". Assim que a disputa é resolvida, a própria notificação de
+  // resolução conta a história, então paramos de reetiquetar.
+  const supersededReleases = useMemo(() => {
+    const ms = (iso: string) => new Date(iso).getTime();
+    const byGig = new Map<string, AppNotification[]>();
+    for (const n of notifications.data ?? []) {
+      if (!n.gigId) continue;
+      const list = byGig.get(n.gigId);
+      if (list) list.push(n);
+      else byGig.set(n.gigId, [n]);
+    }
+    const superseded = new Set<string>();
+    for (const list of byGig.values()) {
+      const disputes = list.filter((n) => n.type === 'dispute_opened').map((n) => ms(n.createdAt));
+      if (!disputes.length) continue;
+      const resolutions = list
+        .filter((n) => n.type === 'dispute_resolved')
+        .map((n) => ms(n.createdAt));
+      for (const rel of list.filter((n) => n.type === 'payment_released')) {
+        const laterDisputes = disputes.filter((d) => d > ms(rel.createdAt));
+        if (!laterDisputes.length) continue;
+        const lastDispute = Math.max(...laterDisputes);
+        const resolvedAfter = resolutions.some((r) => r >= lastDispute);
+        if (!resolvedAfter) superseded.add(rel.id);
+      }
+    }
+    return superseded;
   }, [notifications.data]);
 
   return (
@@ -81,7 +120,10 @@ export function NotificationsScreen() {
                 {group.label}
               </Text>
               {group.items.map((item) => {
-                const presentation = NOTIFICATION_PRESENTATIONS[item.type];
+                const superseded = supersededReleases.has(item.id);
+                const presentation = superseded
+                  ? SUPERSEDED_RELEASE_PRESENTATION
+                  : NOTIFICATION_PRESENTATIONS[item.type];
                 const unread = !item.readAt;
                 return (
                   <Pressable

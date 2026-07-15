@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -52,7 +53,17 @@ export function CompleteServiceScreen() {
   const [photos, setPhotos] = useState<{ uri: string; base64: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const addPhotos = async () => {
+  const applyAssets = (assets: ImagePicker.ImagePickerAsset[]) =>
+    setPhotos((current) =>
+      [
+        ...current,
+        ...assets
+          .filter((asset) => asset.base64)
+          .map((asset) => ({ uri: asset.uri, base64: asset.base64! })),
+      ].slice(0, MAX_PHOTOS),
+    );
+
+  const pickFromLibrary = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true,
@@ -60,15 +71,28 @@ export function CompleteServiceScreen() {
       quality: 0.7,
       base64: true,
     });
-    if (result.canceled) return;
-    setPhotos((current) =>
-      [
-        ...current,
-        ...result.assets
-          .filter((asset) => asset.base64)
-          .map((asset) => ({ uri: asset.uri, base64: asset.base64! })),
-      ].slice(0, MAX_PHOTOS),
-    );
+    if (!result.canceled) applyAssets(result.assets);
+  };
+
+  // F-06 (docs/14): tirar foto na hora, sem sair do app. Usa a câmera do
+  // sistema (launchCameraAsync) — sem lib nova.
+  const takePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      setError('Permita o acesso à câmera para tirar uma foto.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({ quality: 0.7, base64: true });
+    if (!result.canceled) applyAssets(result.assets);
+  };
+
+  const addPhotos = () => {
+    setError(null);
+    Alert.alert('Adicionar foto', undefined, [
+      { text: 'Tirar foto', onPress: takePhoto },
+      { text: 'Escolher da galeria', onPress: pickFromLibrary },
+      { text: 'Cancelar', style: 'cancel' },
+    ]);
   };
 
   const submit = async () => {
@@ -195,6 +219,17 @@ export function CompleteServiceScreen() {
             O anunciante confirma a conclusão e o pagamento cai na sua carteira. Sem resposta,
             libera sozinho em 48h.
           </Text>
+          {/* F-09 (docs/14): saída pro suporte caso algo trave na finalização. */}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Falar com o suporte"
+            onPress={() => router.push('/help')}
+            style={styles.supportLink}>
+            <Ionicons name="help-buoy-outline" size={14} color={theme.textSecondary} />
+            <Text style={[styles.supportLinkText, { color: theme.textSecondary }]}>
+              Algum problema para finalizar? Falar com o suporte
+            </Text>
+          </Pressable>
         </ScrollView>
       </View>
     </View>
@@ -319,5 +354,17 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     textAlign: 'center',
     paddingHorizontal: Spacing.three,
+  },
+  supportLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    marginTop: Spacing.two,
+  },
+  supportLinkText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
   },
 });

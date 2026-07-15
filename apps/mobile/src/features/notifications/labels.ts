@@ -60,6 +60,17 @@ export const NOTIFICATION_PRESENTATIONS: Record<NotificationType, NotificationPr
   },
 };
 
+/**
+ * Shown in place of `payment_released` when a later contest paused the release
+ * (F-11, docs/14): the money was released and then re-frozen, so the old
+ * "liberado na sua carteira" line would mislead.
+ */
+export const SUPERSEDED_RELEASE_PRESENTATION: NotificationPresentation = {
+  icon: 'shield-half',
+  text: (title) =>
+    `A liberação de "${title}" foi pausada por uma contestação — o pagamento está em análise.`,
+};
+
 const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
 /** "HOJE" / "ONTEM" / "SEX, 4". */

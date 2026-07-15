@@ -40,7 +40,7 @@ que hoje falha em silêncio ("a foto não mudou").
 (as funções de upload já aceitam `ArrayBuffer`); envolver os dois `submit` em
 `try/catch` que mostra o `network_error` já existente. — **S**
 
-### F-11 · "Pagamento liberado" aparece junto com "contestado/congelado"
+### F-11 · "Pagamento liberado" aparece junto com "contestado" — ✅ CORRIGIDO (falta build)
 O "liberado" é um evento **real** (`escrow_release`): o pagamento foi liberado
 (confirmação ou 48h) e depois **re-congelado** por um pedido de reembolso dentro
 da retenção de 7 dias. A carteira em si está certa ("em análise pela plataforma",
@@ -54,15 +54,15 @@ vaga **sem** `dispute_resolved` a favor do trabalhador, esconder/reetiquetar o
 
 ## Features sem decisão (resolvo sozinho)
 
-### F-06 · Tirar foto no app na conclusão
-`expo-image-picker` já está instalado — dá pra usar `launchCameraAsync` (câmera do
-sistema) sem lib nova, ao lado do "escolher da galeria" (um action sheet "Tirar
-foto / Escolher da galeria"). Precisa adicionar as permissões de câmera no
-`app.json` (plugin do image-picker) — muda config e exige rebuild. — **S**
+### F-06 · Tirar foto no app na conclusão — ✅ CORRIGIDO (falta build)
+Ao tocar em "adicionar foto" na conclusão agora abre um menu **"Tirar foto /
+Escolher da galeria"**; "tirar foto" usa a câmera do sistema (`launchCameraAsync`,
+sem lib nova) com pedido de permissão. Adicionadas as permissões de câmera/fotos
+no `app.json` (plugin `expo-image-picker`) — exige rebuild. — **S**
 
-### F-09 · Falar com suporte na tela de conclusão
-A Central de Ajuda e a "Vi" já existem (`/help`, `/help/vi`). Basta um link
-discreto na tela de conclusão (e, ver F-05, também durante o serviço). — **S**
+### F-09 · Falar com suporte na tela de conclusão — ✅ CORRIGIDO (falta build)
+Link discreto "Algum problema para finalizar? Falar com o suporte" no rodapé da
+tela de conclusão → `/help` (Central de Ajuda + "Vi"). — **S**
 
 ## Itens que precisam da sua decisão 🟠
 
