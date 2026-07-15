@@ -166,7 +166,11 @@ Deno.serve(async (request) => {
   // it (better anonymity + a layer-free, fluid map), otherwise the legacy
   // fixed-offset fuzz (D-028/D-030) — publishing never blocks on the geocoder.
   const address = draft.address.trim();
-  const areaLabel = deriveAreaLabel(address);
+  // Prefer the structured neighbourhood from the client (A2, docs/13); fall back
+  // to parsing the display string only when it's absent. Parsing "Rua X, 120 —
+  // Boa Vista, Recife" worked, but a road-less pick had no "—" and degraded to
+  // the generic label, which also disabled the D-066 centroid.
+  const areaLabel = (draft.area ?? "").trim() || deriveAreaLabel(address);
   const approx = draft.lat != null && draft.lng != null
     ? (await neighbourhoodCenter(areaLabel, draft.lat, draft.lng)) ??
       approximateLocation(draft.lat, draft.lng)

@@ -14,6 +14,13 @@ export interface GigDraft {
   priceCents: number;
   /** Human-readable label of the map pin (docs/02 §2.1). */
   address: string;
+  /**
+   * Public neighbourhood label from the geocoder's structured parts (A2,
+   * docs/13). When present, create-gig uses it as the public `area` and to
+   * resolve the bairro centroid (D-066); when absent it falls back to parsing
+   * `address`. Never contains the exact street.
+   */
+  area?: string;
   /** Map pin (D-023). Optional during rollout; the form always sends it. */
   lat?: number | null;
   lng?: number | null;

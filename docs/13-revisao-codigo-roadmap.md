@@ -42,14 +42,16 @@ antes de tudo.
   invalidam `['profile-stats']`, mas a query de stats é `['profile','stats',userId]`
   (`reviews/hooks.ts:49`). Não casa (prefix-match) → nome/cidade/foto ficam velhos
   até reabrir o app. **Corrigido:** invalidação passa a usar `['profile','stats']`. — S
-- [ ] **A2 · Centroide do bairro (D-066) não roda para endereços sem rua** —
-  `shortLabel` (`lib/geocoding.ts:61-71`) só usa o separador `" — "` quando há
-  rua; um clique em bairro/cidade devolve `"Boa Vista, Recife"` sem separador, e
-  `deriveAreaLabel` (`core/location.ts:23-27`) cai no rótulo genérico → em
-  `create-gig` o `area` vira "Região aproximada" e o `neighbourhoodCenter`
-  retorna null (volta pro fuzz antigo). O recurso novo regride justamente no caso
-  comum. **Passar `{area, city}` estruturado do geocoder até o create-gig** (ou
-  um contrato de formato único entre `shortLabel` e `deriveAreaLabel`). — M
+- [x] **A2 · Centroide do bairro (D-066) não roda para endereços sem rua** —
+  **Corrigido:** o geocoder agora deriva um `area` estruturado (suburb/bairro +
+  cidade) via `areaLabel(row)` — independente de ter rua — e ele viaja em
+  `GeoResult`/`ReverseOutcome` → `PickedLocation` → `GigDraft` → `create-gig`,
+  que **prefere `draft.area`** e só cai em `deriveAreaLabel(address)` na ausência.
+  De brinde, o `pickResult` do seletor agora **cancela o reverse pendente** (fim
+  da corrida de timer, P0 da revisão de localização). Verificado e2e (deploy
+  create-gig v25): pick sem rua ("Tambaú, João Pessoa") → `area` guardado como
+  "Tambaú, João Pessoa" (não mais genérico) E `approx` = centroide exato do
+  bairro no Nominatim, a 430 m da rua real. — M
 - [x] **A3 · Pino do local exato não fica ancorado** — `location-modal.tsx`.
   **Corrigido:** modo exato usa `marker` ancorado DENTRO do mapa (segue o lugar
   ao arrastar); overlay RQ removido; docstring corrigida. — S

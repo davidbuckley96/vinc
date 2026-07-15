@@ -25,6 +25,12 @@ export interface PickedLocation {
   address: string;
   lat: number;
   lng: number;
+  /**
+   * Public neighbourhood label from the structured geocoder parts (A2,
+   * docs/13). Carried so create-gig gets the real bairro without re-parsing
+   * `address`; may be empty when the provider gives no area.
+   */
+  area?: string;
 }
 
 interface LocationPickerProps {
@@ -52,6 +58,8 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
   // Confirming only makes sense after the person placed the pin somewhere.
   const [interacted, setInteracted] = useState(Boolean(start));
   const [label, setLabel] = useState<string | null>(start?.address ?? null);
+  // Structured neighbourhood label for the confirmed point (A2, docs/13).
+  const [area, setArea] = useState<string>(start?.area ?? '');
   const [reading, setReading] = useState(false);
   // What the reverse lookup said about the pin (D-059): 'ocean'/'foreign'
   // block the confirm; 'error' (network) falls back to the offline bbox so a
@@ -95,6 +103,7 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
       const outcome = await reverseGeocodeDetailed(lat, lng);
       if (outcome.kind === 'address') {
         setLabel(outcome.label);
+        setArea(outcome.area);
         setPointStatus(outcome.inBrazil ? 'brazil' : 'foreign');
       } else if (outcome.kind === 'no_address') {
         setLabel(null);
@@ -145,9 +154,13 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
     setQuery('');
     setCenter({ lat: result.lat, lng: result.lng, zoom: 16 });
     setLabel(result.label);
+    setArea(result.area);
     setInteracted(true);
     setPointStatus('brazil'); // search is scoped to Brazil (countrycodes=br)
     setReading(false);
+    // A search pick is a fresh point — cancel any pending reverse lookup for the
+    // previously dragged center, or it would resolve later and clobber this pick.
+    if (reverseTimer.current) clearTimeout(reverseTimer.current);
   };
 
   // Ocean / foreign always block; a network error falls back to the bbox.
@@ -156,7 +169,12 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
 
   const confirm = () => {
     if (!canConfirm) return;
-    onConfirm({ address: label ?? 'Ponto marcado no mapa', lat: center.lat, lng: center.lng });
+    onConfirm({
+      address: label ?? 'Ponto marcado no mapa',
+      lat: center.lat,
+      lng: center.lng,
+      area: area || undefined,
+    });
   };
 
   return (

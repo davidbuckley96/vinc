@@ -30,6 +30,14 @@ export interface GeoResult {
   lat: number;
   lng: number;
   label: string;
+  /**
+   * The public neighbourhood label ("Boa Vista, Recife") derived from the
+   * STRUCTURED Nominatim parts (A2, docs/13) — independent of whether `label`
+   * has a road. Empty only when the provider gives no area at all. Carried all
+   * the way to create-gig so the bairro centroid (D-066) runs even for a
+   * road-less pick, instead of re-parsing the display string.
+   */
+  area: string;
 }
 
 export interface ReverseResult {
@@ -45,7 +53,7 @@ export interface ReverseResult {
  * blocking a valid pin when the network hiccups.
  */
 export type ReverseOutcome =
-  | { kind: 'address'; label: string; inBrazil: boolean }
+  | { kind: 'address'; label: string; area: string; inBrazil: boolean }
   | { kind: 'no_address' } // Nominatim responded but there's no address (sea, etc.)
   | { kind: 'error' }; // network / HTTP failure — ambiguous
 
@@ -57,15 +65,25 @@ interface NominatimRow {
   address?: Record<string, string>;
 }
 
+/**
+ * Public neighbourhood label ("Boa Vista, Recife") from the STRUCTURED parts —
+ * never includes the road/number, so it's safe to show before the poster picks
+ * a worker (D-028). Empty when the provider gives no suburb/city at all.
+ */
+function areaLabel(row: NominatimRow): string {
+  const parts = row.address ?? {};
+  const area = parts.suburb ?? parts.neighbourhood ?? parts.city_district ?? '';
+  const city = parts.city ?? parts.town ?? parts.village ?? parts.municipality ?? '';
+  return [area, city].filter(Boolean).join(', ');
+}
+
 /** "Rua das Flores, 120 — Boa Vista, Recife" from a Nominatim row. */
 function shortLabel(row: NominatimRow): string {
   const parts = row.address ?? {};
   const road = parts.road ?? parts.pedestrian ?? parts.square ?? row.name ?? '';
   const number = parts.house_number ? `, ${parts.house_number}` : '';
-  const area = parts.suburb ?? parts.neighbourhood ?? parts.city_district ?? '';
-  const city = parts.city ?? parts.town ?? parts.village ?? parts.municipality ?? '';
-  const tail = [area, city].filter(Boolean).join(', ');
   const head = road ? `${road}${number}` : '';
+  const tail = areaLabel(row);
   if (head && tail) return `${head} — ${tail}`;
   return head || tail || row.display_name?.split(',').slice(0, 3).join(',') || 'Local no mapa';
 }
@@ -89,7 +107,7 @@ function toGeoResults(rows: NominatimRow[] | null): GeoResult[] {
     const lat = Number(row.lat);
     const lng = Number(row.lon);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
-    out.push({ lat, lng, label: shortLabel(row) });
+    out.push({ lat, lng, label: shortLabel(row), area: areaLabel(row) });
   }
   return out;
 }
@@ -113,7 +131,12 @@ export async function reverseGeocodeDetailed(lat: number, lng: number): Promise<
   if (!row) return { kind: 'error' };
   // Ocean / no-man's-land: Nominatim responds but with an error / no address.
   if (row.error || !row.address) return { kind: 'no_address' };
-  return { kind: 'address', label: shortLabel(row), inBrazil: row.address.country_code === 'br' };
+  return {
+    kind: 'address',
+    label: shortLabel(row),
+    area: areaLabel(row),
+    inBrazil: row.address.country_code === 'br',
+  };
 }
 
 /** Convenience wrapper: just the label + inBrazil, or null (kept for callers). */

@@ -210,6 +210,9 @@ export function GigForm({
     address: location?.address ?? '',
     lat: hasPin ? location.lat : null,
     lng: hasPin ? location.lng : null,
+    // Structured neighbourhood from the geocoder (A2) — create-gig prefers this
+    // over re-parsing the address string; falls back server-side if absent.
+    area: location?.area || undefined,
   };
 
   const previewGig: OpenGig = {
@@ -220,8 +223,9 @@ export function GigForm({
     startsAt: draft.startsAt,
     endsAt: draft.endsAt,
     priceCents,
-    // Candidates only see the area (D-028) — preview what THEY will see.
-    area: location ? deriveAreaLabel(location.address) : 'Local',
+    // Candidates only see the area (D-028) — preview what THEY will see. Prefer
+    // the structured area (A2); fall back to parsing the label.
+    area: location ? location.area || deriveAreaLabel(location.address) : 'Local',
     approxLat: hasPin ? location.lat : null,
     approxLng: hasPin ? location.lng : null,
     categoryId,
