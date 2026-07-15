@@ -1,29 +1,28 @@
 /**
- * Address search / reverse geocoding via Nominatim (OpenStreetMap) —
- * free, keyless (D-023). Fair-use policy: search fires only on submit
- * (no per-keystroke autocomplete) and reverse lookups are debounced by
- * the picker. Failures degrade to a generic label — the pin is what
- * matters; the label is a convenience.
+ * Address search / reverse geocoding. As de 2026-07-15 as chamadas passam pela
+ * Edge Function `geocode` (proxy do Nominatim), NÃO mais direto do aparelho: no
+ * 4G o IP compartilhado da operadora era bloqueado/limitado pelo Nominatim e o
+ * User-Agent era ignorado no Android — "não encontrava nada". No servidor o IP
+ * é estável e o User-Agent é honrado. Falhas degradam para um rótulo genérico.
  */
 
-const NOMINATIM = 'https://nominatim.openstreetmap.org';
-// Nominatim's usage policy requires an identifying User-Agent; requests
-// without one can be throttled or blocked.
-const UA = 'VincApp/1.0 (marketplace de serviços; contato@vinc.app)';
-const HEADERS = { 'Accept-Language': 'pt-BR', 'User-Agent': UA };
-// Hard ceiling on each lookup: Nominatim's free server can hang or throttle,
-// and callers must never wait forever (the confirm button depends on it).
-const TIMEOUT_MS = 6000;
+import { supabase } from '@/lib/supabase';
 
-async function fetchJson(url: string): Promise<Response | null> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+/** Chama a Edge Function geocode e devolve o payload `data` (ou null). */
+async function invokeGeocode(body: {
+  op: 'search' | 'region' | 'reverse';
+  q?: string;
+  lat?: number;
+  lng?: number;
+  near?: { lat: number; lng: number };
+}): Promise<unknown> {
+  if (!supabase) return null;
   try {
-    return await fetch(url, { headers: HEADERS, signal: controller.signal });
+    const { data, error } = await supabase.functions.invoke('geocode', { body });
+    if (error) return null;
+    return (data as { data?: unknown })?.data ?? null;
   } catch {
     return null;
-  } finally {
-    clearTimeout(timer);
   }
 }
 
@@ -81,54 +80,30 @@ export async function searchRegions(
   query: string,
   near?: { lat: number; lng: number },
 ): Promise<GeoResult[]> {
-  let viewbox = '';
-  if (near) {
-    const d = 0.7; // ~75 km box — prioritizes the user's surroundings
-    viewbox = `&viewbox=${near.lng - d},${near.lat + d},${near.lng + d},${near.lat - d}&bounded=0`;
-  }
-  const response = await fetchJson(
-    `${NOMINATIM}/search?format=jsonv2&addressdetails=1&countrycodes=br&limit=6&q=${encodeURIComponent(query)}${viewbox}`,
-  );
-  if (!response || !response.ok) return [];
-  try {
-    const rows = (await response.json()) as NominatimRow[];
-    return rows.map((row) => ({ lat: Number(row.lat), lng: Number(row.lon), label: shortLabel(row) }));
-  } catch {
-    return [];
-  }
+  const rows = (await invokeGeocode({ op: 'region', q: query, near })) as NominatimRow[] | null;
+  if (!Array.isArray(rows)) return [];
+  return rows.map((row) => ({ lat: Number(row.lat), lng: Number(row.lon), label: shortLabel(row) }));
 }
 
 export async function searchAddress(query: string): Promise<GeoResult[]> {
-  const response = await fetchJson(
-    `${NOMINATIM}/search?format=jsonv2&addressdetails=1&countrycodes=br&limit=5&q=${encodeURIComponent(query)}`,
-  );
-  if (!response || !response.ok) return [];
-  try {
-    const rows = (await response.json()) as NominatimRow[];
-    return rows.map((row) => ({
-      lat: Number(row.lat),
-      lng: Number(row.lon),
-      label: shortLabel(row),
-    }));
-  } catch {
-    return [];
-  }
+  const rows = (await invokeGeocode({ op: 'search', q: query })) as NominatimRow[] | null;
+  if (!Array.isArray(rows)) return [];
+  return rows.map((row) => ({
+    lat: Number(row.lat),
+    lng: Number(row.lon),
+    label: shortLabel(row),
+  }));
 }
 
 /** Full outcome (address / no_address / error) — used by the map picker. */
 export async function reverseGeocodeDetailed(lat: number, lng: number): Promise<ReverseOutcome> {
-  const response = await fetchJson(
-    `${NOMINATIM}/reverse?format=jsonv2&addressdetails=1&lat=${lat}&lon=${lng}`,
-  );
-  if (!response || !response.ok) return { kind: 'error' };
-  try {
-    const row = (await response.json()) as NominatimRow & { error?: string };
-    // Ocean / no-man's-land: Nominatim responds but with an error / no address.
-    if (row.error || !row.address) return { kind: 'no_address' };
-    return { kind: 'address', label: shortLabel(row), inBrazil: row.address.country_code === 'br' };
-  } catch {
-    return { kind: 'error' };
-  }
+  const row = (await invokeGeocode({ op: 'reverse', lat, lng })) as
+    | (NominatimRow & { error?: string })
+    | null;
+  if (!row) return { kind: 'error' };
+  // Ocean / no-man's-land: Nominatim responds but with an error / no address.
+  if (row.error || !row.address) return { kind: 'no_address' };
+  return { kind: 'address', label: shortLabel(row), inBrazil: row.address.country_code === 'br' };
 }
 
 /** Convenience wrapper: just the label + inBrazil, or null (kept for callers). */
