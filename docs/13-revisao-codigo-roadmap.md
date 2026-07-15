@@ -64,17 +64,20 @@ antes de tudo.
 
 ## Fase B — Escala e banco (antes de ter carga) · alto valor
 
-- [ ] **B1 · Match de alertas roda DENTRO da transação de criar vaga, sem guarda** —
-  `notify_job_alerts` (`0043/0044`) é `after insert on gigs`; qualquer exceção
-  (coluna errada, `time_band` inválido, `net.http_post` falho) faz rollback da
-  vaga inteira — o mesmo modo de falha que já quebrou a criação. **Envolver o
-  corpo em `begin…exception when others then…end` (rápido) e/ou desacoplar o
-  fan-out para um worker assíncrono** (a inserção só enfileira 1 evento; um
-  consumidor `pg_cron` faz o resto). — M (guarda) / L (fila)
-- [ ] **B2 · Índice de match sumiu na 0044 → seq scan por vaga criada** — `0043:25`
-  indexava `category_id`; `0044:9` derruba a coluna (e o índice) e cria
-  `category_ids uuid[]` sem índice. **Criar índice GIN em `category_ids` (where
-  active)** e ajustar o predicado para usá-lo. — S
+- [x] **B1 · Match de alertas roda DENTRO da transação de criar vaga, sem guarda** —
+  **Corrigido (migração 0045):** o corpo de `notify_job_alerts` agora roda dentro
+  de `begin…exception when others then raise warning…end`, então nenhuma falha de
+  notificação derruba a criação da vaga. Verificado e2e: vaga criada com sucesso
+  E o `job_match` do David disparou. *(O desacoplamento total para uma fila
+  assíncrona `pg_cron` — mais robusto sob carga — fica como decisão em aberto,
+  ver abaixo.)* — M
+- [x] **B2 · Índice de match sumiu na 0044 → seq scan por vaga criada** —
+  **Corrigido (migração 0045):** índice GIN parcial `job_alerts_active_categories`
+  em `category_ids where active`, e o predicado de categoria reescrito em forma de
+  contenção (`category_ids @> array[…]`) que o GIN usa. *(Caveat: o ramo "todas as
+  categorias" — `cardinality=0` — ainda varre; se muitos alertas forem "todas",
+  vale separar num índice/branch próprio. Hoje, com poucas linhas, o planner usa
+  seq scan de propósito.)* — S
 - [ ] **B3 · Fan-out de push: 1 notificação = 1 pg_net = 1 invocação de send-push**,
   cada uma re-buscando o mesmo título da vaga (`0038`, `send-push/index.ts:52-72`).
   Uma vaga popular vira milhares de chamadas HTTP. **Despachar 1 vez por evento
