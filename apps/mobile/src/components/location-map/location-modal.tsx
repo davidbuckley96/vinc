@@ -50,24 +50,28 @@ export function LocationModal({ visible, lat, lng, address, approximate, onClose
           </View>
 
           <View style={styles.mapArea}>
-            {/* EXPERIMENTO (V-01): para achar a raiz do travamento do gesto, este
-                mapa foi igualado ao da criação — SEM o círculo de região
-                aproximada e SEM marcador desenhados dentro do WebView, só o mapa
-                interativo + um pino central por cima (RN). Se ficar fluido, o
-                culpado era o desenho do círculo/anonimato; aí re-adicionamos de
-                outra forma. `circleMeters`/`marker` comentados de propósito. */}
+            {/* V-01 (raiz confirmada pelo David): o círculo de região aproximada
+                desenhado DENTRO do WebGL (polígono do MapLibre) era o que travava
+                o gesto — por isso o mapa exato (anunciante, sem círculo) era
+                fluido e o aproximado (trabalhador) travava. Solução: o mapa é o
+                mesmo dos dois lados (sem camadas no WebView) e o indicador vira
+                uma CAMADA DO REACT NATIVE por cima (não pesa no gesto): círculo
+                translúcido no modo aproximado, pino no exato. O mapa abre e fica
+                centrado no ponto (já embaralhado no servidor, D-028). */}
             <LocationMap
               lat={lat}
               lng={lng}
-              zoom={16}
+              zoom={approximate ? 15 : 16}
               interactive
               onCenterChange={() => {}}
-              // circleMeters={approximate ? APPROX_RADIUS_M : undefined}
-              // marker={!approximate}
               style={StyleSheet.absoluteFill}
             />
-            <View pointerEvents="none" style={styles.pinWrap}>
-              <Ionicons name="location-sharp" size={40} color={theme.primary} style={styles.pin} />
+            <View pointerEvents="none" style={styles.overlay}>
+              {approximate ? (
+                <View style={[styles.approxCircle, { borderColor: theme.primary }]} />
+              ) : (
+                <Ionicons name="location-sharp" size={40} color={theme.primary} style={styles.pin} />
+              )}
             </View>
           </View>
 
@@ -117,7 +121,7 @@ const styles = StyleSheet.create({
   mapArea: {
     flex: 1,
   },
-  pinWrap: {
+  overlay: {
     position: 'absolute',
     left: 0,
     right: 0,
@@ -131,6 +135,15 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.3)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
+  },
+  // Área aproximada (D-028) desenhada em RN, não no WebGL (V-01): translúcida
+  // no tom da marca, centrada no ponto embaralhado.
+  approxCircle: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    borderWidth: 2,
+    backgroundColor: 'rgba(124,58,237,0.16)',
   },
   foot: {
     padding: Spacing.three,

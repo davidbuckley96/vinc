@@ -1017,6 +1017,28 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-065 — Indicador do mapa (raio/pino) vira camada do React Native, não do WebGL
+**Data:** 2026-07-15 · **Decidido por:** Claude (causa-raiz confirmada pelo David)
+
+O mapa da vaga (D-055) travava o gesto de arrastar **só no lado do trabalhador**
+(local aproximado) — para o anunciante (local exato) era fluido. Pista decisiva
+do David: mesmo o **mesmo mapa** ficava fluido na criação/visualização para o
+anunciante e travava ao trocar para o trabalhador. A diferença era o **círculo
+de região aproximada desenhado DENTRO do WebGL** (polígono do MapLibre no
+WebView): a re-tesselação do preenchimento a cada frame do gesto no Android
+engasgava o toque. O pino exato não pesava, por isso o lado do anunciante era
+fluido.
+
+Correção definitiva: o `LocationModal` usa **o mesmo mapa sem camadas** dos dois
+lados (nada de `circleMeters`/`marker` no WebView) e desenha o indicador como
+uma **camada do React Native por cima** (`pointerEvents="none"`): círculo
+translúcido no modo aproximado, pino (`location-sharp`) no exato. Como fica fora
+do WebGL, não entra no cálculo do gesto — o mapa fica fluido nos dois papéis. O
+ponto continua embaralhado no servidor (D-028/D-030), então a camada RN só
+marca visualmente a região; não revela o endereço exato. As props
+`circleMeters`/`marker` seguem existindo apenas no `location-map.web.tsx` (web
+não tem o problema de gesto). Revisa a implementação de mapa do D-055/D-030.
+
 ## D-064 — Perfil rico + alertas de vagas (B-30, rodada 21 opção A)
 **Data:** 2026-07-14 · **Decidido por:** David (mock rodada 21)
 

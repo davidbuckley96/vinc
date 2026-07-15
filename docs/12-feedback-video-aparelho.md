@@ -49,7 +49,20 @@
   nativa nova + build. Recomendo começar por (a).
 - **Severidade:** Alta (é a tela que o candidato usa pra situar a vaga).
 
-### V-01b 🟡 Gesto AINDA travado no build com o fix — investigação em curso
+### V-01c 🟢 RAIZ CONFIRMADA + fix definitivo — o círculo no WebGL
+- **Pista decisiva do David:** na MESMA vaga, o mapa é **fluido para o
+  anunciante** (vê o local **exato**, sem círculo) e **trava para o trabalhador**
+  (vê a **região aproximada** = o **círculo** de anonimato, D-028). Trocar de
+  conta troca o comportamento. → a raiz é o **círculo desenhado dentro do mapa
+  WebGL** (polígono do MapLibre re-tesselando/preenchendo a cada frame no
+  WebView), não o snap-back nem o gesto em si.
+- **Fix definitivo:** o círculo aproximado saiu do WebGL e virou **camada do
+  React Native** por cima do mapa (`View` translúcida circular). Os dois mapas
+  (exato e aproximado) usam agora o **mesmo LocationMap sem camadas** → o
+  aproximado fica tão fluido quanto o exato. `location-modal.tsx`. Mantido o
+  `androidLayerType="hardware"`. Confirmar no próximo build.
+
+### V-01b 🟡 (histórico) Gesto AINDA travado no build com o fix do snap-back
 - O build `db9ca367` **já continha** o fix do snap-back (confirmado por
   `git merge-base`), e mesmo assim o gesto continua travado → o snap-back **não
   era a raiz** (ou não a única). Também: no mapa da vaga **não dá pra digitar
