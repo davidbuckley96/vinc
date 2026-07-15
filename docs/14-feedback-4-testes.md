@@ -123,12 +123,18 @@ texto ("Nome: última mensagem") o `send-push` precisa carregar o corpo; anti-sp
 não empilhar se já existe um `new_message` não lido daquela vaga. Depende do F-02
 existir. — **M**
 
-### F-08 · Logs + observabilidade — 🟡 BACKEND FEITO (Sentry, D-069) · falta app
-**Decisão do David:** Sentry (região UE). **Backend pronto e ligado** nas funções
-críticas via `_shared/observability.ts` (envelope + `SENTRY_DSN` secret; remove
-CPF/e-mail antes de enviar). Conectividade verificada (HTTP 200). **Falta:** o
-SDK no app (`@sentry/react-native`) — precisa de build pra validar, então vai em
-commit separado/revertível. Detalhe abaixo (histórico):
+### F-08 · Logs + observabilidade — ✅ FEITO (Sentry, D-069) · app precisa de build
+**Decisão do David:** Sentry (região UE). 
+- **Backend:** ligado nas funções críticas via `_shared/observability.ts`
+  (envelope + `SENTRY_DSN` secret; remove CPF/e-mail). Conectividade verificada
+  (HTTP 200) e caminho feliz intacto.
+- **App:** `@sentry/react-native ~7.11.0` (via `expo install`, plugin de config
+  incluído) + `src/lib/sentry.ts` (`initSentry` no `_layout`, `Sentry.wrap`,
+  `beforeSend` removendo CPF/e-mail, sem PII, sem tracing). Typecheck/lint ok —
+  **precisa de um build EAS pra validar o nativo**; se o build quebrar, é só
+  reverter o commit do SDK do app (o backend continua valendo).
+Fica pra depois (opcional): upload de source maps (stack trace legível) e
+integração GitHub (suspect commits). Detalhe abaixo (histórico):
 
 Hoje há `console.*` nas Edge Functions (vai pros logs do Supabase) e o plano de
 observabilidade está em `docs/10`, mas não há captura de erros do **app** nem um

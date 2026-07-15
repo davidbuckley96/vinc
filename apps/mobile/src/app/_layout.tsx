@@ -10,11 +10,15 @@ import { PayoutOnboardingGate } from '@/features/auth/components/payout-onboardi
 import { WelcomeGate } from '@/features/auth/components/welcome-gate';
 import { SessionProvider } from '@/features/auth/session-context';
 import { PushRegistrar } from '@/features/notifications/push';
+import { initSentry, Sentry } from '@/lib/sentry';
+
+// Observabilidade (F-08/D-069): iniciar o mais cedo possível, antes de montar.
+initSentry();
 
 SplashScreen.preventAutoHideAsync();
 SplashScreen.hideAsync();
 
-export default function RootLayout() {
+function RootLayout() {
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
   const colors = Colors[dark ? 'dark' : 'light'];
@@ -55,3 +59,6 @@ export default function RootLayout() {
     </QueryClientProvider>
   );
 }
+
+// Sentry.wrap habilita a captura de erros de renderização e o touch/nav tracking.
+export default Sentry.wrap(RootLayout);

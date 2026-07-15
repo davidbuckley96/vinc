@@ -49,7 +49,8 @@
           "photosPermission": "O Vinc usa suas fotos para você anexar imagens do serviço.",
           "cameraPermission": "O Vinc usa a câmera para você tirar fotos do serviço."
         }
-      ]
+      ],
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -58,7 +59,8 @@
     "extra": {
       "eas": {
         "projectId": "28008093-41ed-4df4-a724-e5c5b5a95c02"
-      }
+      },
+      "sentryDsn": "https://b40c090cbb42e354d82f10a04a89edb9@o4511740446703616.ingest.de.sentry.io/4511740454305872"
     },
     "runtimeVersion": {
       "policy": "appVersion"
