@@ -76,29 +76,48 @@ Deno.serve(async (request) => {
     : { data: [] };
   const priorityWorkers = new Set((windows ?? []).map((row) => row.worker_id as string));
 
+  // Batch the per-worker data in 3 queries total instead of 3 PER candidate
+  // (B5, docs/13): the old serial loop did ~3×N round-trips, growing linearly
+  // with the number of applicants. Fetch profiles/stats/recent-good-reviews for
+  // ALL workers at once and group in memory.
+  const [{ data: profiles }, { data: statsRows }, { data: reviewRows }] = workerIds.length
+    ? await Promise.all([
+        admin.from("profiles").select("id, name, avatar_url").in("id", workerIds),
+        admin
+          .from("profile_stats")
+          .select("id, worker_avg_rating, worker_review_count, completed_as_worker")
+          .in("id", workerIds),
+        admin
+          .from("reviews")
+          .select("reviewee_id, tags, created_at")
+          .in("reviewee_id", workerIds)
+          .eq("reviewee_role", "worker")
+          .gte("rating", 4)
+          .order("created_at", { ascending: false }),
+      ])
+    : [{ data: [] }, { data: [] }, { data: [] }];
+
+  const profileById = new Map((profiles ?? []).map((p) => [p.id as string, p]));
+  const statsById = new Map((statsRows ?? []).map((s) => [s.id as string, s]));
+  // Group recent good reviews per worker, keeping the 10 most recent (rows are
+  // already ordered created_at desc), then count the most frequent praise tags.
+  const reviewsByWorker = new Map<string, string[][]>();
+  for (const row of reviewRows ?? []) {
+    const id = row.reviewee_id as string;
+    const list = reviewsByWorker.get(id) ?? [];
+    if (list.length < 10) list.push(((row.tags as string[] | null) ?? []));
+    reviewsByWorker.set(id, list);
+  }
+
   const candidates = [];
   for (const candidacy of candidacies ?? []) {
-    const [{ data: profile }, { data: stats }, { data: reviews }] = await Promise.all([
-      admin.from("profiles").select("name, avatar_url").eq("id", candidacy.worker_id).maybeSingle(),
-      admin
-        .from("profile_stats")
-        .select("worker_avg_rating, worker_review_count, completed_as_worker")
-        .eq("id", candidacy.worker_id)
-        .maybeSingle(),
-      admin
-        .from("reviews")
-        .select("tags")
-        .eq("reviewee_id", candidacy.worker_id)
-        .eq("reviewee_role", "worker")
-        .gte("rating", 4)
-        .order("created_at", { ascending: false })
-        .limit(10),
-    ]);
+    const profile = profileById.get(candidacy.worker_id);
+    const stats = statsById.get(candidacy.worker_id);
 
     // Most frequent praise tags across the recent good reviews.
     const counts = new Map<string, number>();
-    for (const review of reviews ?? []) {
-      for (const tag of (review.tags as string[] | null) ?? []) {
+    for (const tags of reviewsByWorker.get(candidacy.worker_id) ?? []) {
+      for (const tag of tags) {
         counts.set(tag, (counts.get(tag) ?? 0) + 1);
       }
     }

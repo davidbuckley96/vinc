@@ -91,10 +91,11 @@ antes de tudo.
   existe em `0043:35`) via RPC/view ordenando por `distance_km`, com paginação
   keyset. Isso também **elimina a duplicação de haversine** (JS `distanceMeters`
   vs SQL `distance_km`) que hoje pode divergir entre busca e alerta. — M
-- [ ] **B5 · `get-candidates` é N+1** — `get-candidates/index.ts:80-96` faz 3
-  queries por candidato, em série; 20 candidatos ≈ 60 idas ao banco. **Buscar
-  `profiles`/`profile_stats`/`reviews` de uma vez com `.in(ids)` e agrupar em
-  memória** (o próprio arquivo já faz isso para `priority_windows`). — M
+- [x] **B5 · `get-candidates` é N+1** — **Corrigido (deploy v18):** as 3 queries
+  por candidato viraram **3 queries totais** (`profiles`/`profile_stats`/`reviews`
+  com `.in(workerIds)`), agrupadas em memória (as tags recentes por trabalhador
+  são cortadas em 10 no JS). Verificado e2e com 3 candidatos + avaliações: nomes,
+  notas e tags corretos por pessoa. — M
 - [ ] **B6 · `create-gig` chama o Nominatim de forma síncrona ao publicar** —
   `create-gig/index.ts:170-173` faz um `fetch` (até 3 s) no caminho crítico da
   publicação. **Inserir a vaga com o fuzz na hora e resolver o centroide de forma
