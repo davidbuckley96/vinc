@@ -2,7 +2,16 @@ import { useEffect, useMemo, useRef } from 'react';
 import { View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-import { MAP_STYLE_URL, type LocationMapProps } from './config';
+import { BRAZIL_CENTER, MAP_STYLE_URL, type LocationMapProps } from './config';
+
+/**
+ * A5 (docs/13): a non-finite lat/lng/zoom would be interpolated into the map
+ * HTML as `center: [NaN, NaN]` and silently break the WebView with no error
+ * crossing the bridge. Fall back to the Brazil overview so the map still shows.
+ */
+function finiteOr(value: number, fallback: number): number {
+  return Number.isFinite(value) ? value : fallback;
+}
 
 /**
  * Native (iOS/Android) implementation: MapLibre inside a WebView — same
@@ -15,10 +24,14 @@ export function LocationMap({
   zoom,
   interactive = false,
   onCenterChange,
-  circleMeters,
   marker = false,
   style,
 }: LocationMapProps) {
+  // Sanitize before anything reaches the map HTML (A5, docs/13).
+  const safeLat = finiteOr(lat, BRAZIL_CENTER.lat);
+  const safeLng = finiteOr(lng, BRAZIL_CENTER.lng);
+  const safeZoom = finiteOr(zoom, BRAZIL_CENTER.zoom);
+
   const webviewRef = useRef<WebView>(null);
   // Last center we PUSHED into the map from props. Kept separate from wherever
   // the user has panned to — otherwise a parent re-render would compare the
@@ -26,7 +39,7 @@ export function LocationMap({
   // map on every drag (V-01: only the gig view had this, since it has no
   // onCenterChange to keep the prop in sync). Only a real prop change
   // (a search pick) recenters now.
-  const lastPushed = useRef({ lat, lng });
+  const lastPushed = useRef({ lat: safeLat, lng: safeLng });
 
   const html = useMemo(
     () => `<!DOCTYPE html><html><head>
@@ -38,38 +51,12 @@ export function LocationMap({
   const map = new maplibregl.Map({
     container: 'map',
     style: ${JSON.stringify(MAP_STYLE_URL)},
-    center: [${lng}, ${lat}],
-    zoom: ${zoom},
+    center: [${safeLng}, ${safeLat}],
+    zoom: ${safeZoom},
     interactive: ${interactive},
-    attributionControl: { compact: true },
-    ${
-      // The approximate-region view is meant to explore a neighbourhood, not
-      // the whole country: clamp the zoom so a stray pinch can't zoom out to a
-      // blank country-wide view (V-01). The exact-location view is unclamped.
-      circleMeters ? 'minZoom: 11, maxZoom: 18,' : ''
-    }
+    attributionControl: { compact: true }
   });
-  ${
-    circleMeters
-      ? `map.on('load', () => {
-    if (map.getSource('area')) return; // draw the circle once
-    // Polygon approximating a ${circleMeters} m circle anchored at the point,
-    // so it stays over the place while the map is panned/zoomed.
-    const cx = ${lng}, cy = ${lat}, r = ${circleMeters};
-    const coords = [];
-    for (let i = 0; i <= 64; i++) {
-      const a = (i / 64) * 2 * Math.PI;
-      const dx = (r * Math.cos(a)) / (111320 * Math.cos(cy * Math.PI / 180));
-      const dy = (r * Math.sin(a)) / 110540;
-      coords.push([cx + dx, cy + dy]);
-    }
-    map.addSource('area', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'Polygon', coordinates: [coords] } } });
-    map.addLayer({ id: 'area-fill', type: 'fill', source: 'area', paint: { 'fill-color': '#7C3AED', 'fill-opacity': 0.16 } });
-    map.addLayer({ id: 'area-line', type: 'line', source: 'area', paint: { 'line-color': '#7C3AED', 'line-width': 2 } });
-  });`
-      : ''
-  }
-  ${marker ? `new maplibregl.Marker({ color: '#7C3AED' }).setLngLat([${lng}, ${lat}]).addTo(map);` : ''}
+  ${marker ? `new maplibregl.Marker({ color: '#7C3AED' }).setLngLat([${safeLng}, ${safeLat}]).addTo(map);` : ''}
   map.on('moveend', () => {
     const c = map.getCenter();
     window.ReactNativeWebView?.postMessage(JSON.stringify({ lat: c.lat, lng: c.lng }));
@@ -93,14 +80,16 @@ export function LocationMap({
   // effect. A bare re-render must not move the map, or the user's pan is undone.
   useEffect(() => {
     if (
-      Math.abs(lastPushed.current.lat - lat) < 1e-7 &&
-      Math.abs(lastPushed.current.lng - lng) < 1e-7
+      Math.abs(lastPushed.current.lat - safeLat) < 1e-7 &&
+      Math.abs(lastPushed.current.lng - safeLng) < 1e-7
     ) {
       return;
     }
-    lastPushed.current = { lat, lng };
-    webviewRef.current?.postMessage(JSON.stringify({ jumpTo: { lat, lng, zoom } }));
-  }, [lat, lng, zoom]);
+    lastPushed.current = { lat: safeLat, lng: safeLng };
+    webviewRef.current?.postMessage(
+      JSON.stringify({ jumpTo: { lat: safeLat, lng: safeLng, zoom: safeZoom } }),
+    );
+  }, [safeLat, safeLng, safeZoom]);
 
   return (
     <View style={style}>

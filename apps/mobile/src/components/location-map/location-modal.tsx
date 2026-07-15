@@ -24,8 +24,9 @@ interface LocationModalProps {
 
 /**
  * Full-screen NAVIGABLE map (D-055): the person can pan/zoom to understand
- * where a gig is — the radius circle (approximate) or the pin (exact) stays
- * anchored to the place as the map moves. Replaces the old static preview.
+ * where a gig is. Approximate mode opens centered on the neighbourhood with no
+ * marker (privacy, D-066); exact mode shows a `marker` anchored to the point so
+ * it stays over the place as the map moves. Replaces the old static preview.
  */
 export function LocationModal({ visible, lat, lng, address, approximate, onClose }: LocationModalProps) {
   const theme = useTheme();
@@ -52,28 +53,24 @@ export function LocationModal({ visible, lat, lng, address, approximate, onClose
           </View>
 
           <View style={styles.mapArea}>
-            {/* V-01/D-066 (raiz confirmada pelo David): qualquer coisa desenhada
-                DENTRO do WebGL (o círculo, polígono do MapLibre) — ou uma camada
-                translúcida grande por cima — travava o gesto no Android; por isso
-                o mapa exato (anunciante, só um pino) era fluido e o aproximado
-                travava. Solução: no modo aproximado NÃO há círculo nem pino — o
-                mapa abre CENTRADO NO BAIRRO (o ponto guardado já é o centro do
-                bairro) e o próprio bairro é a garantia de privacidade. Mapa sem
-                camadas = arrasta liso. No modo exato (quem já foi escolhido)
-                mantemos o pino, que é leve. */}
+            {/* V-01/D-066 (raiz confirmada pelo David): o círculo (polígono do
+                MapLibre) desenhado DENTRO do WebGL travava o gesto no Android.
+                Modo APROXIMADO: sem círculo e sem pino — o mapa abre CENTRADO NO
+                BAIRRO (o ponto guardado já é o centro do bairro) e o próprio
+                bairro é a privacidade; mapa sem camadas = arrasta liso. Modo
+                EXATO (quem já foi escolhido): um `marker` ancorado no ponto (A3,
+                docs/13) — um pino leve DENTRO do mapa que segue o lugar ao
+                arrastar, ao contrário do overlay RN que ficava preso no centro
+                da tela e apontava para o lugar errado depois do primeiro pan. */}
             <LocationMap
               lat={lat}
               lng={lng}
               zoom={approximate ? 14 : 16}
               interactive
+              marker={!approximate}
               onCenterChange={() => {}}
               style={StyleSheet.absoluteFill}
             />
-            {!approximate && (
-              <View pointerEvents="none" style={styles.overlay}>
-                <Ionicons name="location-sharp" size={40} color={theme.primary} style={styles.pin} />
-              </View>
-            )}
           </View>
 
           <SafeAreaView edges={['bottom']}>
@@ -121,21 +118,6 @@ const styles = StyleSheet.create({
   },
   mapArea: {
     flex: 1,
-  },
-  overlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pin: {
-    transform: [{ translateY: -20 }],
-    textShadowColor: 'rgba(0,0,0,0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
   },
   foot: {
     padding: Spacing.three,

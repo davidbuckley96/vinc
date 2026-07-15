@@ -34,10 +34,14 @@ antes de tudo.
 
 ## Fase A — Bugs de correção (visíveis, baratos) · fazer primeiro
 
-- [ ] **A1 · Editar perfil/foto não atualiza a tela** — `profile/hooks.ts:61-62,84-85`
+> **Status:** A1, A3, A4, A5 concluídos em 2026-07-15 (commit da Fase A parte 1).
+> A2 é o único estrutural (passa `area` do geocoder até o create-gig) — feito à
+> parte por tocar ~6 arquivos.
+
+- [x] **A1 · Editar perfil/foto não atualiza a tela** — `profile/hooks.ts:61-62,84-85`
   invalidam `['profile-stats']`, mas a query de stats é `['profile','stats',userId]`
   (`reviews/hooks.ts:49`). Não casa (prefix-match) → nome/cidade/foto ficam velhos
-  até reabrir o app. **Corrigir a chave.** — S
+  até reabrir o app. **Corrigido:** invalidação passa a usar `['profile','stats']`. — S
 - [ ] **A2 · Centroide do bairro (D-066) não roda para endereços sem rua** —
   `shortLabel` (`lib/geocoding.ts:61-71`) só usa o separador `" — "` quando há
   rua; um clique em bairro/cidade devolve `"Boa Vista, Recife"` sem separador, e
@@ -46,20 +50,17 @@ antes de tudo.
   retorna null (volta pro fuzz antigo). O recurso novo regride justamente no caso
   comum. **Passar `{area, city}` estruturado do geocoder até o create-gig** (ou
   um contrato de formato único entre `shortLabel` e `deriveAreaLabel`). — M
-- [ ] **A3 · Pino do local exato não fica ancorado** — `location-modal.tsx:25-29,72`
-  desenha o pino como overlay RN fixo no centro da tela; ao arrastar o mapa, o
-  pino aponta para um ponto arbitrário (e a docstring afirma o contrário).
-  **Usar `marker` ancorado no mapa para o modo exato** e corrigir a docstring. — S
-- [ ] **A4 · Calendário de faixa não re-sincroniza ao reabrir** — `date-range-calendar.tsx:52-57`
-  (montado sempre em `search-screen.tsx`) semeia o rascunho por `useState` só uma
-  vez; depois de usar os chips "Hoje/Amanhã" e abrir o calendário, ele aparece
-  vazio. Mesmo problema em `month-calendar.tsx:47`. **Resetar o rascunho quando
-  `visible` vira true.** — S
-- [ ] **A5 · `Number()` sem validação no geocoding do cliente** — `lib/geocoding.ts:85,91-95`
-  não checa `isFinite` (o `create-gig` checa). Uma linha malformada gera `NaN` que
-  entra no HTML do mapa (`center:[NaN,NaN]`) e quebra o mapa sem erro. **Filtrar
-  lat/lng não-finitos.** (Guardar também o HTML do WebView contra NaN em
-  `location-map.tsx`.) — S
+- [x] **A3 · Pino do local exato não fica ancorado** — `location-modal.tsx`.
+  **Corrigido:** modo exato usa `marker` ancorado DENTRO do mapa (segue o lugar
+  ao arrastar); overlay RQ removido; docstring corrigida. — S
+- [x] **A4 · Calendário de faixa não re-sincroniza ao reabrir** —
+  `date-range-calendar.tsx`. **Corrigido:** re-semeia o rascunho + mês na borda
+  de abertura via ajuste de estado em render (sem effect, sem warning). — S
+  *(Nota: `month-calendar.tsx:47` tem o mesmo padrão; se algum caller o mantiver
+  montado, aplicar o mesmo ajuste — hoje ele é montado sob demanda.)*
+- [x] **A5 · `Number()` sem validação no geocoding do cliente** — `lib/geocoding.ts`.
+  **Corrigido:** `toGeoResults` descarta lat/lng não-finitos; `location-map.tsx` e
+  `.web.tsx` sanitizam center/zoom/marker com fallback ao overview do Brasil. — S
 
 ## Fase B — Escala e banco (antes de ter carga) · alto valor
 
@@ -104,10 +105,10 @@ antes de tudo.
 
 ## Fase C — Desacoplamento e limpeza (manutenibilidade)
 
-- [ ] **C1 · Código morto: props `circleMeters`/`marker`** — `config.ts:20-27`,
-  `location-map.tsx:45-72`, `location-map.web.tsx`. Nenhum caller usa desde o
-  "drop the circle"; ~40 linhas duplicadas e divergentes. **Remover** (ou
-  religar `marker` ao resolver A3). — S
+- [x] **C1 · Código morto: prop `circleMeters`** — `config.ts`, `location-map.tsx`,
+  `location-map.web.tsx`. **Feito junto com A3/A5:** `circleMeters` e todo o
+  desenho do círculo (nativo + web + trava de zoom) removidos; `marker` foi
+  *religado* (usado pelo modo exato do `LocationModal`), então continua vivo. — S
 - [ ] **C2 · Lógica do Nominatim duplicada em 2 Edge Functions** — URL, UA,
   headers, wrapper de fetch+timeout e o viewbox existem em `geocode/index.ts:13-41`
   e `create-gig/index.ts:46-91` (com `d` diferente). **Extrair

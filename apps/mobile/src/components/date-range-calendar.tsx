@@ -56,6 +56,22 @@ export function DateRangeCalendar({ visible, range, onConfirm, onClose }: Props)
     month: (range?.start ?? today).getMonth(),
   });
 
+  // A4 (docs/13): the modal stays mounted (only `visible` toggles), so the
+  // `useState` initializers run once and never reflect a `range` set later via
+  // the "Hoje/Amanhã" chips. Re-seed the draft + month view on the open edge,
+  // using React's "adjust state while rendering" pattern (no effect, no
+  // cascading-render warning). Edits made while open are never clobbered.
+  const [wasVisible, setWasVisible] = useState(visible);
+  if (visible !== wasVisible) {
+    setWasVisible(visible);
+    if (visible) {
+      setDraftStart(range?.start ?? null);
+      setDraftEnd(range?.end ?? null);
+      const anchor = range?.start ?? today;
+      setView({ year: anchor.getFullYear(), month: anchor.getMonth() });
+    }
+  }
+
   const tapDay = (date: Date) => {
     // Starting fresh, or a completed range exists → begin a new range.
     if (!draftStart || draftEnd) {

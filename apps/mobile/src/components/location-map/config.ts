@@ -18,12 +18,11 @@ export interface LocationMapProps {
   interactive?: boolean;
   onCenterChange?: (lat: number, lng: number) => void;
   /**
-   * Draw a translucent circle of this radius (meters) anchored at lat/lng —
-   * used for the approximate-location view (D-055): it stays on the place as
-   * the user pans/zooms, instead of a screen-fixed overlay.
+   * Drop a pin anchored at lat/lng (exact-location view). The approximate view
+   * uses no marker — it centers on the neighbourhood instead (D-066). The old
+   * `circleMeters` circle was removed: drawing it inside the WebGL map janked
+   * the pan gesture on Android (V-01/D-065/D-066).
    */
-  circleMeters?: number;
-  /** Drop a pin anchored at lat/lng (exact-location view). */
   marker?: boolean;
   /** Container style (RN). The map fills it. */
   style?: object;

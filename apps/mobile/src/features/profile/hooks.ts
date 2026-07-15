@@ -59,7 +59,10 @@ export function useUpdateProfile() {
     onSuccess: (result) => {
       if (result !== 'updated') return;
       queryClient.invalidateQueries({ queryKey: ['my-profile'] });
-      queryClient.invalidateQueries({ queryKey: ['profile-stats'] });
+      // A1 (docs/13): a query de stats é ['profile','stats',userId] — invalidar
+      // ['profile-stats'] (uma string só) NÃO casava, então nome/cidade/foto
+      // ficavam velhos até reabrir o app. O prefixo ['profile','stats'] casa.
+      queryClient.invalidateQueries({ queryKey: ['profile', 'stats'] });
     },
   });
 }
@@ -82,7 +85,10 @@ export function useUploadAvatar() {
     onSuccess: (url) => {
       if (!url) return;
       queryClient.invalidateQueries({ queryKey: ['my-profile'] });
-      queryClient.invalidateQueries({ queryKey: ['profile-stats'] });
+      // A1 (docs/13): a query de stats é ['profile','stats',userId] — invalidar
+      // ['profile-stats'] (uma string só) NÃO casava, então nome/cidade/foto
+      // ficavam velhos até reabrir o app. O prefixo ['profile','stats'] casa.
+      queryClient.invalidateQueries({ queryKey: ['profile', 'stats'] });
     },
   });
 }

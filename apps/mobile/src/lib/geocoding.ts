@@ -76,23 +76,33 @@ function shortLabel(row: NominatimRow): string {
  * hard-coded lists. Typing "centro" in Aracaju surfaces Aracaju's centro
  * first; in Rio, Rio's. Without `near` it's a plain Brazil-wide search.
  */
+/**
+ * Maps Nominatim rows to GeoResult, dropping any row whose lat/lng isn't a
+ * finite number (A5, docs/13): a malformed coordinate would become NaN and,
+ * once fed into the map center, render as `[NaN, NaN]` and break the WebView
+ * map with no error.
+ */
+function toGeoResults(rows: NominatimRow[] | null): GeoResult[] {
+  if (!Array.isArray(rows)) return [];
+  const out: GeoResult[] = [];
+  for (const row of rows) {
+    const lat = Number(row.lat);
+    const lng = Number(row.lon);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+    out.push({ lat, lng, label: shortLabel(row) });
+  }
+  return out;
+}
+
 export async function searchRegions(
   query: string,
   near?: { lat: number; lng: number },
 ): Promise<GeoResult[]> {
-  const rows = (await invokeGeocode({ op: 'region', q: query, near })) as NominatimRow[] | null;
-  if (!Array.isArray(rows)) return [];
-  return rows.map((row) => ({ lat: Number(row.lat), lng: Number(row.lon), label: shortLabel(row) }));
+  return toGeoResults((await invokeGeocode({ op: 'region', q: query, near })) as NominatimRow[] | null);
 }
 
 export async function searchAddress(query: string): Promise<GeoResult[]> {
-  const rows = (await invokeGeocode({ op: 'search', q: query })) as NominatimRow[] | null;
-  if (!Array.isArray(rows)) return [];
-  return rows.map((row) => ({
-    lat: Number(row.lat),
-    lng: Number(row.lon),
-    label: shortLabel(row),
-  }));
+  return toGeoResults((await invokeGeocode({ op: 'search', q: query })) as NominatimRow[] | null);
 }
 
 /** Full outcome (address / no_address / error) — used by the map picker. */

@@ -3,7 +3,12 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { useEffect, useRef } from 'react';
 import { View } from 'react-native';
 
-import { MAP_STYLE_URL, type LocationMapProps } from './config';
+import { BRAZIL_CENTER, MAP_STYLE_URL, type LocationMapProps } from './config';
+
+/** A5 (docs/13): keep non-finite coords out of the map (mirrors the native side). */
+function finiteOr(value: number, fallback: number): number {
+  return Number.isFinite(value) ? value : fallback;
+}
 
 /** Web implementation: maplibre-gl rendering into a plain div. */
 export function LocationMap({
@@ -12,10 +17,13 @@ export function LocationMap({
   zoom,
   interactive = false,
   onCenterChange,
-  circleMeters,
   marker = false,
   style,
 }: LocationMapProps) {
+  const safeLat = finiteOr(lat, BRAZIL_CENTER.lat);
+  const safeLng = finiteOr(lng, BRAZIL_CENTER.lng);
+  const safeZoom = finiteOr(zoom, BRAZIL_CENTER.zoom);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const centerChangeRef = useRef(onCenterChange);
@@ -26,8 +34,8 @@ export function LocationMap({
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: MAP_STYLE_URL,
-      center: [lng, lat],
-      zoom,
+      center: [safeLng, safeLat],
+      zoom: safeZoom,
       interactive,
       attributionControl: { compact: true },
     });
@@ -35,25 +43,8 @@ export function LocationMap({
       const center = map.getCenter();
       centerChangeRef.current?.(center.lat, center.lng);
     });
-    if (circleMeters) {
-      map.on('load', () => {
-        const coords: [number, number][] = [];
-        for (let i = 0; i <= 64; i++) {
-          const a = (i / 64) * 2 * Math.PI;
-          const dx = (circleMeters * Math.cos(a)) / (111320 * Math.cos((lat * Math.PI) / 180));
-          const dy = (circleMeters * Math.sin(a)) / 110540;
-          coords.push([lng + dx, lat + dy]);
-        }
-        map.addSource('area', {
-          type: 'geojson',
-          data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [coords] } },
-        });
-        map.addLayer({ id: 'area-fill', type: 'fill', source: 'area', paint: { 'fill-color': '#7C3AED', 'fill-opacity': 0.16 } });
-        map.addLayer({ id: 'area-line', type: 'line', source: 'area', paint: { 'line-color': '#7C3AED', 'line-width': 2 } });
-      });
-    }
     if (marker) {
-      new maplibregl.Marker({ color: '#7C3AED' }).setLngLat([lng, lat]).addTo(map);
+      new maplibregl.Marker({ color: '#7C3AED' }).setLngLat([safeLng, safeLat]).addTo(map);
     }
     mapRef.current = map;
     return () => {
@@ -70,10 +61,10 @@ export function LocationMap({
     const center = map.getCenter();
     // Only recenter on EXTERNAL changes (e.g. a search pick) — the user
     // dragging reports this same center back, and jumping would fight them.
-    if (Math.abs(center.lat - lat) > 1e-7 || Math.abs(center.lng - lng) > 1e-7) {
-      map.jumpTo({ center: [lng, lat], zoom });
+    if (Math.abs(center.lat - safeLat) > 1e-7 || Math.abs(center.lng - safeLng) > 1e-7) {
+      map.jumpTo({ center: [safeLng, safeLat], zoom: safeZoom });
     }
-  }, [lat, lng, zoom]);
+  }, [safeLat, safeLng, safeZoom]);
 
   return (
     <View style={style}>
