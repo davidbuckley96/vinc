@@ -21,6 +21,7 @@ import {
   allowedLifecycleAction,
   type GigStatus,
 } from "../../../packages/core/src/gig.ts";
+import { withObservability } from "../_shared/observability.ts";
 import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 type Action = "start" | "complete" | "confirm";
@@ -59,7 +60,7 @@ function respond(code: ResultCode, status: number, extra: object = {}): Response
   });
 }
 
-Deno.serve(async (request) => {
+Deno.serve(withObservability("gig-lifecycle", async (request) => {
   if (request.method === "OPTIONS") {
     return new Response("ok", { headers: CORS_HEADERS });
   }
@@ -217,4 +218,4 @@ Deno.serve(async (request) => {
   }
 
   return respond("done", 200, { status: NEXT_STATUS[action as Action] });
-});
+}));

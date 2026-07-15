@@ -1017,6 +1017,23 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-069 — Observabilidade com Sentry (erros de app + backend)
+**Data:** 2026-07-15 · **Decidido por:** David (escolheu Sentry, região UE)
+
+Adotado o **Sentry** para captura de erros e dashboard (F-08, docs/14), com o
+projeto hospedado na **UE** (alinhado à LGPD, que espelha o GDPR; latência
+irrelevante pra envio assíncrono de erro). Backend: um helper
+`supabase/functions/_shared/observability.ts` monta o *envelope* e faz POST no
+endpoint de ingestão derivado do `SENTRY_DSN` (secret) — **sem SDK**; se não
+houver DSN, vira no-op. `withObservability(fn, handler)` embrulha o handler,
+reporta exceções não tratadas e devolve 500 limpo. Ligado nas funções críticas
+(create-gig, gig-lifecycle, decide-candidacy; as demais adotam o mesmo wrapper
+aos poucos). App: `@sentry/react-native` com `Sentry.init` + `beforeSend`.
+**Privacidade:** antes de enviar, o helper remove **CPF e e-mail** de
+mensagens/stack (o Sentry é pra erro, não pra dado pessoal). A integração com o
+GitHub (suspect commits) fica pra depois — opcional. Conectividade verificada
+(evento de teste aceito, HTTP 200).
+
 ## D-068 — Travas de tempo no ciclo do serviço (30 min antes / 30 min mínimos)
 **Data:** 2026-07-15 · **Decidido por:** David (opção 30/30)
 

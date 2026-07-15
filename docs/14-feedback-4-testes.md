@@ -123,7 +123,13 @@ texto ("Nome: última mensagem") o `send-push` precisa carregar o corpo; anti-sp
 não empilhar se já existe um `new_message` não lido daquela vaga. Depende do F-02
 existir. — **M**
 
-### F-08 · Logs + observabilidade num dashboard
+### F-08 · Logs + observabilidade — 🟡 BACKEND FEITO (Sentry, D-069) · falta app
+**Decisão do David:** Sentry (região UE). **Backend pronto e ligado** nas funções
+críticas via `_shared/observability.ts` (envelope + `SENTRY_DSN` secret; remove
+CPF/e-mail antes de enviar). Conectividade verificada (HTTP 200). **Falta:** o
+SDK no app (`@sentry/react-native`) — precisa de build pra validar, então vai em
+commit separado/revertível. Detalhe abaixo (histórico):
+
 Hoje há `console.*` nas Edge Functions (vai pros logs do Supabase) e o plano de
 observabilidade está em `docs/10`, mas não há captura de erros do **app** nem um
 painel. 🟠 **Decisão de abordagem:**

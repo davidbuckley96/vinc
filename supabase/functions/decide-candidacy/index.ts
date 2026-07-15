@@ -17,6 +17,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { ACTIVE_WORKER_STATUSES } from "../../../packages/core/src/gig.ts";
 import { hasScheduleConflict } from "../../../packages/core/src/schedule.ts";
 import { finalizeChosenCandidacy } from "../_shared/choice.ts";
+import { withObservability } from "../_shared/observability.ts";
 import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 type ResultCode =
@@ -44,7 +45,7 @@ function respond(code: ResultCode, status: number, extra: object = {}): Response
   });
 }
 
-Deno.serve(async (request) => {
+Deno.serve(withObservability("decide-candidacy", async (request) => {
   if (request.method === "OPTIONS") {
     return new Response("ok", { headers: CORS_HEADERS });
   }
@@ -171,4 +172,4 @@ Deno.serve(async (request) => {
       totalCents: gig.price_cents + gig.fee_cents,
     },
   });
-});
+}));

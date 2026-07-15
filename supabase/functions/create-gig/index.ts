@@ -20,6 +20,7 @@ import {
   prohibitedContentCategory,
 } from "../../../packages/core/src/moderation.ts";
 import { computeGigPricing } from "../../../packages/core/src/pricing.ts";
+import { withObservability } from "../_shared/observability.ts";
 
 type ResultCode =
   | "created"
@@ -90,7 +91,7 @@ async function neighbourhoodCenter(
   }
 }
 
-Deno.serve(async (request) => {
+Deno.serve(withObservability("create-gig", async (request) => {
   if (request.method === "OPTIONS") {
     return new Response("ok", { headers: CORS_HEADERS });
   }
@@ -204,4 +205,4 @@ Deno.serve(async (request) => {
   });
 
   return respond("created", 200, { gigId: gig.id });
-});
+}));
