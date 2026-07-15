@@ -38,7 +38,7 @@ export async function fetchMyProfile(
 export async function uploadAvatar(
   client: SupabaseClient,
   userId: string,
-  file: Blob | ArrayBuffer,
+  file: Blob | ArrayBuffer | Uint8Array,
   contentType = "image/jpeg",
 ): Promise<string | null> {
   const ext = contentType.includes("png") ? "png" : "jpg";

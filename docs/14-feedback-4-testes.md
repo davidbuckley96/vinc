@@ -27,7 +27,7 @@
 
 ## Bugs (resolvo sozinho — causa-raiz confirmada)
 
-### F-07 + F-10 · Botão morto ao anexar foto (finalizar serviço / pedir reembolso)
+### F-07 + F-10 · Botão morto ao anexar foto — ✅ CORRIGIDO (falta build p/ confirmar)
 **Mesma causa nos dois.** O upload lê a imagem com `fetch(uri).blob()`
 (`features/services/hooks.ts:53-56` e `features/disputes/hooks.ts:47-49`), idioma
 **quebrado no React Native** (lê 0 bytes / rejeita). O erro é **engolido** porque

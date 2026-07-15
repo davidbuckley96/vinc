@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Buffer } from 'buffer';
 
 import {
   fetchMyAgenda,
@@ -77,10 +78,12 @@ export function useUploadAvatar() {
   const { session } = useSession();
   const userId = session?.user.id ?? null;
   return useMutation({
-    mutationFn: async (input: { uri: string; mime: string }): Promise<string | null> => {
+    mutationFn: async (input: { base64: string; mime: string }): Promise<string | null> => {
       if (!supabase || !userId) return null;
-      const blob = await (await fetch(input.uri)).blob();
-      return uploadAvatar(supabase, userId, blob, input.mime);
+      // Decoded base64 bytes — fetch(uri).blob() is broken in RN and uploaded
+      // nothing, so the avatar silently "didn't change" (F-07 sibling, docs/14).
+      const bytes = Buffer.from(input.base64, 'base64');
+      return uploadAvatar(supabase, userId, bytes, input.mime);
     },
     onSuccess: (url) => {
       if (!url) return;

@@ -63,11 +63,16 @@ export function EditProfileScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
+      base64: true,
     });
     if (picked.canceled || !picked.assets[0]) return;
     const asset = picked.assets[0];
+    if (!asset.base64) {
+      setFeedback({ kind: 'error', text: 'Não foi possível ler a foto. Tente de novo.' });
+      return;
+    }
     const url = await uploadAvatar.mutateAsync({
-      uri: asset.uri,
+      base64: asset.base64,
       mime: asset.mimeType ?? 'image/jpeg',
     });
     if (url) setAvatarUrl(url);

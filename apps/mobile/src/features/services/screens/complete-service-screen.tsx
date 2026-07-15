@@ -46,7 +46,10 @@ export function CompleteServiceScreen() {
   const complete = useCompleteService(gigId);
 
   const [report, setReport] = useState('');
-  const [photos, setPhotos] = useState<{ uri: string }[]>([]);
+  // Carry base64 (F-07, docs/14): fetch(uri).blob() is broken in React Native
+  // and uploaded 0 bytes / threw, killing the submit. We upload the decoded
+  // base64 bytes instead.
+  const [photos, setPhotos] = useState<{ uri: string; base64: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const addPhotos = async () => {
@@ -55,20 +58,32 @@ export function CompleteServiceScreen() {
       allowsMultipleSelection: true,
       selectionLimit: MAX_PHOTOS - photos.length,
       quality: 0.7,
+      base64: true,
     });
     if (result.canceled) return;
     setPhotos((current) =>
-      [...current, ...result.assets.map((asset) => ({ uri: asset.uri }))].slice(0, MAX_PHOTOS),
+      [
+        ...current,
+        ...result.assets
+          .filter((asset) => asset.base64)
+          .map((asset) => ({ uri: asset.uri, base64: asset.base64! })),
+      ].slice(0, MAX_PHOTOS),
     );
   };
 
   const submit = async () => {
     setError(null);
-    const result = await complete.mutateAsync({ report, photos });
-    if (result === 'done') {
-      router.replace(`/service/${gigId}`);
-    } else {
-      setError(RESULT_MESSAGES[result] ?? RESULT_MESSAGES.invalid_request!);
+    try {
+      const result = await complete.mutateAsync({ report, photos });
+      if (result === 'done') {
+        router.replace(`/service/${gigId}`);
+      } else {
+        setError(RESULT_MESSAGES[result] ?? RESULT_MESSAGES.invalid_request!);
+      }
+    } catch {
+      // An upload/network failure used to reject silently and leave the button
+      // dead (F-07). Surface it so the person can retry.
+      setError(RESULT_MESSAGES.network_error!);
     }
   };
 

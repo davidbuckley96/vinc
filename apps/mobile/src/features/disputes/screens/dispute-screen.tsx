@@ -86,20 +86,31 @@ export function DisputeScreen() {
       allowsMultipleSelection: true,
       selectionLimit: MAX_PHOTOS - photos.length,
       quality: 0.7,
+      base64: true,
     });
     if (result.canceled) return;
     setPhotos((current) =>
-      [...current, ...result.assets.map((asset) => ({ uri: asset.uri }))].slice(0, MAX_PHOTOS),
+      [
+        ...current,
+        ...result.assets
+          .filter((asset) => asset.base64)
+          .map((asset) => ({ uri: asset.uri, base64: asset.base64! })),
+      ].slice(0, MAX_PHOTOS),
     );
   };
 
   const submit = async () => {
     setError(null);
-    const result = await open.mutateAsync({ reason: reason.trim(), photos });
-    if (result === 'opened') {
-      router.replace(`/service/${gigId}`);
-    } else {
-      setError(RESULT_MESSAGES[result]);
+    try {
+      const result = await open.mutateAsync({ reason: reason.trim(), photos });
+      if (result === 'opened') {
+        router.replace(`/service/${gigId}`);
+      } else {
+        setError(RESULT_MESSAGES[result]);
+      }
+    } catch {
+      // Used to reject silently → dead button with photos attached (F-10).
+      setError(RESULT_MESSAGES.network_error);
     }
   };
 

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Buffer } from 'buffer';
 
 import {
   fetchDispute,
@@ -25,6 +26,10 @@ export function useDispute(gigId: string) {
 /** A photo picked for the report (expo-image-picker asset subset). */
 export interface DisputePhoto {
   uri: string;
+  /** base64 bytes — uploaded directly (F-10, docs/14): fetch(uri).blob() is
+   * broken in RN and made the "request refund" button a no-op when photos
+   * were attached. */
+  base64: string;
 }
 
 /**
@@ -45,8 +50,8 @@ export function useOpenDispute(gigId: string) {
       if (!userId) return 'unauthorized';
       const paths: string[] = [];
       for (const [index, photo] of input.photos.entries()) {
-        const blob = await (await fetch(photo.uri)).blob();
-        paths.push(await uploadDisputePhoto(supabase, userId, gigId, index, blob));
+        const bytes = Buffer.from(photo.base64, 'base64');
+        paths.push(await uploadDisputePhoto(supabase, userId, gigId, index, bytes));
       }
       return openDispute(supabase, gigId, input.reason, paths);
     },

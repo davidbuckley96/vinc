@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Buffer } from 'buffer';
 
 import {
   fetchServiceDetail,
@@ -45,14 +46,16 @@ export function useCompleteService(gigId: string) {
   return useMutation({
     mutationFn: async (input: {
       report: string;
-      photos: { uri: string }[];
+      photos: { uri: string; base64: string }[];
     }): Promise<LifecycleResult> => {
       if (!supabase) return 'done'; // demo mode: pretend success
       if (!userId) return 'unauthorized';
       const photoPaths: string[] = [];
       for (const [index, photo] of input.photos.entries()) {
-        const blob = await (await fetch(photo.uri)).blob();
-        photoPaths.push(await uploadCompletionPhoto(supabase, userId, gigId, index, blob));
+        // Decoded base64 bytes — NOT fetch(uri).blob(), which is broken in RN
+        // and silently uploaded nothing (F-07, docs/14).
+        const bytes = Buffer.from(photo.base64, 'base64');
+        photoPaths.push(await uploadCompletionPhoto(supabase, userId, gigId, index, bytes));
       }
       return gigLifecycle(supabase, gigId, 'complete', undefined, {
         report: input.report.trim() || undefined,

@@ -108,7 +108,7 @@ export async function uploadDisputePhoto(
   userId: string,
   gigId: string,
   index: number,
-  file: Blob | ArrayBuffer,
+  file: Blob | ArrayBuffer | Uint8Array,
   contentType = "image/jpeg",
 ): Promise<string> {
   const path = `${userId}/${gigId}/${Date.now()}-${index}.jpg`;
