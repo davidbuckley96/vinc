@@ -89,3 +89,60 @@ export async function markMessagesRead(
     .from("gig_message_reads")
     .upsert({ gig_id: gigId, user_id: userId, last_read_at: new Date().toISOString() });
 }
+
+/**
+ * A conversation row for the Messages inbox (D-070). One per gig where the
+ * caller is a participant, filtered by the visibility rule server-side (active +
+ * disputed always; completed only within 1 month). Reads the `conversations`
+ * view, so RLS/visibility live in one place.
+ */
+export interface Conversation {
+  gigId: string;
+  title: string;
+  status: string;
+  myRole: "poster" | "worker";
+  counterpartId: string;
+  counterpartName: string;
+  counterpartAvatar: string | null;
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+  lastSenderId: string | null;
+  unreadCount: number;
+}
+
+export async function fetchConversations(client: SupabaseClient): Promise<Conversation[]> {
+  const { data, error } = await client
+    .from("conversations")
+    .select(
+      "gig_id, title, status, my_role, counterpart_id, counterpart_name, counterpart_avatar, last_message, last_message_at, last_sender_id, unread_count",
+    )
+    .order("last_message_at", { ascending: false, nullsFirst: false });
+  if (error) throw new Error(error.message);
+  return (
+    data as Array<{
+      gig_id: string;
+      title: string;
+      status: string;
+      my_role: "poster" | "worker";
+      counterpart_id: string;
+      counterpart_name: string;
+      counterpart_avatar: string | null;
+      last_message: string | null;
+      last_message_at: string | null;
+      last_sender_id: string | null;
+      unread_count: number;
+    }>
+  ).map((row) => ({
+    gigId: row.gig_id,
+    title: row.title,
+    status: row.status,
+    myRole: row.my_role,
+    counterpartId: row.counterpart_id,
+    counterpartName: row.counterpart_name,
+    counterpartAvatar: row.counterpart_avatar,
+    lastMessage: row.last_message,
+    lastMessageAt: row.last_message_at,
+    lastSenderId: row.last_sender_id,
+    unreadCount: row.unread_count ?? 0,
+  }));
+}

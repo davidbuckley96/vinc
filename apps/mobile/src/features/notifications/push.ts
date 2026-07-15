@@ -96,11 +96,14 @@ export function usePushNotifications() {
     };
   }, [userId]);
 
-  // Tapping a push opens the related service.
+  // Tapping a push opens the related screen — the chat for a message (D-070),
+  // otherwise the service.
   useEffect(() => {
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      const gigId = response.notification.request.content.data?.gigId;
-      if (typeof gigId === 'string') router.push(`/service/${gigId}`);
+      const data = response.notification.request.content.data;
+      const gigId = data?.gigId;
+      if (typeof gigId !== 'string') return;
+      router.push(data?.type === 'new_message' ? `/chat/${gigId}` : `/service/${gigId}`);
     });
     return () => sub.remove();
   }, [router]);

@@ -2,10 +2,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import {
+  fetchConversations,
   fetchMessages,
   fetchUnreadCount,
   markMessagesRead,
   sendMessage,
+  type Conversation,
   type GigMessage,
   type SendMessageResult,
 } from '@vinc/api';
@@ -75,6 +77,24 @@ export function useMessages(gigId: string, enabled: boolean) {
   return query;
 }
 
+/** Inbox: all my conversations (D-070), newest activity first. */
+export function useConversations() {
+  return useQuery({
+    queryKey: ['conversations'],
+    queryFn: (): Promise<Conversation[]> => {
+      if (!supabase) return Promise.resolve([]); // demo: no live conversations
+      return fetchConversations(supabase);
+    },
+    refetchInterval: 20_000,
+  });
+}
+
+/** Total unread across conversations — the badge on the Messages tab. */
+export function useTotalUnreadMessages(): number {
+  const { data } = useConversations();
+  return (data ?? []).reduce((sum, c) => sum + c.unreadCount, 0);
+}
+
 export function useSendMessage(gigId: string) {
   const queryClient = useQueryClient();
   const { session } = useSession();
@@ -106,7 +126,11 @@ export function useSendMessage(gigId: string) {
           current.filter((message) => message.id !== context.optimisticId),
         );
       }
-      if (supabase) queryClient.invalidateQueries({ queryKey: ['messages', gigId] });
+      if (supabase) {
+        queryClient.invalidateQueries({ queryKey: ['messages', gigId] });
+        // Bump the inbox's last-message preview (D-070).
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      }
     },
   });
 }
@@ -137,6 +161,8 @@ export function useMarkRead(gigId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['unread', gigId] });
+      // Clears the unread badge on the Messages tab / inbox row (D-070).
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 }

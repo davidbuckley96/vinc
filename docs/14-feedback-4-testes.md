@@ -105,7 +105,18 @@ duração mínima antes de finalizar **30 min**. E: a trava de 30 min vale só p
 "finalizar" do trabalhador, ou também pro "confirmar" do anunciante? (sugiro: só do
 trabalhador — confirmar antes é bom pro trabalhador). — **M**
 
-### F-02 · Aba de mensagens (inbox estilo WhatsApp)
+### F-02 · Aba de mensagens — ✅ FEITO (opção B, D-070) · precisa de build
+Nova aba **"Mensagens"** (`chatbubble`) com o inbox opção B (foto, nome, prévia,
+hora, não-lidas + chip da vaga/status). Lê a view `conversations` (regra de
+retenção do David: ativos+disputa sempre, concluídos 1 mês). Badge de não-lidas
+no ícone da aba. Backend verificado e2e; a tela entra no próximo build.
+
+### F-03 · Push de mensagem — ✅ FEITO (D-070) · precisa de build
+Trigger `notify_message` + `send-push` mandam "Nome: última mensagem"; anti-spam
+por leitura da conversa (verificado e2e). Tocar no push abre o chat. Fora da
+central de notificações (mensagens moram no inbox).
+
+### F-02b · (histórico) Aba de mensagens (inbox estilo WhatsApp)
 O chat já existe (1 conversa por vaga, `0013_gig_messages.sql`), mas só se chega a
 ele **abrindo a vaga** (`service-detail-screen.tsx:308`) — não há aba nem inbox. O
 inbox lê de uma lista que já existe (`fetchMyAgenda`) + última mensagem/não-lidas.
