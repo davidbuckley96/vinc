@@ -24,6 +24,8 @@ const MAX_PHOTOS = 5;
 const REPORT_MAX = 2000;
 
 const RESULT_MESSAGES: Record<string, string> = {
+  too_soon:
+    'O serviço precisa durar pelo menos 30 minutos antes de ser finalizado. Se houve algum problema, fale com o suporte.',
   state_changed: 'O status mudou agora mesmo. Atualize e tente de novo.',
   invalid_action: 'Este serviço não está mais em andamento.',
   forbidden: 'Você não participa deste serviço.',

@@ -1017,6 +1017,31 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-068 — Travas de tempo no ciclo do serviço (30 min antes / 30 min mínimos)
+**Data:** 2026-07-15 · **Decidido por:** David (opção 30/30)
+
+Antes, o ciclo do serviço só olhava o `status`, nunca o relógio — dava pra pegar
+o código de check-in dias antes, **iniciar um serviço marcado pra amanhã** e
+**finalizar na hora** (F-04/F-05, docs/14). Regras adotadas:
+- O **código de check-in** só é revelado ao anunciante a partir de **30 min
+  antes** do horário (RLS em `gig_checkin_codes`).
+- **Iniciar** só é permitido a partir de **30 min antes** de `starts_at`
+  (pode começar um pouco cedo, não um dia antes). Trava no `gig-lifecycle`
+  (`too_early`) — server-side, porque trava só no app não seguraria.
+- **Finalizar** só é permitido **30 min após o início real**. Por isso o
+  `gig-lifecycle` passa a gravar `gigs.started_at` no "start"; o "complete"
+  rejeita antes disso (`too_soon`). Vale só pro **finalizar do trabalhador** — o
+  **confirmar do anunciante** não é travado (confirmar cedo só beneficia o
+  trabalhador). Vagas antigas (sem `started_at`) não são afetadas.
+- Escape: o trabalhador pode **reportar um problema durante o serviço** (abre
+  ticket de suporte) e o **suporte pode finalizar antes da hora**
+  (`force_complete` no painel) — *a implementar na sequência*.
+
+Migração `0047` (coluna `started_at` + RLS do código) e `gig-lifecycle` v18.
+Verificado e2e: iniciar amanhã → `too_early`; iniciar na janela → ok + carimba
+`started_at`; finalizar na hora → `too_soon`; finalizar após 30 min → ok.
+Opções 15/15 e 1h/30 descartadas pelo David.
+
 ## D-067 — Nota geral por média bayesiana (proteção do novo usuário)
 **Data:** 2026-07-15 · **Decidido por:** David (escolheu a opção equilibrada)
 

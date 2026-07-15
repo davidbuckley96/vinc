@@ -74,7 +74,14 @@ Todo o fluxo Pix real já existe (D-040) e aparece quando o provedor é
 pro MVP); (b) mostrar uma tela de "pagamento simulado" (confirmação visível) mesmo
 no modo demo; (c) já ligar o Mercado Pago sandbox pra ver o QR de verdade.
 
-### F-04 + F-05 · Travas de tempo no ciclo do serviço
+### F-04 + F-05 · Travas de tempo — ✅ SERVIDOR FEITO (D-068) · falta UX+override
+**Decisão do David:** 30 min / 30 min. Servidor pronto e testado (migração `0047`
++ `gig-lifecycle` v18): iniciar amanhã → `too_early`; iniciar na janela → ok +
+carimba `started_at`; finalizar na hora → `too_soon`; após 30 min → ok. Mensagens
+no app já mapeadas. **Falta (próximo):** esconder o código antes da janela +
+dica na tela, link "reportar problema durante o serviço" pro trabalhador, e o
+`force_complete` do suporte. Detalhe abaixo (histórico):
+
 Hoje **nada olha o relógio** — o controle é só por `status`. O código de check-in é
 gerado na escolha (dias antes) e revelado sem trava (`_shared/choice.ts:112`,
 `agenda.ts:85-92`), e nem iniciar nem finalizar comparam com o horário

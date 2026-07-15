@@ -385,6 +385,8 @@ export type LifecycleAction = "start" | "complete" | "confirm";
 export type LifecycleResult =
   | "done"
   | "wrong_code"
+  | "too_early" // F-04: start attempted >30 min before the gig's time
+  | "too_soon" // F-05: finish attempted <30 min after the real start
   | "unauthorized"
   | "not_found"
   | "forbidden"

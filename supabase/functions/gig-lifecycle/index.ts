@@ -28,12 +28,18 @@ type Action = "start" | "complete" | "confirm";
 type ResultCode =
   | "done"
   | "wrong_code"
+  | "too_early" // F-04: trying to start more than 30 min before the gig's time
+  | "too_soon" // F-05: trying to finish less than 30 min after the real start
   | "unauthorized"
   | "not_found"
   | "forbidden"
   | "invalid_action"
   | "state_changed"
   | "invalid_request";
+
+// F-04/F-05 (docs/14, D-068): grace/minimum windows around the service.
+const START_GRACE_MS = 30 * 60 * 1000; // can start up to 30 min before starts_at
+const MIN_SERVICE_MS = 30 * 60 * 1000; // must run 30 min before it can be finished
 
 const NEXT_STATUS: Record<Action, GigStatus> = {
   start: "in_progress",
@@ -88,7 +94,7 @@ Deno.serve(async (request) => {
 
   const { data: gig } = await admin
     .from("gigs")
-    .select("id, status, poster_id, worker_id, price_cents")
+    .select("id, status, poster_id, worker_id, price_cents, starts_at, started_at")
     .eq("id", gigId)
     .maybeSingle();
   if (!gig) return respond("not_found", 404);
@@ -109,7 +115,15 @@ Deno.serve(async (request) => {
     return respond("invalid_request", 400);
   }
 
+  const now = Date.now();
+
   if (action === "start") {
+    // Time gate (F-04): can't start more than 30 min before the gig's time,
+    // even holding the code. Server-side — the app gate isn't enough. Legacy
+    // gigs without starts_at are unaffected.
+    if (gig.starts_at && now < new Date(gig.starts_at).getTime() - START_GRACE_MS) {
+      return respond("too_early", 409, { startsAt: gig.starts_at });
+    }
     // Check-in by code (D-028): the worker types the 4 digits shown on
     // the poster's screen. Gigs from before the feature have no code row
     // and start freely.
@@ -123,10 +137,25 @@ Deno.serve(async (request) => {
     }
   }
 
+  // Time gate (F-05): a service must run at least 30 min before it can be
+  // finished. `started_at` is stamped on the real start below; legacy in-
+  // progress gigs (no started_at) are unaffected. Support can finish early via
+  // the support panel (force_complete), which bypasses this. Late evidence
+  // (after the 12h job) is always past this window.
+  if (
+    action === "complete" &&
+    !lateEvidence &&
+    gig.started_at &&
+    now < new Date(gig.started_at).getTime() + MIN_SERVICE_MS
+  ) {
+    return respond("too_soon", 409, { startedAt: gig.started_at });
+  }
+
   if (!lateEvidence) {
     // Atomic transition: only succeeds if the status hasn't changed
     // meanwhile. Completing stamps awaiting_since — the 48h clock (D-028).
     const patch: Record<string, unknown> = { status: NEXT_STATUS[action as Action] };
+    if (action === "start") patch.started_at = new Date(now).toISOString();
     if (action === "complete") patch.awaiting_since = new Date().toISOString();
     const { data: updated } = await admin
       .from("gigs")

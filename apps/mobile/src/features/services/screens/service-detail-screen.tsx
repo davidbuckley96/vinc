@@ -138,6 +138,8 @@ function statusCard(service: ServiceDetail): StatusCard {
 
 const RESULT_MESSAGES: Record<string, string> = {
   wrong_code: 'Código errado. Peça ao anunciante o código de 4 dígitos que aparece na tela dele.',
+  too_early: 'Ainda é cedo. O serviço só pode começar a partir de 30 minutos antes do horário combinado.',
+  too_soon: 'O serviço precisa durar pelo menos 30 minutos antes de ser finalizado. Se houve um problema, fale com o suporte.',
   state_changed: 'O status mudou agora mesmo. Atualize e tente de novo.',
   invalid_action: 'Essa ação não está mais disponível.',
   forbidden: 'Você não participa deste serviço.',
