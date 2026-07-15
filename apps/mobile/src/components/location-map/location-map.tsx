@@ -112,6 +112,10 @@ export function LocationMap({
         // container stealing the gesture. No-op on iOS.
         nestedScrollEnabled
         overScrollMode="never"
+        // WebGL (MapLibre) inside a WebView needs a hardware layer on Android
+        // for smooth pan/zoom — without it the canvas repaints poorly and the
+        // gestures feel stuck (V-01 investigation). No-op on iOS.
+        androidLayerType="hardware"
         onMessage={(event) => {
           try {
             const data = JSON.parse(event.nativeEvent.data) as { lat: number; lng: number };

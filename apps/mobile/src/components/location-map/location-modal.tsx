@@ -20,10 +20,6 @@ interface LocationModalProps {
   onClose: () => void;
 }
 
-// Radius of the shown area for an approximate pin (matches the 250–600 m
-// server-side fuzz, D-028) — comfortably covers where the place really is.
-const APPROX_RADIUS_M = 600;
-
 /**
  * Full-screen NAVIGABLE map (D-055): the person can pan/zoom to understand
  * where a gig is — the radius circle (approximate) or the pin (exact) stays
@@ -54,15 +50,25 @@ export function LocationModal({ visible, lat, lng, address, approximate, onClose
           </View>
 
           <View style={styles.mapArea}>
+            {/* EXPERIMENTO (V-01): para achar a raiz do travamento do gesto, este
+                mapa foi igualado ao da criação — SEM o círculo de região
+                aproximada e SEM marcador desenhados dentro do WebView, só o mapa
+                interativo + um pino central por cima (RN). Se ficar fluido, o
+                culpado era o desenho do círculo/anonimato; aí re-adicionamos de
+                outra forma. `circleMeters`/`marker` comentados de propósito. */}
             <LocationMap
               lat={lat}
               lng={lng}
-              zoom={approximate ? 14 : 16}
+              zoom={16}
               interactive
-              circleMeters={approximate ? APPROX_RADIUS_M : undefined}
-              marker={!approximate}
+              onCenterChange={() => {}}
+              // circleMeters={approximate ? APPROX_RADIUS_M : undefined}
+              // marker={!approximate}
               style={StyleSheet.absoluteFill}
             />
+            <View pointerEvents="none" style={styles.pinWrap}>
+              <Ionicons name="location-sharp" size={40} color={theme.primary} style={styles.pin} />
+            </View>
           </View>
 
           <SafeAreaView edges={['bottom']}>
@@ -110,6 +116,21 @@ const styles = StyleSheet.create({
   },
   mapArea: {
     flex: 1,
+  },
+  pinWrap: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pin: {
+    transform: [{ translateY: -20 }],
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   foot: {
     padding: Spacing.three,
