@@ -38,6 +38,9 @@ export async function fetchNotifications(
     .from("notifications")
     .select("id, type, gig_id, read_at, created_at, gig:gig_id (title)")
     .eq("user_id", userId)
+    // 'new_message' rows exist only to drive the push — messages live in the
+    // inbox, not the notification center (D-070).
+    .neq("type", "new_message")
     .order("created_at", { ascending: false })
     .limit(100);
   if (error) throw new Error(error.message);
@@ -69,6 +72,7 @@ export async function fetchUnreadNotificationsCount(
     .from("notifications")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
+    .neq("type", "new_message") // messages have their own inbox badge (D-070)
     .is("read_at", null);
   if (error) throw new Error(error.message);
   return count ?? 0;

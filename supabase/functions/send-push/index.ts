@@ -71,7 +71,27 @@ Deno.serve(async (request) => {
     if (gig?.title) gigTitle = gig.title;
   }
 
-  const copy = (PUSH_COPY[notif.type] ?? ((t: string) => ({ title: "Vinc", body: t })))(gigTitle);
+  // Message push (F-03, D-070): copy is "Sender: last message", built from the
+  // latest message of the gig (the notification row carries no body).
+  let copy: { title: string; body: string };
+  if (notif.type === "new_message" && notif.gig_id) {
+    const { data: msg } = await admin
+      .from("gig_messages")
+      .select("body, sender_id")
+      .eq("gig_id", notif.gig_id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    let sender = "Nova mensagem";
+    if (msg?.sender_id) {
+      const { data: sp } = await admin
+        .from("profiles").select("name").eq("id", msg.sender_id).maybeSingle();
+      if (sp?.name) sender = (sp.name as string).trim().split(/\s+/)[0];
+    }
+    copy = { title: sender, body: (msg?.body as string) ?? "Você recebeu uma mensagem." };
+  } else {
+    copy = (PUSH_COPY[notif.type] ?? ((t: string) => ({ title: "Vinc", body: t })))(gigTitle);
+  }
   const messages = tokens.map((row) => ({
     to: row.token,
     sound: "default",

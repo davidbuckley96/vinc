@@ -1017,6 +1017,26 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-070 — Aba de mensagens (inbox) com retenção + push de mensagem
+**Data:** 2026-07-15 · **Decidido por:** David (rodada 22, opção B + regra de retenção)
+
+Nova **aba "Mensagens"** (F-02, docs/14) que lista as conversas — layout **Opção B**
+(rodada 22): foto + nome + prévia da última mensagem + hora + não-lidas, **com o
+contexto da vaga** (título + status) em cada linha. Toca e abre o chat que já
+existe. **Regra de visibilidade (David):** o inbox mostra só conversas de serviços
+**ativos** (`accepted`, `in_progress`, `awaiting_confirmation`) e **em disputa**
+(`disputed`); serviços **concluídos** (`completed`) ficam por **1 mês** (âncora: o
+lançamento `escrow_release` no razão) e depois ssomem; cancelados/expirados não
+aparecem. O chat continua nascendo só após a escolha (D-024) e parando na
+conclusão (D-026) — a lista só facilita o acesso. Fonte: view `conversations`.
+
+**Push de mensagem (F-03):** ao chegar mensagem, avisa o destinatário com
+*"Nome: última mensagem"*. **Anti-spam:** o trigger `notify_message` só cria a
+notificação (que dispara o push) se o destinatário **já leu** a conversa desde o
+último aviso — enquanto não lê, mensagens novas não empilham. As notificações de
+mensagem **não aparecem na central de notificações** (mensagens moram no inbox);
+existem só pra alimentar o push. Toca e vai pro chat.
+
 ## D-069 — Observabilidade com Sentry (erros de app + backend)
 **Data:** 2026-07-15 · **Decidido por:** David (escolheu Sentry, região UE)
 
