@@ -21,6 +21,7 @@ conversas.
 | 11 | [bugs-e-melhorias.md](11-bugs-e-melhorias.md) | Roadmap de bugs/melhorias do 2º ciclo de testes (antes/depois) | Ao corrigir os itens B-01…B-30 |
 | 12 | [feedback-video-aparelho.md](12-feedback-video-aparelho.md) | 3º ciclo: feedback do vídeo no APK real (V-01…V-06) | Ao corrigir os itens do teste no aparelho |
 | 13 | [revisao-codigo-roadmap.md](13-revisao-codigo-roadmap.md) | Revisão de arquitetura pós-B/V + roadmap de refatoração (Fases A–D) | Ao pagar débito técnico / refatorar |
+| 14 | [feedback-4-testes.md](14-feedback-4-testes.md) | 4º ciclo: feedback do David (F-01…F-12) — bugs, features, regras | Ao trabalhar nos itens F-01…F-12 |
 
 ## Regras de manutenção
 
