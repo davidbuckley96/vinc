@@ -111,3 +111,48 @@ export function PushRegistrar() {
   usePushNotifications();
   return null;
 }
+
+/**
+ * On-demand push diagnostic (V-08): runs the exact registration flow and
+ * returns a human-readable result, so a tester can SEE why the token isn't
+ * minting instead of it failing silently. Also saves the token on success.
+ */
+export async function pushSelfTest(
+  supabaseClient: typeof supabase,
+  userId: string | null,
+): Promise<string> {
+  if (Platform.OS === 'web') return 'Push não funciona no navegador (só no app instalado).';
+  if (!Device.isDevice) return 'Precisa de um aparelho real (emulador não gera token).';
+  const perm = await Notifications.getPermissionsAsync();
+  let granted = perm.granted;
+  if (!granted && perm.canAskAgain) {
+    granted = (await Notifications.requestPermissionsAsync()).granted;
+  }
+  if (!granted) return 'Permissão de notificação negada. Ative nas configurações do Android.';
+  const id = projectId();
+  if (!id) return 'Build sem projectId do EAS — o app não consegue pedir o token.';
+  let token: string;
+  try {
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'Vinc',
+        importance: Notifications.AndroidImportance.HIGH,
+        lightColor: '#6D28D9',
+      });
+    }
+    const result = await Notifications.getExpoPushTokenAsync({ projectId: id });
+    token = result.data;
+  } catch (err) {
+    return `Falha ao gerar o token (FCM): ${String((err as Error)?.message ?? err)}`;
+  }
+  if (!supabaseClient || !userId) {
+    return `Token gerado, mas você não está logado para salvá-lo. (${token.slice(0, 18)}…)`;
+  }
+  try {
+    await registerPushToken(supabaseClient, userId, token, Platform.OS);
+    setCurrentPushToken(token);
+    return `✅ Tudo certo! Notificações ativas. (${token.slice(0, 18)}…)`;
+  } catch (err) {
+    return `Token gerado, mas falhou ao salvar: ${String((err as Error)?.message ?? err)}`;
+  }
+}

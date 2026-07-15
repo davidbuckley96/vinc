@@ -1,13 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { signOut } from '@/features/auth/auth-actions';
 import { useSession } from '@/features/auth/session-context';
+import { pushSelfTest } from '@/features/notifications/push';
 import { useProfileStats } from '@/features/reviews/hooks';
+import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/hooks/use-theme';
 
 import { MyActivity } from '../components/my-activity';
@@ -37,6 +40,15 @@ export function ProfileScreen() {
   const avatarUrl = stats.data?.avatarUrl ?? null;
   const city = stats.data?.city ?? null;
   const signedOut = status === 'signedOut';
+  const [testingPush, setTestingPush] = useState(false);
+
+  // Diagnóstico de push (V-08): roda o fluxo e mostra o resultado/erro exato.
+  const testPush = async () => {
+    setTestingPush(true);
+    const result = await pushSelfTest(supabase, userId);
+    setTestingPush(false);
+    Alert.alert('Notificações push', result);
+  };
 
   return (
     <View style={[styles.root, { backgroundColor: theme.background }]}>
@@ -142,6 +154,19 @@ export function ProfileScreen() {
                   <Ionicons name="help-circle-outline" size={17} color={theme.primary} />
                   <Text style={[styles.payoutEntryLabel, { color: theme.text }]}>
                     Central de Ajuda
+                  </Text>
+                  <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
+                </Pressable>
+              )}
+              {status === 'signedIn' && (
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={testingPush}
+                  onPress={testPush}
+                  style={[styles.payoutEntry, { borderColor: theme.line }]}>
+                  <Ionicons name="notifications-circle-outline" size={17} color={theme.primary} />
+                  <Text style={[styles.payoutEntryLabel, { color: theme.text }]}>
+                    {testingPush ? 'Testando…' : 'Testar notificações push'}
                   </Text>
                   <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
                 </Pressable>
