@@ -1,0 +1,275 @@
+<meta charset="utf-8">
+<title>Rodada 22 — Aba de mensagens (inbox) + push de mensagem</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --lilas:#F1EBFD; --lilas2:#FAF7FE; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --ok:#059669; --amarelo:#F59E0B; --azul:#2563EB; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:36px 24px;margin:0}
+  h1{font-size:22px;margin:0 0 4px}
+  h2{font-size:15px;margin:30px 0 12px;color:var(--roxo-deep)}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:8px;max-width:1000px;line-height:1.55}
+  .row{display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start}
+  .option{width:300px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;margin-bottom:8px;background:var(--lilas);color:var(--roxo)}
+  .tag.rec{background:var(--ok);color:#fff}
+  .option h3{margin:2px 0 4px;font-size:16px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 0 14px;min-height:78px}
+  .phone{width:300px;height:600px;border-radius:34px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .top{background:var(--roxo);color:#fff;padding:15px 15px 13px}
+  .top .t{font-size:17px;font-weight:800}
+  .top .s{font-size:11.5px;opacity:.85;margin-top:1px}
+  .body{flex:1;overflow:hidden;background:#fff}
+  .tabbar{height:52px;border-top:1px solid var(--line);display:flex;background:#fff}
+  .tabbar .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:9px;color:var(--ink2)}
+  .tabbar .tab .ic{font-size:17px;filter:grayscale(1) opacity(.55)}
+  .tabbar .tab.on{color:var(--roxo);font-weight:800}
+  .tabbar .tab.on .ic{filter:none}
+  /* conversa (linha) */
+  .conv{display:flex;gap:11px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);position:relative}
+  .av{width:46px;height:46px;border-radius:99px;flex:none;background:#DDD3F3;color:var(--roxo);font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center}
+  .av.g{background:linear-gradient(135deg,#c9b8ef,#e7dcfb)}
+  .cmid{flex:1;min-width:0}
+  .cname{font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px}
+  .cprev{font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+  .cprev.un{color:var(--ink);font-weight:600}
+  .cright{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:none}
+  .ctime{font-size:10.5px;color:var(--ink2)}
+  .ctime.un{color:var(--roxo);font-weight:800}
+  .badge{min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--roxo);color:#fff;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .dot{width:9px;height:9px;border-radius:99px;background:var(--roxo)}
+  /* chip de contexto da vaga */
+  .gchip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;margin-top:4px}
+  .gchip.andamento{background:#E6F6EF;color:var(--ok)}
+  .gchip.aguardando{background:#FEF3E2;color:var(--amarelo)}
+  .gchip.combinar{background:var(--lilas);color:var(--roxo)}
+  .gchip.concluido{background:#EEF0F3;color:var(--ink2)}
+  /* seções (opção C) */
+  .sec{font-size:10.5px;font-weight:800;letter-spacing:.5px;color:var(--ink2);padding:12px 14px 5px;background:#fff}
+  .sec.hot{color:var(--roxo-deep)}
+  .active{background:var(--lilas2)}
+  .note{font-size:12.5px;color:var(--ink2);line-height:1.6;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:22px;max-width:1000px}
+  b{color:var(--ink)}
+  /* push mock */
+  .pushwrap{margin-top:14px;display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start}
+  .lockshot{width:300px;border-radius:22px;overflow:hidden;background:linear-gradient(160deg,#3b2a63,#6D28D9);padding:26px 14px 30px;box-shadow:0 10px 30px rgba(17,20,24,.18)}
+  .clock{color:#fff;text-align:center;margin-bottom:20px}
+  .clock .h{font-size:44px;font-weight:300;letter-spacing:1px}
+  .clock .d{font-size:12.5px;opacity:.85}
+  .pushcard{background:rgba(255,255,255,.92);border-radius:16px;padding:11px 12px;display:flex;gap:10px;align-items:flex-start;backdrop-filter:blur(4px)}
+  .pushcard .pic{width:30px;height:30px;border-radius:8px;background:var(--roxo);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+  .pushcard .pt{flex:1;min-width:0}
+  .pushcard .pa{font-size:11px;color:var(--ink2);font-weight:700;display:flex;justify-content:space-between}
+  .pushcard .ph{font-size:13px;font-weight:800;margin-top:1px}
+  .pushcard .pb{font-size:12px;color:#333;margin-top:1px;line-height:1.35}
+</style>
+
+<h1>Rodada 22 — Aba de mensagens (inbox) + push de mensagem</h1>
+<p class="sub">
+<b>F-02/F-03:</b> uma <b>aba "Mensagens"</b> (nova, na barra de baixo) que lista todas as conversas, pra os dois
+lados conversarem sem precisar abrir a vaga antes. Cada conversa é sempre atrelada a uma vaga (o chat existe só
+depois da escolha — anonimato D-024). Tocar numa conversa abre o chat que já existe. Escolha <b>A, B ou C</b> pro
+layout da lista; o <b>push</b> (última linha) é o mesmo nas três.</p>
+
+<h2>Layout da lista — escolha A, B ou C</h2>
+<div class="row">
+
+  <!-- ============ OPÇÃO A ============ -->
+  <div class="option">
+    <span class="tag">Opção A</span>
+    <h3>Lista limpa (estilo WhatsApp)</h3>
+    <p>O clássico: foto, nome, prévia da última mensagem, hora e o contador de não-lidas. Máxima
+    familiaridade e simplicidade — não mostra a vaga na lista (ela aparece dentro do chat).</p>
+    <div class="phone">
+      <div class="top"><div class="t">Mensagens</div></div>
+      <div class="body">
+        <div class="conv">
+          <div class="av g">M</div>
+          <div class="cmid">
+            <div class="cname">Marina</div>
+            <div class="cprev un">Beleza, chego às 14h! Pode deixar 🙌</div>
+          </div>
+          <div class="cright"><span class="ctime un">14:32</span><span class="badge">2</span></div>
+        </div>
+        <div class="conv">
+          <div class="av">C</div>
+          <div class="cmid">
+            <div class="cname">Carlos</div>
+            <div class="cprev">Você: Obrigado, ficou ótimo!</div>
+          </div>
+          <div class="cright"><span class="ctime">ontem</span></div>
+        </div>
+        <div class="conv">
+          <div class="av g">B</div>
+          <div class="cmid">
+            <div class="cname">Bruna</div>
+            <div class="cprev">Pode ser no sábado de manhã?</div>
+          </div>
+          <div class="cright"><span class="ctime">seg</span></div>
+        </div>
+        <div class="conv">
+          <div class="av">R</div>
+          <div class="cmid">
+            <div class="cname">Rafael</div>
+            <div class="cprev">Combinado, até lá 👍</div>
+          </div>
+          <div class="cright"><span class="ctime">12/07</span></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><span class="ic">📅</span>Agenda</div>
+        <div class="tab"><span class="ic">🔍</span>Buscar</div>
+        <div class="tab"><span class="ic">➕</span>Anunciar</div>
+        <div class="tab on"><span class="ic">💬</span>Mensagens</div>
+        <div class="tab"><span class="ic">👤</span>Perfil</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPÇÃO B ============ -->
+  <div class="option">
+    <span class="tag rec">Opção B · recomendada</span>
+    <h3>Com o contexto da vaga</h3>
+    <p>Igual a A, mas cada conversa mostra também <b>qual vaga</b> e o <b>status</b> (em andamento, aguardando,
+    concluído). Como toda conversa é de uma vaga, isso ajuda a lembrar do que se trata sem abrir — bom pra quem
+    tem vários serviços ao mesmo tempo.</p>
+    <div class="phone">
+      <div class="top"><div class="t">Mensagens</div></div>
+      <div class="body">
+        <div class="conv">
+          <div class="av g">M</div>
+          <div class="cmid">
+            <div class="cname">Marina</div>
+            <div class="cprev un">Beleza, chego às 14h! Pode deixar 🙌</div>
+            <span class="gchip andamento">● Faxina no apê · em andamento</span>
+          </div>
+          <div class="cright"><span class="ctime un">14:32</span><span class="badge">2</span></div>
+        </div>
+        <div class="conv">
+          <div class="av">C</div>
+          <div class="cmid">
+            <div class="cname">Carlos</div>
+            <div class="cprev">Você: Obrigado, ficou ótimo!</div>
+            <span class="gchip aguardando">● Garçom festa · aguardando confirmação</span>
+          </div>
+          <div class="cright"><span class="ctime">ontem</span></div>
+        </div>
+        <div class="conv">
+          <div class="av g">B</div>
+          <div class="cmid">
+            <div class="cname">Bruna</div>
+            <div class="cprev">Pode ser no sábado de manhã?</div>
+            <span class="gchip combinar">● Passeio com cães · a combinar</span>
+          </div>
+          <div class="cright"><span class="ctime">seg</span></div>
+        </div>
+        <div class="conv">
+          <div class="av">R</div>
+          <div class="cmid">
+            <div class="cname">Rafael</div>
+            <div class="cprev">Combinado, até lá 👍</div>
+            <span class="gchip concluido">● Montagem de móvel · concluído</span>
+          </div>
+          <div class="cright"><span class="ctime">12/07</span></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><span class="ic">📅</span>Agenda</div>
+        <div class="tab"><span class="ic">🔍</span>Buscar</div>
+        <div class="tab"><span class="ic">➕</span>Anunciar</div>
+        <div class="tab on"><span class="ic">💬</span>Mensagens</div>
+        <div class="tab"><span class="ic">👤</span>Perfil</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPÇÃO C ============ -->
+  <div class="option">
+    <span class="tag">Opção C</span>
+    <h3>Agrupado por "ativas"</h3>
+    <p>Separa em <b>Serviços ativos</b> (em andamento / aguardando) no topo, destacados, e <b>Outras conversas</b>
+    embaixo. Foca no que está acontecendo agora — bom se a maioria das conversas antigas vira ruído, mas adiciona
+    uma camada a mais de organização.</p>
+    <div class="phone">
+      <div class="top"><div class="t">Mensagens</div></div>
+      <div class="body">
+        <div class="sec hot">EM ANDAMENTO</div>
+        <div class="conv active">
+          <div class="av g">M</div>
+          <div class="cmid">
+            <div class="cname">Marina</div>
+            <div class="cprev un">Beleza, chego às 14h! Pode deixar 🙌</div>
+            <span class="gchip andamento">● Faxina no apê</span>
+          </div>
+          <div class="cright"><span class="ctime un">14:32</span><span class="badge">2</span></div>
+        </div>
+        <div class="conv active">
+          <div class="av">C</div>
+          <div class="cmid">
+            <div class="cname">Carlos</div>
+            <div class="cprev">Você: Obrigado, ficou ótimo!</div>
+            <span class="gchip aguardando">● Garçom festa · aguardando</span>
+          </div>
+          <div class="cright"><span class="ctime">ontem</span></div>
+        </div>
+        <div class="sec">OUTRAS CONVERSAS</div>
+        <div class="conv">
+          <div class="av g">B</div>
+          <div class="cmid">
+            <div class="cname">Bruna</div>
+            <div class="cprev">Pode ser no sábado de manhã?</div>
+          </div>
+          <div class="cright"><span class="ctime">seg</span></div>
+        </div>
+        <div class="conv">
+          <div class="av">R</div>
+          <div class="cmid">
+            <div class="cname">Rafael</div>
+            <div class="cprev">Combinado, até lá 👍</div>
+          </div>
+          <div class="cright"><span class="ctime">12/07</span></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><span class="ic">📅</span>Agenda</div>
+        <div class="tab"><span class="ic">🔍</span>Buscar</div>
+        <div class="tab"><span class="ic">➕</span>Anunciar</div>
+        <div class="tab on"><span class="ic">💬</span>Mensagens</div>
+        <div class="tab"><span class="ic">👤</span>Perfil</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Push de nova mensagem (F-03) — igual nas três opções</h2>
+<p class="sub">Notificação com a <b>última mensagem</b> (estilo WhatsApp), não spam: mensagens seguidas da mesma
+conversa <b>não empilham</b> (só atualiza a existente). Tocar abre direto o chat.</p>
+<div class="pushwrap">
+  <div class="lockshot">
+    <div class="clock"><div class="h">14:32</div><div class="d">terça-feira, 15 de julho</div></div>
+    <div class="pushcard">
+      <div class="pic">💬</div>
+      <div class="pt">
+        <div class="pa"><span>Vinc</span><span>agora</span></div>
+        <div class="ph">Marina</div>
+        <div class="pb">Beleza, chego às 14h! Pode deixar 🙌</div>
+      </div>
+    </div>
+  </div>
+  <div class="option" style="width:360px">
+    <span class="tag">Anti-spam</span>
+    <h3>Regras do push</h3>
+    <p style="min-height:auto">
+    • Mostra <b>“Nome: última mensagem”</b>.<br>
+    • Se já existe um aviso não lido daquela conversa, <b>atualiza</b> em vez de criar outro.<br>
+    • Só notifica quem <b>não</b> enviou.<br>
+    • Não notifica se o app já está aberto naquela conversa.<br>
+    • Tocar leva ao chat (<code>/chat/&lt;vaga&gt;</code>).</p>
+  </div>
+</div>
+
+<div class="note">
+<b>Observações de produto (valem nas três):</b> a aba lista as conversas que já existem — o chat só nasce
+<b>depois</b> que o anunciante escolhe um prestador (anonimato, D-024) e é encerrado na conclusão do serviço
+(D-026), mas o histórico continua legível. Ou seja, "conversar sem ir até a vaga" = ter a lista à mão, não
+chat antes da escolha. O <b>badge de não-lidas</b> aparece também no ícone da aba. Recomendo a
+<b>Opção B</b>: mesmo esforço da A, e o contexto da vaga evita confusão pra quem tem vários serviços.
+</div>
