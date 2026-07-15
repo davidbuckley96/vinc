@@ -49,6 +49,20 @@
   nativa nova + build. Recomendo começar por (a).
 - **Severidade:** Alta (é a tela que o candidato usa pra situar a vaga).
 
+### V-01b 🟡 Gesto AINDA travado no build com o fix — investigação em curso
+- O build `db9ca367` **já continha** o fix do snap-back (confirmado por
+  `git merge-base`), e mesmo assim o gesto continua travado → o snap-back **não
+  era a raiz** (ou não a única). Também: no mapa da vaga **não dá pra digitar
+  endereço** (isso é a busca, ver V-09) e o **drag/zoom-out não é fluido**.
+- **Experimento (a pedido do David):** igualar os dois mapas. `LocationModal`
+  passou a renderizar como o mapa da criação — **sem o círculo de região
+  aproximada e sem marcador** desenhados no WebView (comentados), só o mapa
+  interativo + pino central (RN). Se ficar fluido, o culpado era o desenho do
+  círculo → re-adicionamos de outro jeito (ex.: overlay RN, não dentro do WebGL).
+- **Também aplicado:** `androidLayerType="hardware"` no WebView — fix conhecido
+  de fluidez de mapa WebGL dentro de WebView no Android (não tinha sido tentado).
+- **Só valida no build nativo** (o web usa MapLibre direto, não reproduz).
+
 ## V-02 🟢 Dois círculos no mapa aproximado — CORRIGIDO
 - **Descrição:** o mapa da região desenhava **dois círculos roxos** sobrepostos.
 - **Causa:** o `map.on('load')` podia redesenhar o círculo (recarga de estilo).
@@ -118,6 +132,29 @@
   configurar **FCM** no projeto EAS (`eas credentials` → Android → FCM V1, com
   um projeto Firebase). Detalhar em docs/10.
 - **Severidade:** Média (o sino já funciona; só o push do SO depende disso).
+
+## V-09 🟢 Busca de endereço "não encontra nada" no aparelho — CORRIGIDO
+- **Descrição:** no aparelho, digitar endereço/bairro nunca traz sugestão
+  ("sempre diz que não encontrou"). Do servidor o Nominatim funciona.
+- **Causa:** o app batia no **Nominatim direto do celular**. No 4G, o **IP
+  compartilhado da operadora** é bloqueado/limitado pela política do Nominatim
+  (que proíbe uso de app), e o **`User-Agent` é ignorado no Android** (vai como
+  `okhttp`), o que o Nominatim rejeita → resposta vazia.
+- **Correção:** Edge Function **`geocode`** faz proxy do Nominatim
+  **server-side** (IP estável + User-Agent correto). `geocoding.ts` chama a
+  função em vez de `fetch` direto. **Verificado e2e** (search, region com viés
+  por GPS, reverse — todos retornam resultados).
+- **Provedor de produção (proposta, quando escalar):** o Nominatim público não
+  aguarda volume nem autocomplete real. Migrar o *dentro da função* (sem tocar
+  no app) para:
+  - **LocationIQ** — grátis até 5k/dia, base OSM, autocomplete liberado, com
+    chave. Mais parecido com o Nominatim (migração fácil).
+  - **Mapbox Geocoding** — grátis generoso, ótimo autocomplete, com chave.
+  - **Photon (komoot)** — grátis, sem chave, mas cobertura fraca de rua no
+    Brasil (testado: retornou 0). Serve mais p/ cidades/bairros.
+  - **Google Places Autocomplete** — melhor qualidade, porém pago.
+  Recomendo **LocationIQ** quando precisar de volume/autocomplete; até lá o
+  proxy do Nominatim resolve.
 
 ---
 
