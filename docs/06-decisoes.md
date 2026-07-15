@@ -1017,6 +1017,25 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-067 — Nota geral por média bayesiana (proteção do novo usuário)
+**Data:** 2026-07-15 · **Decidido por:** David (escolheu a opção equilibrada)
+
+A nota geral deixa de ser a média aritmética pura e passa a ser uma **média
+bayesiana**: `nota = (C·m + Σnotas) / (C + n)`, com **m = 5** (prior, mantém o
+"começa em 5" do D-061) e **C = 5** (peso do prior, ~5 "avaliações-fantasma").
+Motivo (F-12, docs/14): uma conta nova que levava uma única avaliação injusta
+caía direto pra aquela nota (5 → 2 com 1 review virava 2,00), o que permitia que
+um usuário mal-intencionado destruísse a reputação de outro no primeiro serviço.
+Com a bayesiana, poucas avaliações ficam perto do prior e a nota converge pra
+real conforme `n` cresce: **5 → 2 com 1 avaliação vira 4,50**; com ~15 avaliações
+de 2, cai pra ~2,75 (converge). Continua tudo **derivado** na view
+`profile_stats` (nada guardado; invariante do D-016/reviews), com 2 casas
+decimais, aplicado à nota geral e às notas por papel (trabalhador/anunciante).
+`C` e `m` ficam num único lugar (migração `0046`) pra ajuste futuro. Opções mais
+protetora (C=10) e mais reativa (C=3) foram descartadas pelo David. Verificado
+e2e na base real. A meia-estrela visual (mostrar ★★★★½ em vez de "★ 4,5") fica
+como melhoria opcional futura.
+
 ## D-066 — Sem círculo: o mapa da vaga abre centrado no BAIRRO (privacidade + fluidez)
 **Data:** 2026-07-15 · **Decidido por:** David (proposta) + Claude (implementação)
 

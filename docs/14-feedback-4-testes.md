@@ -121,7 +121,12 @@ painel. 🟠 **Decisão de abordagem:**
 - (c) Só estruturar os logs do backend agora (JSON + níveis) e deixar o painel pra
   depois. — **L**
 
-### F-12 · Nota decimal + algoritmo justo (proteção do novo usuário)
+### F-12 · Nota decimal + algoritmo justo — ✅ FEITO (bayesiana C=5, D-067)
+**Decisão do David:** equilibrado (C=5, prior m=5). Implementado na migração
+`0046` (view `profile_stats`). Verificado na base real: quem tinha 1 nota 2 agora
+mostra **4,50** (era 2,00); 0 avaliações = 5,00. O app já mostra 1 casa decimal,
+então o número novo aparece sem mudança no cliente. Meia-estrela visual fica como
+opcional futuro. Detalhe abaixo (mantido pra histórico):
 Achados: a média **já é decimal** no banco (`round(avg,2)` na view `profile_stats`)
 e o app já mostra 1 casa (`profile-view.tsx:71`). O "de 5 pra 2" acontece porque o
 **5 é só um placeholder de exibição** pra quem tem 0 avaliações (D-061) — não há
