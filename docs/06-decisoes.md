@@ -1017,6 +1017,42 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-066 — Sem círculo: o mapa da vaga abre centrado no BAIRRO (privacidade + fluidez)
+**Data:** 2026-07-15 · **Decidido por:** David (proposta) + Claude (implementação)
+
+O círculo de região aproximada era a causa do travamento do mapa no Android —
+e a tentativa anterior (D-065, círculo como camada RN translúcida por cima do
+WebView) **não resolveu**: no build de teste o mapa continuou travando na
+visualização da vaga aberta (inclusive para o próprio anunciante) e a camada
+RN ficava presa no centro da tela ao arrastar (não acompanhava o mapa). Só o
+mapa **sem nenhuma camada** e **sem overlay grande** era fluido (o lado exato,
+com um pino leve).
+
+Decisão do David: **acabar com o círculo**. O ponto público guardado passa a
+ser o **centro do bairro** (centroide), não um pino embaralhado. Assim:
+- **Privacidade:** todo mundo do bairro cai no mesmo ponto público; o endereço
+  exato fica escondido (no teste em João Pessoa, o centro do bairro ficou a
+  **1258 m** da rua real). A nota reforça: "mostramos só o bairro; o endereço
+  exato aparece quando você é escolhido".
+- **Fluidez:** o mapa aproximado abre **centrado no bairro, sem círculo e sem
+  pino** (zoom 14) — mapa sem camadas = arrasta liso. O modo exato (quem já foi
+  escolhido) mantém o pino leve.
+
+Implementação:
+- `create-gig` resolve o centroide do bairro no Nominatim (server-side, IP
+  estável), enviesado por um *viewbox* ao redor do ponto exato para achar o
+  "Centro"/"Bancários" certo (há muitos no Brasil). Timeout de 3 s com
+  **fallback** para o embaralhamento por deslocamento fixo (D-028/D-030) — a
+  publicação nunca depende do geocoder. Verificado e2e: vaga em Bancários, João
+  Pessoa → `approx` = centroide exato do bairro do Nominatim.
+- `LocationModal` (modo aproximado) não desenha mais círculo nem pino; abre
+  centrado no ponto (= bairro) em zoom 14.
+
+Substitui o desenho de mapa do D-065/D-055/D-030 no que toca ao lado
+aproximado. Alternativa descartada: resolver o centroide na hora de abrir o
+mapa (uma chamada de rede por visualização, mais lenta e sujeita a falha) —
+melhor resolver uma vez, na criação.
+
 ## D-065 — Indicador do mapa (raio/pino) vira camada do React Native, não do WebGL
 **Data:** 2026-07-15 · **Decidido por:** Claude (causa-raiz confirmada pelo David)
 

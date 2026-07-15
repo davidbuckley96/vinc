@@ -10,7 +10,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 import { validateGigDraft, type GigDraft } from "../../../packages/core/src/gig-draft.ts";
-import { approximateLocation, deriveAreaLabel } from "../../../packages/core/src/location.ts";
+import {
+  approximateLocation,
+  deriveAreaLabel,
+  GENERIC_AREA_LABEL,
+} from "../../../packages/core/src/location.ts";
 import {
   containsContactInfo,
   prohibitedContentCategory,
@@ -37,6 +41,53 @@ function respond(code: ResultCode, status: number, extra: object = {}): Response
     status,
     headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
   });
+}
+
+const NOMINATIM = "https://nominatim.openstreetmap.org";
+const GEO_HEADERS = {
+  "Accept-Language": "pt-BR",
+  "User-Agent": "VincApp/1.0 (marketplace de servicos; contato@vinc.app)",
+};
+
+/**
+ * Public map point = the NEIGHBOURHOOD CENTROID (D-066), not a fuzzed pin.
+ * Showing the whole bairro centred (no circle) preserves anonymity — everyone
+ * in "Manaíra, João Pessoa" maps to the same public centre — and lets the map
+ * render layer-free (the WebGL circle janked the pan gesture on Android, V-01).
+ * The area label already names the bairro; here we resolve its centre.
+ *
+ * The search is biased by a viewbox around the EXACT point so it picks the
+ * RIGHT "Centro"/"Boa Vista" (there are many in Brazil). Any failure (no match,
+ * timeout, network) returns null and the caller falls back to the fixed-offset
+ * fuzz — publishing must never depend on the geocoder being up.
+ */
+async function neighbourhoodCenter(
+  areaLabel: string,
+  lat: number,
+  lng: number,
+): Promise<{ lat: number; lng: number } | null> {
+  if (areaLabel === GENERIC_AREA_LABEL) return null;
+  const d = 0.15; // ~16 km box around the exact point — the bairro is well inside
+  const viewbox = `&viewbox=${lng - d},${lat + d},${lng + d},${lat - d}&bounded=1`;
+  const url =
+    `${NOMINATIM}/search?format=jsonv2&limit=1&countrycodes=br` +
+    `&q=${encodeURIComponent(areaLabel)}${viewbox}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 3000);
+  try {
+    const res = await fetch(url, { headers: GEO_HEADERS, signal: controller.signal });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    const row = Array.isArray(rows) ? rows[0] : null;
+    const clat = Number(row?.lat);
+    const clng = Number(row?.lon);
+    if (!Number.isFinite(clat) || !Number.isFinite(clng)) return null;
+    return { lat: clat, lng: clng };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 Deno.serve(async (request) => {
@@ -109,11 +160,16 @@ Deno.serve(async (request) => {
   // is charged at the choice (fee_cents stored now, used then).
   const pricing = computeGigPricing(draft.priceCents);
 
-  // Candidates see only the area + fuzzed pin (D-028); the exact address
-  // goes to gig_addresses, readable by the poster and the chosen worker.
+  // Candidates see only the bairro centred on the map (D-066); the exact
+  // address goes to gig_addresses, readable by the poster and the chosen
+  // worker. The public point is the neighbourhood centroid when we can resolve
+  // it (better anonymity + a layer-free, fluid map), otherwise the legacy
+  // fixed-offset fuzz (D-028/D-030) — publishing never blocks on the geocoder.
   const address = draft.address.trim();
+  const areaLabel = deriveAreaLabel(address);
   const approx = draft.lat != null && draft.lng != null
-    ? approximateLocation(draft.lat, draft.lng)
+    ? (await neighbourhoodCenter(areaLabel, draft.lat, draft.lng)) ??
+      approximateLocation(draft.lat, draft.lng)
     : null;
 
   const { data: gig, error: insertError } = await admin
@@ -127,7 +183,7 @@ Deno.serve(async (request) => {
       ends_at: draft.endsAt,
       price_cents: pricing.netCents,
       fee_cents: pricing.feeCents,
-      area: deriveAreaLabel(address),
+      area: areaLabel,
       approx_lat: approx?.lat ?? null,
       approx_lng: approx?.lng ?? null,
       status: "open",

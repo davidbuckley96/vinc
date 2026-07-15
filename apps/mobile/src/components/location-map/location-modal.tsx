@@ -13,8 +13,10 @@ interface LocationModalProps {
   lng: number;
   address: string;
   /**
-   * Approximate mode (D-028): a translucent radius circle instead of a pin —
-   * the point shown is already fuzzed, and a pin would read as exact.
+   * Approximate mode (D-066): the map is CENTRED ON THE NEIGHBOURHOOD (the
+   * stored point is the bairro centroid) with no circle and no pin — showing
+   * the whole bairro is the privacy guarantee, and a layer-free map pans
+   * smoothly (the old WebGL circle janked the gesture on Android, V-01).
    */
   approximate?: boolean;
   onClose: () => void;
@@ -50,29 +52,28 @@ export function LocationModal({ visible, lat, lng, address, approximate, onClose
           </View>
 
           <View style={styles.mapArea}>
-            {/* V-01 (raiz confirmada pelo David): o círculo de região aproximada
-                desenhado DENTRO do WebGL (polígono do MapLibre) era o que travava
-                o gesto — por isso o mapa exato (anunciante, sem círculo) era
-                fluido e o aproximado (trabalhador) travava. Solução: o mapa é o
-                mesmo dos dois lados (sem camadas no WebView) e o indicador vira
-                uma CAMADA DO REACT NATIVE por cima (não pesa no gesto): círculo
-                translúcido no modo aproximado, pino no exato. O mapa abre e fica
-                centrado no ponto (já embaralhado no servidor, D-028). */}
+            {/* V-01/D-066 (raiz confirmada pelo David): qualquer coisa desenhada
+                DENTRO do WebGL (o círculo, polígono do MapLibre) — ou uma camada
+                translúcida grande por cima — travava o gesto no Android; por isso
+                o mapa exato (anunciante, só um pino) era fluido e o aproximado
+                travava. Solução: no modo aproximado NÃO há círculo nem pino — o
+                mapa abre CENTRADO NO BAIRRO (o ponto guardado já é o centro do
+                bairro) e o próprio bairro é a garantia de privacidade. Mapa sem
+                camadas = arrasta liso. No modo exato (quem já foi escolhido)
+                mantemos o pino, que é leve. */}
             <LocationMap
               lat={lat}
               lng={lng}
-              zoom={approximate ? 15 : 16}
+              zoom={approximate ? 14 : 16}
               interactive
               onCenterChange={() => {}}
               style={StyleSheet.absoluteFill}
             />
-            <View pointerEvents="none" style={styles.overlay}>
-              {approximate ? (
-                <View style={[styles.approxCircle, { borderColor: theme.primary }]} />
-              ) : (
+            {!approximate && (
+              <View pointerEvents="none" style={styles.overlay}>
                 <Ionicons name="location-sharp" size={40} color={theme.primary} style={styles.pin} />
-              )}
-            </View>
+              </View>
+            )}
           </View>
 
           <SafeAreaView edges={['bottom']}>
@@ -80,7 +81,7 @@ export function LocationModal({ visible, lat, lng, address, approximate, onClose
               <Text style={[styles.address, { color: theme.text }]}>{address}</Text>
               <Text style={[styles.note, { color: theme.textSecondary }]}>
                 {approximate
-                  ? 'Local aproximado — o endereço exato aparece quando você é escolhido. Arraste o mapa para explorar a região.'
+                  ? 'Mostramos só o bairro para preservar a privacidade. O endereço exato aparece quando você é escolhido. Arraste o mapa para explorar.'
                   : 'Arraste o mapa para explorar. Toque em fechar quando terminar.'}
               </Text>
             </View>
@@ -135,15 +136,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.3)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
-  },
-  // Área aproximada (D-028) desenhada em RN, não no WebGL (V-01): translúcida
-  // no tom da marca, centrada no ponto embaralhado.
-  approxCircle: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    borderWidth: 2,
-    backgroundColor: 'rgba(124,58,237,0.16)',
   },
   foot: {
     padding: Spacing.three,

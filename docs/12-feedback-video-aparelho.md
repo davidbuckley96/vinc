@@ -56,11 +56,28 @@
   conta troca o comportamento. → a raiz é o **círculo desenhado dentro do mapa
   WebGL** (polígono do MapLibre re-tesselando/preenchendo a cada frame no
   WebView), não o snap-back nem o gesto em si.
-- **Fix definitivo:** o círculo aproximado saiu do WebGL e virou **camada do
-  React Native** por cima do mapa (`View` translúcida circular). Os dois mapas
-  (exato e aproximado) usam agora o **mesmo LocationMap sem camadas** → o
-  aproximado fica tão fluido quanto o exato. `location-modal.tsx`. Mantido o
-  `androidLayerType="hardware"`. Confirmar no próximo build.
+- **Fix tentado (D-065, NÃO resolveu):** mover o círculo do WebGL para uma
+  **camada RN** translúcida por cima. No build de teste o David reportou que
+  **continuou travando** (inclusive para o anunciante ao visitar a vaga aberta)
+  e que a camada RN ficava **presa no centro da tela** ao arrastar (não seguia o
+  mapa). Ou seja: até uma `View` translúcida grande por cima do WebView engasga
+  o gesto no Android. Só o mapa **sem qualquer camada/overlay** (o lado exato,
+  com pino leve) era fluido.
+
+### V-01d 🟢 Fix DEFINITIVO — acabar com o círculo: mapa centrado no bairro (D-066)
+- **Proposta do David:** em vez de círculo, abrir o mapa **centrado no bairro**
+  de quem anunciou. Sem círculo algum (que é o que trava), e o anonimato se
+  mantém por mostrar só o bairro + aviso de que o endereço exato é liberado se a
+  pessoa for escolhida.
+- **Implementação:** o ponto público guardado passa a ser o **centroide do
+  bairro** (resolvido no `create-gig` via Nominatim server-side, enviesado por
+  viewbox ao redor do ponto exato; fallback para o embaralhamento antigo se o
+  geocoder falhar). O `LocationModal` no modo aproximado **não desenha círculo
+  nem pino** — abre centrado no ponto (= bairro) em zoom 14. Mapa sem camadas =
+  arrasta liso. Detalhe em **D-066**.
+- **Verificado e2e:** vaga de teste em **Bancários, João Pessoa** → ponto
+  público = **centroide exato do bairro** no Nominatim, a **1258 m** da rua
+  real (endereço exato escondido). Confirmar a fluidez no próximo build.
 
 ### V-01b 🟡 (histórico) Gesto AINDA travado no build com o fix do snap-back
 - O build `db9ca367` **já continha** o fix do snap-back (confirmado por
