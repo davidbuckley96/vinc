@@ -22,6 +22,7 @@ conversas.
 | 12 | [feedback-video-aparelho.md](12-feedback-video-aparelho.md) | 3º ciclo: feedback do vídeo no APK real (V-01…V-06) | Ao corrigir os itens do teste no aparelho |
 | 13 | [revisao-codigo-roadmap.md](13-revisao-codigo-roadmap.md) | Revisão de arquitetura pós-B/V + roadmap de refatoração (Fases A–D) | Ao pagar débito técnico / refatorar |
 | 14 | [feedback-4-testes.md](14-feedback-4-testes.md) | 4º ciclo: feedback do David (F-01…F-12) — bugs, features, regras | Ao trabalhar nos itens F-01…F-12 |
+| 15 | [checklist-build.md](15-checklist-build.md) | Checklist de teste no aparelho (build acumulado) + cobertura de testes | Antes/depois de cada build de teste |
 
 ## Regras de manutenção
 
