@@ -507,6 +507,19 @@ export function ServiceDetailScreen() {
                 </Text>
               </View>
             )}
+            {/* F-04 (docs/14): antes da janela de 30 min o código nem vem do
+                servidor (RLS). Explicamos por que a caixa ainda está vazia. */}
+            {data.role === 'poster' && data.status === 'accepted' && !data.checkinCode && (
+              <View style={[styles.codeBox, { backgroundColor: theme.primarySoft }]}>
+                <Text style={[styles.codeLabel, { color: theme.primarySoftMeta }]}>
+                  CÓDIGO DE INÍCIO
+                </Text>
+                <Text style={[styles.codeHint, { color: theme.primarySoftMeta }]}>
+                  O código aparece aqui 30 minutos antes do horário combinado — é assim que o
+                  serviço começa.
+                </Text>
+              </View>
+            )}
 
             {startArmed && data.role === 'worker' && data.status === 'accepted' && (
               <TextInput
@@ -577,6 +590,20 @@ export function ServiceDetailScreen() {
                   </Text>
                 </Pressable>
               )}
+
+            {/* F-05 (docs/14): saída pro trabalhador que tem um problema durante
+                o serviço (não consegue finalizar, imprevisto etc.) — abre o
+                suporte, que pode finalizar antes da hora se preciso. */}
+            {data.role === 'worker' && data.status === 'in_progress' && (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push('/help')}
+                style={styles.disputeLink}>
+                <Text style={[styles.disputeLinkLabel, { color: theme.textSecondary }]}>
+                  Algum problema durante o serviço? Falar com o suporte
+                </Text>
+              </Pressable>
+            )}
             {dispute.data && data.status === 'completed' && (
               <Text style={[styles.disputeState, { color: theme.textSecondary }]}>
                 {dispute.data.status === 'open'

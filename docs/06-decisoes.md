@@ -1033,9 +1033,11 @@ o código de check-in dias antes, **iniciar um serviço marcado pra amanhã** e
   rejeita antes disso (`too_soon`). Vale só pro **finalizar do trabalhador** — o
   **confirmar do anunciante** não é travado (confirmar cedo só beneficia o
   trabalhador). Vagas antigas (sem `started_at`) não são afetadas.
-- Escape: o trabalhador pode **reportar um problema durante o serviço** (abre
-  ticket de suporte) e o **suporte pode finalizar antes da hora**
-  (`force_complete` no painel) — *a implementar na sequência*.
+- Escape: o trabalhador vê um link **"reportar um problema durante o serviço"**
+  (→ suporte) e o **suporte pode finalizar antes da hora** via `force_complete`
+  no `support-panel-action` (botão "Finalizar" no painel) — leva a vaga pra
+  `awaiting_confirmation`, sem mover dinheiro ad hoc, com auditoria em
+  `support_actions`. Verificado e2e.
 
 Migração `0047` (coluna `started_at` + RLS do código) e `gig-lifecycle` v18.
 Verificado e2e: iniciar amanhã → `too_early`; iniciar na janela → ok + carimba

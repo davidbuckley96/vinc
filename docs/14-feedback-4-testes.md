@@ -74,13 +74,19 @@ Todo o fluxo Pix real já existe (D-040) e aparece quando o provedor é
 pro MVP); (b) mostrar uma tela de "pagamento simulado" (confirmação visível) mesmo
 no modo demo; (c) já ligar o Mercado Pago sandbox pra ver o QR de verdade.
 
-### F-04 + F-05 · Travas de tempo — ✅ SERVIDOR FEITO (D-068) · falta UX+override
-**Decisão do David:** 30 min / 30 min. Servidor pronto e testado (migração `0047`
-+ `gig-lifecycle` v18): iniciar amanhã → `too_early`; iniciar na janela → ok +
-carimba `started_at`; finalizar na hora → `too_soon`; após 30 min → ok. Mensagens
-no app já mapeadas. **Falta (próximo):** esconder o código antes da janela +
-dica na tela, link "reportar problema durante o serviço" pro trabalhador, e o
-`force_complete` do suporte. Detalhe abaixo (histórico):
+### F-04 + F-05 · Travas de tempo — ✅ FEITO (D-068)
+**Decisão do David:** 30 min / 30 min. Tudo pronto e testado:
+- **Servidor** (migração `0047` + `gig-lifecycle` v18): iniciar amanhã →
+  `too_early`; iniciar na janela → ok + carimba `started_at`; finalizar na hora
+  → `too_soon`; após 30 min → ok.
+- **Código de início:** só vem do servidor 30 min antes (RLS); o app mostra uma
+  dica ("aparece 30 min antes") enquanto isso.
+- **Reportar problema:** link do trabalhador em serviço em andamento → suporte.
+- **Override do suporte** (`force_complete` no `support-panel-action` v4 +
+  botão "Finalizar" no painel): encerra um serviço em andamento antes dos 30 min,
+  indo pra `awaiting_confirmation`. Verificado e2e na base real (auditado em
+  `support_actions`). Mensagens de erro no app mapeadas.
+Itens de UI entram no próximo build. Detalhe abaixo (histórico):
 
 Hoje **nada olha o relógio** — o controle é só por `status`. O código de check-in é
 gerado na escolha (dias antes) e revelado sem trava (`_shared/choice.ts:112`,

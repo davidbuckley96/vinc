@@ -309,3 +309,16 @@ export function cancelGigOnBehalf(
 ): Promise<PanelActionResult> {
   return invokeAction(client, { action: "cancel_gig", ...input });
 }
+
+/**
+ * Support forces an in-progress service to completion before the 30-min
+ * minimum (F-05, D-068) — e.g. the worker reported a problem and can't finish
+ * normally. Moves the gig to awaiting_confirmation (the poster still confirms
+ * or it auto-releases in 48h); no ad-hoc money movement.
+ */
+export function forceCompleteGig(
+  client: SupabaseClient,
+  input: { gigId: string; note?: string },
+): Promise<PanelActionResult> {
+  return invokeAction(client, { action: "force_complete", ...input });
+}

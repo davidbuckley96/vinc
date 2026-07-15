@@ -214,5 +214,37 @@ Deno.serve(async (request) => {
     return respond("ok", 200);
   }
 
+  // -------------------------------------------------------- force_complete
+  // F-05 (docs/14, D-068): o suporte pode encerrar um serviço EM ANDAMENTO
+  // antes dos 30 min mínimos (imprevisto, bug, o trabalhador não consegue
+  // finalizar). Segue o fluxo normal pós-conclusão: vai pra awaiting_confirmation
+  // (o anunciante confirma, ou libera sozinho em 48h) — o painel não move
+  // dinheiro ad hoc. Só age em `in_progress`.
+  if (action === "force_complete") {
+    const { gigId, note } = body as { gigId?: string; note?: string };
+    if (typeof gigId !== "string") return respond("invalid_request", 400);
+
+    const { data: gig } = await admin
+      .from("gigs")
+      .select("id, status")
+      .eq("id", gigId)
+      .maybeSingle();
+    if (!gig) return respond("not_found", 404);
+    if (gig.status !== "in_progress") {
+      return respond("needs_dispute", 409, { gigStatus: gig.status });
+    }
+
+    const { data: updated } = await admin
+      .from("gigs")
+      .update({ status: "awaiting_confirmation", awaiting_since: new Date().toISOString() })
+      .eq("id", gigId)
+      .eq("status", "in_progress")
+      .select("id");
+    if (!updated || updated.length === 0) return respond("needs_dispute", 409);
+
+    await log("force_complete", "gig", gigId, note);
+    return respond("ok", 200);
+  }
+
   return respond("invalid_request", 400);
 });

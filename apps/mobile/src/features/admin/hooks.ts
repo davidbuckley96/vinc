@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   cancelGigOnBehalf,
+  forceCompleteGig,
   fetchDisputeCase,
   fetchDisputeQueue,
   fetchIsAdmin,
@@ -202,6 +203,17 @@ export function useCancelGigOnBehalf() {
     mutationFn: async (input: { gigId: string; note?: string }): Promise<PanelActionResult> => {
       if (!supabase) return 'ok';
       return cancelGigOnBehalf(supabase, input);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'user-context'] }),
+  });
+}
+
+export function useForceCompleteGig() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { gigId: string; note?: string }): Promise<PanelActionResult> => {
+      if (!supabase) return 'ok';
+      return forceCompleteGig(supabase, input);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'user-context'] }),
   });

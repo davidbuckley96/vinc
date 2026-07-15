@@ -19,6 +19,7 @@ import { useTheme } from '@/hooks/use-theme';
 
 import {
   useCancelGigOnBehalf,
+  useForceCompleteGig,
   useReplyTicket,
   useReports,
   useResolveReport,
@@ -391,6 +392,7 @@ function UserContext360({
 }) {
   const theme = useTheme();
   const cancelGig = useCancelGigOnBehalf();
+  const forceComplete = useForceCompleteGig();
   const [feedback, setFeedback] = useState<string | null>(null);
 
   if (loading) return <ActivityIndicator color={theme.primary} style={styles.pad} />;
@@ -407,6 +409,20 @@ function UserContext360({
         : result === 'needs_dispute'
           ? 'Essa vaga já tem pagamento/serviço em andamento — resolva pela aba Disputas.'
           : 'Não foi possível cancelar agora.',
+    );
+  };
+
+  // F-05 (D-068): encerrar um serviço em andamento antes dos 30 min mínimos,
+  // quando o trabalhador reporta um problema e não consegue finalizar.
+  const finishNow = async (gig: UserGig) => {
+    setFeedback(null);
+    const result = await forceComplete.mutateAsync({ gigId: gig.id, note: 'conclusão pelo suporte' });
+    setFeedback(
+      result === 'ok'
+        ? `Serviço "${gig.title}" encerrado — aguardando confirmação do anunciante.`
+        : result === 'needs_dispute'
+          ? 'Esse serviço não está mais em andamento.'
+          : 'Não foi possível encerrar agora.',
     );
   };
 
@@ -431,6 +447,15 @@ function UserContext360({
                 onPress={() => unblock(gig)}
                 style={[styles.smallBtn, { borderColor: theme.danger }]}>
                 <Text style={{ color: theme.danger, fontSize: 11, fontWeight: '700' }}>Cancelar</Text>
+              </Pressable>
+            )}
+            {gig.status === 'in_progress' && (
+              <Pressable
+                accessibilityRole="button"
+                disabled={forceComplete.isPending}
+                onPress={() => finishNow(gig)}
+                style={[styles.smallBtn, { borderColor: theme.primary }]}>
+                <Text style={{ color: theme.primary, fontSize: 11, fontWeight: '700' }}>Finalizar</Text>
               </Pressable>
             )}
           </View>
