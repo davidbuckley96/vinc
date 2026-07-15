@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 
-import { deriveAreaLabel, GENERIC_AREA_LABEL } from '@vinc/core';
+import { deriveAreaLabel, GENERIC_AREA_LABEL, insideBrazilBbox } from '@vinc/core';
 
 import { LocationPicker } from '@/components/location-map';
 import { Radius, Spacing } from '@/constants/theme';
@@ -63,7 +63,11 @@ export function RegionModal({ visible, region, onChange, onClose }: RegionModalP
     if (!visible || near) return;
     let active = true;
     locateDevice().then((r) => {
-      if (active && r.ok) setNear({ lat: r.lat, lng: r.lng });
+      // Só enviesa pela GPS se estiver no Brasil (quem testa do exterior não
+      // quer sugestões de bairros de Portugal). Fora do Brasil = busca ampla.
+      if (active && r.ok && insideBrazilBbox(r.lat, r.lng)) {
+        setNear({ lat: r.lat, lng: r.lng });
+      }
     });
     return () => {
       active = false;

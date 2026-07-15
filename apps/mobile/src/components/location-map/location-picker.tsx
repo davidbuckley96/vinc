@@ -73,11 +73,16 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
 
   // Open the map on the user's own region (B-10) instead of the middle of
   // Brazil: try the device GPS once when the picker opens without a pin.
+  // Só usa o GPS se ele estiver DENTRO do Brasil — quem está no exterior (ex.:
+  // testando de Portugal) não quer o mapa abrindo lá fora, já que as vagas são
+  // sempre no Brasil.
   useEffect(() => {
     if (!visible || start || located.current) return;
     located.current = true;
     locateDevice().then((result) => {
-      if (result.ok) setCenter({ lat: result.lat, lng: result.lng, zoom: 15 });
+      if (result.ok && insideBrazilBbox(result.lat, result.lng)) {
+        setCenter({ lat: result.lat, lng: result.lng, zoom: 15 });
+      }
     });
   }, [visible, start]);
 
