@@ -15,6 +15,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+import { releaseToWorkerWithDebt } from "../_shared/debt.ts";
 import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
@@ -78,16 +79,11 @@ Deno.serve(async (request) => {
       .eq("status", "awaiting_confirmation")
       .select("id");
     if (!won || won.length === 0) continue;
-    await admin.from("ledger_entries").insert({
-      user_id: gig.worker_id,
-      gig_id: gig.id,
-      type: "escrow_release",
-      amount_cents: gig.price_cents,
-    });
-    await provider.releaseToWorker({
+    // Release the escrow; collect any no-show debt from this payout (D-071).
+    await releaseToWorkerWithDebt(admin, provider, {
       workerId: gig.worker_id,
       gigId: gig.id,
-      amountCents: gig.price_cents,
+      netCents: gig.price_cents,
     });
     released += 1;
   }

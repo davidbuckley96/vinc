@@ -21,6 +21,7 @@ import {
   allowedLifecycleAction,
   type GigStatus,
 } from "../../../packages/core/src/gig.ts";
+import { releaseToWorkerWithDebt } from "../_shared/debt.ts";
 import { withObservability } from "../_shared/observability.ts";
 import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
@@ -203,17 +204,12 @@ Deno.serve(withObservability("gig-lifecycle", async (request) => {
 
   if (action === "confirm") {
     // Poster confirmed: release the escrowed amount to the worker (the
-    // 10% fee — D-035 — was charged on top at creation).
-    await admin.from("ledger_entries").insert({
-      user_id: gig.worker_id,
-      gig_id: gig.id,
-      type: "escrow_release",
-      amount_cents: gig.price_cents,
-    });
-    await getPaymentProvider(admin).releaseToWorker({
+    // 10% fee — D-035 — was charged on top at creation). If the worker owes
+    // any no-show debt (D-071), up to 50% of this payout is seized toward it.
+    await releaseToWorkerWithDebt(admin, getPaymentProvider(admin), {
       workerId: gig.worker_id,
       gigId: gig.id,
-      amountCents: gig.price_cents,
+      netCents: gig.price_cents,
     });
   }
 

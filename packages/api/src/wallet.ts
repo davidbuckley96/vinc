@@ -4,7 +4,14 @@ import { deriveWalletBalances, isProcessing, isWalletEntry, releasesAt } from "@
 
 export interface LedgerEntry {
   id: string;
-  type: "escrow_hold" | "escrow_release" | "fee" | "fine" | "refund" | "withdrawal";
+  type:
+    | "escrow_hold"
+    | "escrow_release"
+    | "fee"
+    | "fine"
+    | "refund"
+    | "withdrawal"
+    | "debt_repayment";
   amountCents: number;
   gigId: string | null;
   gigTitle: string | null;
@@ -96,7 +103,9 @@ export function buildWallet(
   // (D-037), so the list always adds up to the displayed balance.
   const effectiveAt = (entry: LedgerEntry) =>
     new Date(
-      entry.type === "escrow_release" ? releasesAt(entry.createdAt) : entry.createdAt,
+      entry.type === "escrow_release" || entry.type === "debt_repayment"
+        ? releasesAt(entry.createdAt)
+        : entry.createdAt,
     ).getTime();
   const withdrawnAt = lastWithdrawal ? new Date(lastWithdrawal.createdAt).getTime() : null;
   const availableEntries = entries.filter(

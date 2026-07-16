@@ -29,11 +29,23 @@ const WALLET_ENTRY_TYPES: ReadonlySet<string> = new Set([
   "escrow_release",
   "fine",
   "withdrawal",
+  // D-071: the slice of a released payout seized to repay a no-show debt — a
+  // negative entry that reduces the wallet, held on the SAME 7-day clock as
+  // the earning it comes from so both clear together (see HELD_TYPES).
+  "debt_repayment",
 ]);
 
 export function isWalletEntry(entry: { type: string }): boolean {
   return WALLET_ENTRY_TYPES.has(entry.type);
 }
+
+/**
+ * Types that sit in the 7-day processing hold: the service payment and the
+ * debt slice taken from it at release (D-071). Both are created together, so
+ * aligning their hold keeps `available` from dipping negative while the
+ * earning is still processing.
+ */
+const HELD_TYPES: ReadonlySet<string> = new Set(["escrow_release", "debt_repayment"]);
 
 const HOLD_MS = PROCESSING_HOLD_DAYS * 24 * 60 * 60 * 1000;
 
@@ -60,7 +72,7 @@ export function isProcessing(
   now: Date,
   frozenGigIds?: ReadonlySet<string>,
 ): boolean {
-  if (entry.type !== "escrow_release") return false;
+  if (!HELD_TYPES.has(entry.type)) return false;
   if (frozenGigIds && entry.gigId && frozenGigIds.has(entry.gigId)) return true;
   return now.getTime() < new Date(releasesAt(entry.createdAt)).getTime();
 }

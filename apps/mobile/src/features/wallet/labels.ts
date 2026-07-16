@@ -7,6 +7,7 @@ export const ENTRY_LABELS: Record<LedgerEntry['type'], string> = {
   fine: 'multa',
   refund: 'reembolso',
   withdrawal: 'saque',
+  debt_repayment: 'desconto de dívida (furo)',
 };
 
 /** "multa" only makes sense for who pays it; who receives sees this. */
