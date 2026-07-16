@@ -9,8 +9,9 @@ import { registerPushToken } from '@vinc/api';
 
 import { useSession } from '@/features/auth/session-context';
 import { supabase } from '@/lib/supabase';
+import { usePreferences } from '@/lib/preferences';
 
-import { setCurrentPushToken } from './push-token';
+import { clearPushRegistration, setCurrentPushToken } from './push-token';
 
 // Show a banner + play a sound when a push arrives with the app in foreground.
 Notifications.setNotificationHandler({
@@ -75,9 +76,18 @@ export function usePushNotifications() {
   const userId = session?.user.id ?? null;
   const router = useRouter();
   const registeredFor = useRef<string | null>(null);
+  // Notifications on/off from Configurações (D-072 follow-up): when off, the
+  // token is removed so the server has nowhere to push; when on, we register.
+  const { notificationsEnabled, ready } = usePreferences();
 
   useEffect(() => {
-    if (!supabase || !userId) return;
+    if (!supabase || !userId || !ready) return;
+    if (!notificationsEnabled) {
+      // User turned notifications off: drop this device's token.
+      clearPushRegistration();
+      registeredFor.current = null;
+      return;
+    }
     if (registeredFor.current === userId) return;
     let cancelled = false;
     (async () => {
@@ -94,7 +104,7 @@ export function usePushNotifications() {
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, notificationsEnabled, ready]);
 
   // Tapping a push opens the related screen — the chat for a message (D-070),
   // otherwise the service.

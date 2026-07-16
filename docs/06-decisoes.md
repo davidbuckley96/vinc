@@ -1089,6 +1089,14 @@ foto (perfil — com recorte quadrado, conclusão de serviço, disputa). Compone
 (reestruturar as rotas por aba é pesado/arriscado). Por ora, o essencial é que
 toda tela de detalhe tenha "voltar" (G-01 já resolveu os becos sem saída).
 
+**Follow-up (2026-07-16):** implementados os controles de **Tema**
+(Automático/Claro/Escuro) e **Notificações** (ligar/desligar push) em
+Configurações, persistidos no aparelho (`lib/preferences.tsx` +
+AsyncStorage). O Tema sobrescreve o `useColorScheme` do app (afeta todo o
+tema via `useTheme`); desligar Notificações remove o token de push do
+dispositivo (o servidor deixa de ter para onde enviar) e religar registra de
+novo.
+
 ## D-070 — Aba de mensagens (inbox) com retenção + push de mensagem
 **Data:** 2026-07-15 · **Decidido por:** David (rodada 22, opção B + regra de retenção)
 
