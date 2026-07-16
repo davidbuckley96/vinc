@@ -166,10 +166,7 @@ Recomendação do Claude para a 1ª leva: **10-a, 10-b, 10-c, 10-d**.
     pt-BR melhor e sem treinar nos dados. Custo de centavos por conversa,
     sem exigir CNPJ. Até lá, a Vi já responde o comum pelo `local`.
 
-24. 🟡 **Furo repetido também deve suspender? (sub-dúvida do D-071)** A
-    consequência do furo passou a ser **monetária** (dívida da taxa) +
-    contestável. Fica em aberto se **furos repetidos** também devem contar
-    como offense para a **suspensão por reincidência** (anti-abuso C), além
-    da dívida — ou se a dívida sozinha já basta como dissuasor. Enquanto não
-    respondido, implemento só a dívida (D-071); adicionar o offense depois é
-    barato (o mecanismo já existe).
+24. ✅ **RESPONDIDA (2026-07-16, David): furo repetido também suspende.** Além
+    da dívida da taxa (D-071), cada furo registra um evento `no_show`; a
+    **reincidência (2º furo em 30 dias)** suspende por 7 dias (anti-abuso C).
+    Implementado na migração 0050 + `no-show-cancel`. Migrada para o D-071.

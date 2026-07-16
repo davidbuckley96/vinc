@@ -128,6 +128,14 @@ Deno.serve(async (request) => {
     status: "open",
   });
 
+  // D-071 (dúvida 24): furo repetido também penaliza a reputação — registra um
+  // evento de integridade; a reincidência (2º furo em 30 dias) suspende (C).
+  await admin.rpc("record_offense", {
+    p_user: gig.worker_id,
+    p_type: "no_show",
+    p_gig: gig.id,
+  });
+
   return respond("cancelled", 200, {
     posterRefundCents,
     workerDebtCents,

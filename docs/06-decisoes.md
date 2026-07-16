@@ -1059,8 +1059,11 @@ serviço concluído = `min(dívida_total_em_aberto, round(0,5 × líquido))`.
 
 Substitui a ideia anterior de marcar só uma "falta"/offense automática: a
 consequência do furo passa a ser **monetária + rastreável + contestável**.
-Fica em aberto (docs/07) se furos repetidos também devem contar para suspensão
-por reincidência (anti-abuso C) além da dívida.
+
+**Reincidência (David, 2026-07-16):** além da dívida, cada furo também registra
+um evento de integridade `no_show` (anti-abuso C); a **reincidência (2º furo em
+30 dias)** suspende a conta por 7 dias, como as demais penalidades. Fecha a
+dúvida 24.
 
 ## D-070 — Aba de mensagens (inbox) com retenção + push de mensagem
 **Data:** 2026-07-15 · **Decidido por:** David (rodada 22, opção B + regra de retenção)
