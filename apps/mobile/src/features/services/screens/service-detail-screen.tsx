@@ -27,7 +27,7 @@ import { LocationModal } from '@/components/location-map';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useDispute } from '@/features/disputes/hooks';
 import { CandidateList } from '@/features/gigs/components/candidate-list';
-import { useCancelGig, useDeleteGig } from '@/features/gigs/hooks';
+import { useCancelGig, useCandidates, useDeleteGig } from '@/features/gigs/hooks';
 import { useUnreadCount } from '@/features/messages/hooks';
 import { useHasReviewed } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
@@ -167,6 +167,13 @@ export function ServiceDetailScreen() {
     ['accepted', 'in_progress', 'awaiting_confirmation'].includes(service.data.status);
   const chatReady = chatActive || (service.data?.status === 'completed' && service.data.counterpartId != null);
   const unread = useUnreadCount(id, chatActive);
+  // G-13 (docs/16): uma vaga com candidato deve ficar imutável — editar depois
+  // que alguém se candidatou permitiria mudar as regras de má-fé pra fazer o
+  // candidato desistir. O banco já bloqueia (migração 0041); aqui desativamos o
+  // botão para dar o feedback certo. Só busca quando é a vaga aberta do dono.
+  const isPosterOpen = service.data?.role === 'poster' && service.data.status === 'open';
+  const candidates = useCandidates(id, isPosterOpen);
+  const hasCandidates = (candidates.data?.length ?? 0) > 0;
   const [error, setError] = useState<string | null>(null);
   const [deleteArmed, setDeleteArmed] = useState(false);
   const [deletedNote, setDeletedNote] = useState<string | null>(null);
@@ -408,16 +415,27 @@ export function ServiceDetailScreen() {
               posterCanEdit(data.status as GigStatus) &&
               !deletedNote && (
                 <View style={styles.decideRow}>
+                  {/* G-13: com candidato a vaga fica imutável — botão desativado. */}
                   <Pressable
                     accessibilityRole="button"
+                    accessibilityState={{ disabled: hasCandidates }}
+                    disabled={hasCandidates}
                     onPress={() => router.push(`/gig/edit/${data.id}`)}
                     style={[
                       styles.action,
                       styles.decideButton,
                       styles.refuseButton,
-                      { borderColor: theme.primary, backgroundColor: theme.background },
+                      {
+                        borderColor: hasCandidates ? theme.line : theme.primary,
+                        backgroundColor: theme.background,
+                        opacity: hasCandidates ? 0.5 : 1,
+                      },
                     ]}>
-                    <Text style={[styles.actionLabel, { color: theme.primary }]}>
+                    <Text
+                      style={[
+                        styles.actionLabel,
+                        { color: hasCandidates ? theme.textSecondary : theme.primary },
+                      ]}>
                       Editar vaga
                     </Text>
                   </Pressable>
@@ -447,6 +465,16 @@ export function ServiceDetailScreen() {
                     )}
                   </Pressable>
                 </View>
+              )}
+            {data.role === 'poster' &&
+              posterCanEdit(data.status as GigStatus) &&
+              hasCandidates &&
+              !deletedNote && (
+                <Text style={[styles.editLockNote, { color: theme.textSecondary }]}>
+                  Você já tem candidatos, então a vaga não pode mais ser editada —
+                  as pessoas se candidataram a estas condições. Você ainda pode
+                  escolher alguém ou excluir a vaga.
+                </Text>
               )}
 
             {cancelledNote && (
@@ -743,6 +771,13 @@ const styles = StyleSheet.create({
   decideRow: {
     flexDirection: 'row',
     gap: Spacing.two + 2,
+  },
+  editLockNote: {
+    fontSize: 12,
+    lineHeight: 17,
+    textAlign: 'center',
+    marginTop: Spacing.one,
+    paddingHorizontal: Spacing.two,
   },
   decideButton: {
     flex: 1,

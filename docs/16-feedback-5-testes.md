@@ -87,7 +87,8 @@ O **banco já bloqueia** editar conteúdo com candidaturas `pending`/`chosen`
 quando há candidato **ou** a vaga já está fechada (alguém escolhido), e reabilitar
 quando não há ninguém — com um aviso do porquê. **Correção:** o detalhe da vaga
 do dono recebe a contagem de candidatos ativos e desabilita o botão conforme a
-regra. — **S**
+regra. — **S** · ✅ **Feito** (`service-detail-screen.tsx`: `useCandidates`
+gate + aviso; a vaga fechada já cai no `posterCanEdit === false`).
 
 ### G-14 · Card do topo mostra a inicial em vez da foto
 O avatar do topo (`agenda-screen.tsx:78`) sempre desenha a **inicial do nome**;
