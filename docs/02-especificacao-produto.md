@@ -196,23 +196,26 @@ candidatura a elas é recusada.
   a multa sai da carteira simulada do prestador (pode ficar negativa);
   na Fase 3 é cobrada **no cartão** quando o saldo não cobrir.
 
-### 3.1 Prestador não aparece (furo) — D-071
+### 3.1 Prestador não aparece (furo) — D-071/D-073
 
+- O serviço **já foi pago** (cobrança na escolha), então o furo é tratado como
+  uma **disputa de reembolso real**, não um cancelamento automático (D-073).
 - Se o prestador **escolhido não inicia** o serviço em até **30 minutos** depois
-  do horário combinado (`starts_at + 30min`, serviço ainda `accepted`), o
-  anunciante ganha o botão **"Prestador não apareceu — cancelar"**: é **grátis**
-  e o **reembolso é integral** — volta o valor do serviço **e** a taxa de 10%
-  que ele pagou a mais (diferente do cancelamento comum, em que a taxa fica).
-- A taxa devolvida vira **dívida do prestador que furou** (a "multa" do furo).
-  Vários furos **acumulam**. A dívida **não** debita saldo existente; é cobrada
-  dos **ganhos futuros**: ao concluir um serviço, até **50% do líquido** abate
-  as dívidas em aberto (o prestador **sempre recebe ao menos 50%**), até quitar.
-- **Transparência:** a **carteira** e o **histórico** mostram a dívida, **qual
-  serviço a gerou** e quanto foi descontado em cada liberação. Toda vaga
-  finalizada **continua clicável** no histórico e abre o **card da vaga**.
-- **Contestação:** o cancelamento por furo **não abre denúncia automática**; se
-  o prestador discordar, ele **contesta pela vaga no histórico** e aí abre uma
-  **disputa no suporte** (§6), que pode **anular a dívida**.
+  do horário (`starts_at + 30min`, ainda `accepted`), o anunciante ganha o botão
+  **"Prestador não apareceu"**, que **abre uma disputa** (`no_show`): a vaga vai
+  para `disputed` e o **dinheiro congela** — nada é reembolsado ainda.
+- O **prestador é avisado e pode se defender** na vaga ("Me defender"): manda um
+  texto + fotos (ex.: provar que **o anunciante não deu o código de início**).
+- O **suporte decide** no painel de disputas (§6):
+  - **Furo confirmado (prestador em falta):** reembolso **integral** ao
+    anunciante (líquido + taxa); o prestador fica **devendo a taxa** (dívida) e
+    leva um **evento de falta** (reincidência suspende); vaga → cancelada.
+  - **Anunciante em falta:** o prestador **recebe o líquido**, **sem** dívida e
+    **sem** falta; vaga → concluída. Reembolso parcial fica a critério do suporte.
+- **Dívida do furo (quando confirmado):** cobrada dos **ganhos futuros** — ao
+  concluir um serviço, até **50% do líquido** abate as dívidas em aberto (o
+  prestador **sempre recebe ao menos 50%**), até quitar. A **carteira** mostra a
+  dívida e **qual serviço a gerou**.
 
 ## 4. Execução e conclusão do serviço
 
