@@ -165,3 +165,11 @@ Recomendação do Claude para a 1ª leva: **10-a, 10-b, 10-c, 10-d**.
     (recuperação da FAQ) pelo **Claude Haiku** (`claude-haiku-4-5`), com
     pt-BR melhor e sem treinar nos dados. Custo de centavos por conversa,
     sem exigir CNPJ. Até lá, a Vi já responde o comum pelo `local`.
+
+24. 🟡 **Furo repetido também deve suspender? (sub-dúvida do D-071)** A
+    consequência do furo passou a ser **monetária** (dívida da taxa) +
+    contestável. Fica em aberto se **furos repetidos** também devem contar
+    como offense para a **suspensão por reincidência** (anti-abuso C), além
+    da dívida — ou se a dívida sozinha já basta como dissuasor. Enquanto não
+    respondido, implemento só a dívida (D-071); adicionar o offense depois é
+    barato (o mecanismo já existe).

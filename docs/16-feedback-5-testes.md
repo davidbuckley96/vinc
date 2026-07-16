@@ -127,21 +127,39 @@ removo a aba Perfil e ligo o avatar ao perfil; e faço uma **rodada de design** 
 menu do topo (perfil + configurações + o que mais você quiser: tema, notificações,
 sair, termos…) — me diga o que deve ter em "configurações". — **M** (+ design)
 
-### G-11 · Furo do trabalhador (passou a hora e não iniciou)
+### G-11 · Furo do trabalhador (passou a hora e não iniciou) — ✅ regra decidida (D-071)
 Hoje **não há nada** que detecte. A vaga fica presa em `accepted` pra sempre, o
 dinheiro (cobrado na escolha) fica **congelado**, o anunciante **não consegue
 pedir reembolso** (disputa só abre em `awaiting_confirmation`/`completed`) e o
 suporte não tem ferramenta. Quem paga o pato é o **anunciante**. Já existe a
-coluna `started_at` (do G-04… não, da migração 0047) pra detectar. 🟠 **Decisão de
-regra:** quando o serviço não começa até X depois do horário combinado:
-- **Reembolso ao anunciante?** (recomendo: sim, integral — ele não recebeu nada);
-- **Penalidade ao trabalhador?** (recomendo: registrar uma "falta"/offense, que já
-  existe no anti-abuso, contando pra suspensão por reincidência);
-- **Prazo de tolerância** antes de considerar furo (ex.: `ends_at` da vaga, ou
-  `starts_at + N horas`?). Sugiro esperar até o `ends_at` (o serviço não pode mais
-  acontecer) antes de reembolsar automaticamente.
-Detecção é um job novo (M); a resolução (reembolso + offense + novo status) é M-L e
-depende dessa regra. — **M-L**
+coluna `started_at` (migração 0047) pra detectar.
+
+**Regra (David → D-071):** tolerância de **30 min** após `starts_at` com serviço
+não iniciado → o anunciante ganha o botão **"Prestador não apareceu — cancelar"**,
+**grátis** e com **reembolso integral (líquido + taxa)**. A taxa devolvida vira
+**dívida do prestador**; cobrada dos ganhos futuros (**≤50% do líquido** de cada
+serviço concluído, acumulando). Carteira/histórico mostram a dívida e o serviço que
+a gerou; a vaga finalizada fica clicável; o prestador contesta → disputa no suporte.
+
+**Plano de implementação (partes):**
+1. **core (puro):** `computeNoShowRefund` (devolve líquido + taxa) e
+   `applyDebtToPayout(netCents, outstandingCents)` → `{ deducted, remaining, workerGets }`
+   com o teto de 50%. Testes vitest.
+2. **DB:** tabela `worker_debts` (id, worker_id, gig_id origem, amount_cents,
+   remaining_cents, status `open|settled|voided`, created_at) + lançamentos no razão
+   da carteira ao abater. Migração.
+3. **Edge `no-show-cancel`** (ou ação no cancel existente): valida dono + janela de
+   30 min + `started_at` nulo; status → `cancelled_by_worker` (furo); reembolso
+   integral ao anunciante; cria `worker_debts`.
+4. **Liberação (scheduled-money-jobs / escrow release):** ao liberar o líquido do
+   prestador, abater `min(dívida, 50% do líquido)`, atualizar `worker_debts`, lançar
+   no razão com referência à vaga.
+5. **App:** botão no `service-detail-screen` quando furo elegível; carteira/histórico
+   mostrando dívida + abatimentos; **vaga finalizada sempre clicável** abrindo o card;
+   botão **"Contestar débito"** → abre disputa (fluxo de disputas já existe).
+6. **Detecção/nudge (opcional):** job que, passados 30 min, notifica o anunciante que
+   pode cancelar (o cancelamento em si é ação do anunciante, não automático).
+— **M-L** (feito por partes; ver task #57)
 
 ## G-12 · Vi trava o usuário na fila do suporte (resolvo autônomo)
 Achados: a **Vi é baseada em regras** (casa palavras-chave contra artigos de FAQ e
@@ -155,7 +173,8 @@ pro usuário fechar o ticket (novo endpoint que valida que o ticket é dele). �
 ---
 
 ## Ordem sugerida
-1. **Bugs baratos:** G-01, G-04, G-06, G-07, G-13 (+ G-12).
+1. **Bugs baratos:** ✅ G-01, G-04, G-06, G-07, G-13, G-14 (feitos). Falta G-12.
 2. **Mapa:** G-03, G-09, G-10.
-3. **Decisões:** G-11 (regra do furo), G-08 (navegação/menu), G-05 (câmera), G-02 (abas).
-4. Implementar o que você decidir.
+3. **Decisões:** ✅ G-11 (furo → D-071, decidido). Faltam G-08 (navegação/menu),
+   G-05 (câmera), G-02 (abas).
+4. **Furo (D-071):** implementar por partes (task #57).

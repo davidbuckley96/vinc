@@ -1017,6 +1017,51 @@ se candidatar, **sem revelar o endereço exato** (privacidade, D-028): no modo
 aproximado só aparece o círculo de ~600 m. `LocationMap` ganhou as props
 `circleMeters` e `marker` (nativo via WebView/MapLibre e web).
 
+## D-071 — Furo do prestador: cancelamento grátis do anunciante + dívida da taxa
+**Data:** 2026-07-16 · **Decidido por:** David
+
+Fecha a dúvida do furo (G-11, docs/16). Quando o prestador **escolhido não
+aparece para iniciar** o serviço, a regra é:
+
+**1. Tolerância + cancelamento grátis.** Passados **30 minutos** do horário de
+início (`starts_at + 30min`) com o serviço ainda **não iniciado** (`accepted`,
+`started_at` nulo), o anunciante ganha a opção **"Prestador não apareceu —
+cancelar"**. É **grátis** para ele e o **reembolso é integral**: volta para a
+carteira dele o valor do serviço **e** a taxa de 10% que pagou a mais
+(diferente do cancelamento comum, em que a taxa não volta — D-014).
+
+**2. A taxa vira dívida do prestador (multa).** Como a plataforma devolveu a
+taxa ao anunciante, o **prestador que furou passa a dever essa taxa** (os 10%
+= `feeCents` da vaga). É uma **dívida**, não um débito imediato na carteira
+(ele pode nem ter saldo). Múltiplos furos **acumulam** dívidas.
+
+**3. Cobrança nos ganhos futuros, sempre deixando ele receber algo.** Quando o
+prestador **conclui um serviço** e o líquido é liberado, até **50% desse
+líquido** é usado para abater as dívidas em aberto (`min(dívida_total, 50% do
+líquido)`). Várias dívidas podem ser quitadas de um mesmo serviço se couber nos
+50%; o que passar disso **continua como dívida** para os próximos. Assim o
+prestador **sempre recebe ao menos 50%** do que ganhou. O saldo que ele já
+tinha na carteira **não** é tocado — só os ganhos novos.
+
+**4. Transparência total.** A **carteira e o histórico** mostram a dívida e
+**qual serviço** a gerou (o furo) e, em cada liberação, quanto foi descontado.
+Toda vaga **finalizada continua clicável no histórico** e abre o **card da vaga
+concluída**, para o prestador ver o motivo do débito.
+
+**5. Contestação (não automática).** O cancelamento por furo **não abre denúncia
+automática** contra o prestador — só aplica reembolso + dívida. Se o prestador
+discordar, ele **contesta pela vaga no histórico**, e aí sim abre uma **disputa
+no suporte** (painel de disputas já existente), onde o suporte decide e pode
+**anular a dívida**. A iniciativa da disputa é do prestador.
+
+**Números:** dívida por furo = `feeCents` (10% do líquido). Abatimento por
+serviço concluído = `min(dívida_total_em_aberto, round(0,5 × líquido))`.
+
+Substitui a ideia anterior de marcar só uma "falta"/offense automática: a
+consequência do furo passa a ser **monetária + rastreável + contestável**.
+Fica em aberto (docs/07) se furos repetidos também devem contar para suspensão
+por reincidência (anti-abuso C) além da dívida.
+
 ## D-070 — Aba de mensagens (inbox) com retenção + push de mensagem
 **Data:** 2026-07-15 · **Decidido por:** David (rodada 22, opção B + regra de retenção)
 
