@@ -16,6 +16,7 @@ import {
   prohibitedContentCategory,
 } from "../../../packages/core/src/moderation.ts";
 import { approximateLocation, deriveAreaLabel } from "../../../packages/core/src/location.ts";
+import { neighbourhoodCenter } from "../_shared/geo.ts";
 
 type ResultCode =
   | "contact_in_text"
@@ -102,35 +103,50 @@ Deno.serve(async (request) => {
   }
   if (errors.length > 0) return respond("invalid_draft", 400, { errors });
 
-  // Public side keeps only the area + a fresh fuzzed pin (D-028).
+  // G-10 (docs/16): the public map point is recomputed EXACTLY like create-gig
+  // — prefer the structured neighbourhood from the client, resolve its centroid
+  // (D-066), fall back to the fixed-offset fuzz only when the geocoder is down.
+  // Crucially, the location is only rewritten when the draft actually carries a
+  // pin: a legacy gig without exact coords (exactLat null) would otherwise send
+  // draft.lat/lng == null on save, NULLing approx_lat/lng and wiping the map
+  // link ("não dá pra clicar na localização aproximada", intermittent). When
+  // there's no pin we leave area/approx/address untouched.
   const address = draft.address.trim();
-  const approx = draft.lat != null && draft.lng != null
-    ? approximateLocation(draft.lat, draft.lng)
-    : null;
+  const hasPin = draft.lat != null && draft.lng != null;
+
+  const gigUpdate: Record<string, unknown> = {
+    category_id: draft.categoryId,
+    title: draft.title.trim(),
+    description: draft.description.trim(),
+    starts_at: draft.startsAt,
+    ends_at: draft.endsAt,
+  };
+  if (hasPin) {
+    const areaLabel = (draft.area ?? "").trim() || deriveAreaLabel(address);
+    const approx =
+      (await neighbourhoodCenter(areaLabel, draft.lat!, draft.lng!)) ??
+      approximateLocation(draft.lat!, draft.lng!);
+    gigUpdate.area = areaLabel;
+    gigUpdate.approx_lat = approx?.lat ?? null;
+    gigUpdate.approx_lng = approx?.lng ?? null;
+  }
 
   const { data: updated } = await admin
     .from("gigs")
-    .update({
-      category_id: draft.categoryId,
-      title: draft.title.trim(),
-      description: draft.description.trim(),
-      starts_at: draft.startsAt,
-      ends_at: draft.endsAt,
-      area: deriveAreaLabel(address),
-      approx_lat: approx?.lat ?? null,
-      approx_lng: approx?.lng ?? null,
-    })
+    .update(gigUpdate)
     .eq("id", gig.id)
     .eq("status", "open")
     .select("id");
   if (!updated || updated.length === 0) return respond("state_changed", 409);
 
-  await admin.from("gig_addresses").upsert({
-    gig_id: gig.id,
-    address,
-    lat: draft.lat ?? null,
-    lng: draft.lng ?? null,
-  });
+  if (hasPin) {
+    await admin.from("gig_addresses").upsert({
+      gig_id: gig.id,
+      address,
+      lat: draft.lat,
+      lng: draft.lng,
+    });
+  }
 
   return respond("updated", 200);
 });

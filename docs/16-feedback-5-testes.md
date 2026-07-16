@@ -42,7 +42,11 @@ efeito de recentragem (`location-map.tsx:81-92`) compara com `lastPushed`, que
 "devolvido" (`moveend` só manda lat/lng), então a recentragem reaplica o zoom 16
 da busca. Por isso só acontece no seletor (o mapa do trabalhador usa
 `onCenterChange={()=>{}}`, sem realimentação → fluido). **Correção:** atualizar
-`lastPushed` no `onMessage` e devolver o zoom no `moveend`. — **S-M**
+`lastPushed` no `onMessage` e devolver o zoom no `moveend`. — **S-M** · ✅ **Feito**
+(`location-map.tsx`: `onMessage` atualiza `lastPushed` **só quando há
+`onCenterChange`** — no seletor a prop espelha o pan, então a recentragem vira
+no-op e o zoom não pula; a vaga do trabalhador não tem `onCenterChange`, então
+`lastPushed` fica intocado e o V-01 continua protegido).
 
 ### G-04 · Editar local mostra endereço antigo até reiniciar
 A tela do anunciante (`ServiceDetailScreen`) lê a query `['service', gigId,…]`
@@ -69,7 +73,9 @@ O `onClose`/voltar **não** commita (só `onConfirm` chama `setLocation`). O bug
 reseta** ao reabrir/cancelar (`location-picker.tsx:52-68`); a posição movida-mas-
 cancelada persiste e, na reabertura, aparece como se confirmada. **Correção:**
 resetar o estado interno pro `initial` ao (re)abrir (effect por `visible` ou
-`key`). — **S-M**
+`key`). — **S-M** · ✅ **Feito** (`location-picker.tsx`: effect por `visible`
+resemeia center/label/area/interacted/status a partir do `initial` ao abrir;
+cancelar no X descarta o rascunho).
 
 ### G-10 · Não dá pra clicar na localização aproximada (intermitente)
 `update-gig` **sobrescreve** `area` e `approx_lat/lng` de forma diferente do
@@ -80,6 +86,10 @@ resetar o estado interno pro `initial` ao (re)abrir (effect por `visible` ou
 "perde" o pino. **Correção:** o `update-gig` espelha o `create-gig` (prefere
 `draft.area`, usa `neighbourhoodCenter`, e **preserva** os valores existentes em
 vez de zerar) + carregar `area`/lat/lng no caminho de edição do cliente. — **M**
+· ✅ **Feito** (extraí `neighbourhoodCenter` para `_shared/geo.ts` usado pelos
+DOIS (fim da divergência que causou o bug); `update-gig` só reescreve local
+quando o draft traz pino, senão preserva `area`/`approx`/endereço. Testado e2e:
+criar→centroide, editar sem pino→preserva, editar com pino→recalcula).
 
 ### G-13 · Vaga imutável quando há candidato
 O **banco já bloqueia** editar conteúdo com candidaturas `pending`/`chosen`

@@ -108,9 +108,19 @@ export function LocationMap({
         onMessage={(event) => {
           try {
             const data = JSON.parse(event.nativeEvent.data) as { lat: number; lng: number };
-            // Do NOT touch lastPushed here — that's the user's pan, not a
-            // prop-driven recenter (see the ref comment above).
-            onCenterChange?.(data.lat, data.lng);
+            if (onCenterChange) {
+              // Picker mode (G-03): the parent mirrors this panned center back
+              // into the lat/lng props. Record it as the last pushed center so
+              // that mirrored prop update is seen as already-applied — otherwise
+              // the recenter effect re-pushes it with the prop's zoom and the
+              // map's zoom/pin snaps back after every drag/search. The gig view
+              // has NO onCenterChange (its props stay put), so we must NOT touch
+              // lastPushed there, or a re-render would snap it back to the
+              // original center (V-01). Mirrors the web version, which reads the
+              // live map center instead of tracking it in a ref.
+              lastPushed.current = { lat: data.lat, lng: data.lng };
+              onCenterChange(data.lat, data.lng);
+            }
           } catch {
             // ignore malformed messages
           }

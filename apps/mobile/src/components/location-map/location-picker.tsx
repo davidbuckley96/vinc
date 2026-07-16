@@ -74,10 +74,41 @@ export function LocationPicker({ visible, initial, onConfirm, onClose }: Locatio
 
   const reverseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const located = useRef(false);
+  const wasVisible = useRef(false);
 
   useEffect(() => () => {
     if (reverseTimer.current) clearTimeout(reverseTimer.current);
   }, []);
+
+  // G-09 (docs/16): a picker é um Modal sempre montado, então o estado interno
+  // sobrevivia entre aberturas — arrastar o mapa e fechar no X deixava o ponto
+  // "grudado", reaparecendo como se tivesse sido confirmado. Ao ABRIR, resemeia
+  // tudo a partir do `initial` (o valor de fato confirmado): assim cancelar
+  // descarta o rascunho e reabrir mostra só o que já estava salvo.
+  useEffect(() => {
+    if (visible && !wasVisible.current) {
+      const seed = initial ?? null;
+      if (reverseTimer.current) clearTimeout(reverseTimer.current);
+      setCenter({
+        lat: seed?.lat ?? BRAZIL_CENTER.lat,
+        lng: seed?.lng ?? BRAZIL_CENTER.lng,
+        zoom: seed ? 16 : BRAZIL_CENTER.zoom,
+      });
+      setInteracted(Boolean(seed));
+      setLabel(seed?.address ?? null);
+      setArea(seed?.area ?? '');
+      setPointStatus(seed ? 'brazil' : 'unknown');
+      setReading(false);
+      setQuery('');
+      setResults([]);
+      setNoResults(false);
+      located.current = false; // let the GPS re-locate when opening without a pin
+    }
+    wasVisible.current = visible;
+    // `initial` is read fresh at open time; re-running on its identity would
+    // wipe an in-progress drag, so we key only on `visible`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
 
   // Open the map on the user's own region (B-10) instead of the middle of
   // Brazil: try the device GPS once when the picker opens without a pin.
