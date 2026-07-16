@@ -171,6 +171,14 @@ a gerou; a vaga finalizada fica clicável; o prestador contesta → disputa no s
    pode cancelar (o cancelamento em si é ação do anunciante, não automático).
 — **M-L** (feito por partes; ver task #57)
 
+**Progresso:** ✅ 1 (core `computeNoShowRefund`/`applyDebtToPayout`/`canDeclareNoShow`
++ testes) · ✅ 2 (migração 0049: `worker_debts`, `gigs.worker_no_show`,
+`debt_repayment`) · ✅ 3 (`no-show-cancel` — testado e2e) · ✅ 4 (abatimento na
+liberação nos DOIS caminhos via `_shared/debt.ts` — testado e2e) · ✅ 5a (botão
+"Prestador não apareceu" no dono). ⏳ **Falta:** 5b (carteira/histórico mostrando a
+dívida ao prestador; vaga finalizada sempre clicável; botão "Contestar débito" →
+disputa) e 6 (nudge, opcional). O 5b precisa de build pra validar visualmente.
+
 ## G-12 · Vi trava o usuário na fila do suporte (resolvo autônomo)
 Achados: a **Vi é baseada em regras** (casa palavras-chave contra artigos de FAQ e
 responde com o texto do artigo; só usa IA — Claude Haiku — se uma chave de API for
