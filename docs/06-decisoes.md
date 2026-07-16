@@ -1065,6 +1065,30 @@ um evento de integridade `no_show` (anti-abuso C); a **reincidência (2º furo e
 30 dias)** suspende a conta por 7 dias, como as demais penalidades. Fecha a
 dúvida 24.
 
+## D-072 — Rodada 23: perfil pelo topo + Configurações (Opção A) e câmera nativa
+**Data:** 2026-07-16 · **Decidido por:** David (rodada 23)
+
+Fecha G-08/G-05/G-02 (docs/16).
+
+**Navegação (G-08, Opção A):** a aba **"Perfil"** sai da barra de baixo (eram 6
+abas, viram 5: Agenda, Buscar, Anunciar, Mensagens, Carteira). O perfil abre
+pelo **avatar do topo** (que já mostra a foto — G-14). O **Perfil fica enxuto**
+(reputação + minhas vagas/candidaturas + editar/alertas) e ganha uma
+**engrenagem** que abre uma nova tela de **Configurações** com: Editar perfil,
+Minha chave Pix · Tema, Notificações, Alertas de vagas · Falar com a Vi, Central
+de Ajuda · Termos e Privacidade, Versão · Sair da conta.
+
+**Câmera (G-05):** David preferiu o caminho **simples/nativo** — nada de
+componente de câmera customizado. Um seletor **"Tirar foto / Escolher da
+galeria"** que abre a **câmera nativa do celular** (`expo-image-picker`
+`launchCameraAsync`) e a galeria do sistema, igual em **todos** os pontos de
+foto (perfil — com recorte quadrado, conclusão de serviço, disputa). Componente
+único `lib/photo-picker.ts`.
+
+**Barra sempre visível (G-02):** **adiada** para uma fase dedicada de navegação
+(reestruturar as rotas por aba é pesado/arriscado). Por ora, o essencial é que
+toda tela de detalhe tenha "voltar" (G-01 já resolveu os becos sem saída).
+
 ## D-070 — Aba de mensagens (inbox) com retenção + push de mensagem
 **Data:** 2026-07-15 · **Decidido por:** David (rodada 22, opção B + regra de retenção)
 

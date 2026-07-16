@@ -1,10 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -17,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { choosePhotos } from '@/lib/photo-picker';
 
 import { useCompleteService, useServiceDetail } from '../hooks';
 
@@ -55,46 +54,16 @@ export function CompleteServiceScreen() {
   const [photos, setPhotos] = useState<{ uri: string; base64: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const applyAssets = (assets: ImagePicker.ImagePickerAsset[]) =>
-    setPhotos((current) =>
-      [
-        ...current,
-        ...assets
-          .filter((asset) => asset.base64)
-          .map((asset) => ({ uri: asset.uri, base64: asset.base64! })),
-      ].slice(0, MAX_PHOTOS),
-    );
-
-  const pickFromLibrary = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsMultipleSelection: true,
-      selectionLimit: MAX_PHOTOS - photos.length,
-      quality: 0.7,
-      base64: true,
-    });
-    if (!result.canceled) applyAssets(result.assets);
-  };
-
-  // F-06 (docs/14): tirar foto na hora, sem sair do app. Usa a câmera do
-  // sistema (launchCameraAsync) — sem lib nova.
-  const takePhoto = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      setError('Permita o acesso à câmera para tirar uma foto.');
-      return;
-    }
-    const result = await ImagePicker.launchCameraAsync({ quality: 0.7, base64: true });
-    if (!result.canceled) applyAssets(result.assets);
-  };
-
+  // G-05 (docs/16): câmera nativa + galeria pelo chooser compartilhado.
   const addPhotos = () => {
     setError(null);
-    Alert.alert('Adicionar foto', undefined, [
-      { text: 'Tirar foto', onPress: takePhoto },
-      { text: 'Escolher da galeria', onPress: pickFromLibrary },
-      { text: 'Cancelar', style: 'cancel' },
-    ]);
+    choosePhotos({
+      multiple: true,
+      limit: MAX_PHOTOS - photos.length,
+      onResult: (picked) =>
+        setPhotos((current) => [...current, ...picked].slice(0, MAX_PHOTOS)),
+      onCameraDenied: () => setError('Permita o acesso à câmera para tirar uma foto.'),
+    });
   };
 
   const submit = async () => {

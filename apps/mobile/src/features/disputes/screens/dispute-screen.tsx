@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -20,6 +19,7 @@ import { formatBRL } from '@vinc/core';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useServiceDetail } from '@/features/services/hooks';
 import { useTheme } from '@/hooks/use-theme';
+import { choosePhotos } from '@/lib/photo-picker';
 
 import { useOpenDispute, type DisputePhoto } from '../hooks';
 
@@ -80,23 +80,16 @@ export function DisputeScreen() {
     }
   };
 
-  const addPhotos = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsMultipleSelection: true,
-      selectionLimit: MAX_PHOTOS - photos.length,
-      quality: 0.7,
-      base64: true,
+  // G-05 (docs/16): câmera nativa + galeria pelo chooser compartilhado.
+  const addPhotos = () => {
+    setError(null);
+    choosePhotos({
+      multiple: true,
+      limit: MAX_PHOTOS - photos.length,
+      onResult: (picked) =>
+        setPhotos((current) => [...current, ...picked].slice(0, MAX_PHOTOS)),
+      onCameraDenied: () => setError('Permita o acesso à câmera para tirar uma foto.'),
     });
-    if (result.canceled) return;
-    setPhotos((current) =>
-      [
-        ...current,
-        ...result.assets
-          .filter((asset) => asset.base64)
-          .map((asset) => ({ uri: asset.uri, base64: asset.base64! })),
-      ].slice(0, MAX_PHOTOS),
-    );
   };
 
   const submit = async () => {

@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -18,6 +17,7 @@ import { firstName } from '@vinc/core';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { choosePhotos } from '@/lib/photo-picker';
 
 import { useMyProfile, useUpdateProfile, useUploadAvatar } from '../hooks';
 
@@ -51,32 +51,23 @@ export function EditProfileScreen() {
 
   const initial = (name || 'V').trim().charAt(0).toUpperCase();
 
-  const changePhoto = async () => {
+  // G-05 (docs/16): mesma câmera nativa + galeria de todo o app; foto de perfil
+  // com recorte quadrado (edit).
+  const changePhoto = () => {
     setFeedback(null);
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setFeedback({ kind: 'error', text: 'Permita o acesso às fotos para escolher uma imagem.' });
-      return;
-    }
-    const picked = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-      base64: true,
+    choosePhotos({
+      edit: true,
+      onCameraDenied: () =>
+        setFeedback({ kind: 'error', text: 'Permita o acesso à câmera para tirar uma foto.' }),
+      onResult: async (picked) => {
+        const photo = picked[0];
+        if (!photo) return;
+        const url = await uploadAvatar.mutateAsync({ base64: photo.base64, mime: 'image/jpeg' });
+        if (url) setAvatarUrl(url);
+        else
+          setFeedback({ kind: 'error', text: 'Não foi possível enviar a foto. Tente de novo.' });
+      },
     });
-    if (picked.canceled || !picked.assets[0]) return;
-    const asset = picked.assets[0];
-    if (!asset.base64) {
-      setFeedback({ kind: 'error', text: 'Não foi possível ler a foto. Tente de novo.' });
-      return;
-    }
-    const url = await uploadAvatar.mutateAsync({
-      base64: asset.base64,
-      mime: asset.mimeType ?? 'image/jpeg',
-    });
-    if (url) setAvatarUrl(url);
-    else setFeedback({ kind: 'error', text: 'Não foi possível enviar a foto. Tente de novo.' });
   };
 
   const submit = async () => {
