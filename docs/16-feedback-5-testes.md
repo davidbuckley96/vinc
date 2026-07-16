@@ -174,10 +174,16 @@ a gerou; a vaga finalizada fica clicável; o prestador contesta → disputa no s
 **Progresso:** ✅ 1 (core `computeNoShowRefund`/`applyDebtToPayout`/`canDeclareNoShow`
 + testes) · ✅ 2 (migração 0049: `worker_debts`, `gigs.worker_no_show`,
 `debt_repayment`) · ✅ 3 (`no-show-cancel` — testado e2e) · ✅ 4 (abatimento na
-liberação nos DOIS caminhos via `_shared/debt.ts` — testado e2e) · ✅ 5a (botão
-"Prestador não apareceu" no dono). ⏳ **Falta:** 5b (carteira/histórico mostrando a
-dívida ao prestador; vaga finalizada sempre clicável; botão "Contestar débito" →
-disputa) e 6 (nudge, opcional). O 5b precisa de build pra validar visualmente.
+liberação nos DOIS caminhos via `_shared/debt.ts` — testado e2e) · ✅ 4b
+(reincidência: evento `no_show`, 2º furo em 30 dias suspende — migração 0050,
+testado) · ✅ 5a (botão "Prestador não apareceu" no dono) · ✅ 5b (carteira mostra
+a dívida com link pra vaga de origem; a vaga do furo explica o débito e tem
+"Contestar este débito" → suporte). ⏳ **Refinamento pendente:** a contestação hoje
+cai no **suporte/fila humana** (fiel ao "irá para o suporte"); falta ligar num
+**registro formal de disputa** no painel admin com **anulação automática da dívida**
+na resolução a favor do prestador (open-dispute é hoje só do anunciante em
+`awaiting_confirmation`/`completed`). Precisa de build pra validar o 5b visualmente.
+Item 6 (nudge de notificação ao dono) segue opcional.
 
 ## G-12 · Vi trava o usuário na fila do suporte (resolvo autônomo)
 Achados: a **Vi é baseada em regras** (casa palavras-chave contra artigos de FAQ e
