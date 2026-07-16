@@ -1,16 +1,22 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-/** A contested service (docs/02 §6 — D-028). */
+/** A contested service (docs/02 §6 — D-028; no_show — D-073). */
 export interface Dispute {
   id: string;
   gigId: string;
   openerId: string;
-  /** pre_release: escrow frozen; post_release: wallet payment frozen. */
-  kind: "pre_release" | "post_release";
+  /**
+   * pre_release: escrow frozen; post_release: wallet payment frozen;
+   * no_show: poster claims the worker didn't show — decided by fault (D-073).
+   */
+  kind: "pre_release" | "post_release" | "no_show";
   reason: string;
   status: "open" | "resolved";
   refundCents: number | null;
   resolutionNote: string | null;
+  /** The worker's defense on a no_show dispute (D-073). */
+  workerResponse: string | null;
+  workerRespondedAt: string | null;
   createdAt: string;
   resolvedAt: string | null;
 }
@@ -24,6 +30,8 @@ interface DisputeRow {
   status: Dispute["status"];
   refund_cents: number | null;
   resolution_note: string | null;
+  worker_response: string | null;
+  worker_responded_at: string | null;
   created_at: string;
   resolved_at: string | null;
 }
@@ -38,6 +46,8 @@ function mapDispute(row: DisputeRow): Dispute {
     status: row.status,
     refundCents: row.refund_cents,
     resolutionNote: row.resolution_note,
+    workerResponse: row.worker_response,
+    workerRespondedAt: row.worker_responded_at,
     createdAt: row.created_at,
     resolvedAt: row.resolved_at,
   };
@@ -119,9 +129,50 @@ export async function uploadDisputePhoto(
   return path;
 }
 
+export type RespondDisputeResult =
+  | "responded"
+  | "invalid_reason"
+  | "unauthorized"
+  | "not_found"
+  | "forbidden"
+  | "already_resolved"
+  | "invalid_request"
+  | "network_error";
+
+/**
+ * The worker submits their defense on a dispute (respond-dispute — D-073):
+ * a text response (10–2000 chars) and optional photos (bucket paths).
+ */
+export async function respondDispute(
+  client: SupabaseClient,
+  gigId: string,
+  response: string,
+  photoPaths: string[] = [],
+): Promise<RespondDisputeResult> {
+  const { data, error } = await client.functions.invoke("respond-dispute", {
+    body: { gigId, response, photoPaths },
+  });
+  if (error) {
+    try {
+      const context = (error as { context?: Response }).context;
+      if (context) {
+        const body = (await context.json()) as { code?: RespondDisputeResult };
+        if (body.code) return body.code;
+      }
+    } catch {
+      // fall through
+    }
+    return "network_error";
+  }
+  return (data as { code?: RespondDisputeResult })?.code ?? "network_error";
+}
+
+export type DisputeOutcome = "worker_fault" | "poster_fault";
+
 export type ResolveDisputeResult =
   | "resolved"
   | "invalid_refund"
+  | "invalid_outcome"
   | "unauthorized"
   | "not_found"
   | "forbidden"
@@ -130,18 +181,18 @@ export type ResolveDisputeResult =
   | "network_error";
 
 /**
- * Admin-only resolution (resolve-dispute Edge Function — D-028): total or
- * partial refund capped at the service value; 0 dismisses the dispute.
- * Used by the admin panel (block 2.5).
+ * Admin-only resolution (resolve-dispute Edge Function — D-028/D-073). For
+ * pre/post_release disputes pass `refundCents` (total or partial refund capped
+ * at the service value; 0 dismisses). For a no_show dispute pass `outcome`
+ * (worker_fault → refund + worker debt; poster_fault → pay the worker).
  */
 export async function resolveDispute(
   client: SupabaseClient,
   disputeId: string,
-  refundCents: number,
-  note?: string,
+  args: { refundCents?: number; outcome?: DisputeOutcome; note?: string },
 ): Promise<ResolveDisputeResult> {
   const { data, error } = await client.functions.invoke("resolve-dispute", {
-    body: { disputeId, refundCents, note },
+    body: { disputeId, ...args },
   });
   if (error) {
     try {

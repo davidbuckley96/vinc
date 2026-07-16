@@ -574,8 +574,9 @@ export async function cancelGig(
   return (data as { code?: CancelGigResult })?.code ?? "network_error";
 }
 
-export type NoShowCancelResult =
-  | "cancelled"
+export type NoShowDisputeResult =
+  | "opened"
+  | "already_disputed"
   | "unauthorized"
   | "not_found"
   | "forbidden"
@@ -585,14 +586,14 @@ export type NoShowCancelResult =
   | "network_error";
 
 /**
- * The poster free-cancels because the chosen worker never showed up
- * (no-show-cancel Edge Function — D-071): full refund to the poster (net +
- * fee) and the refunded fee becomes the no-show worker's debt.
+ * The poster reports a no-show (no-show-cancel Edge Function — D-073). Since
+ * the service was already paid this OPENS A DISPUTE (freezes the gig, no money
+ * moves): the worker can defend and support decides.
  */
-export async function noShowCancel(
+export async function openNoShowDispute(
   client: SupabaseClient,
   gigId: string,
-): Promise<NoShowCancelResult> {
+): Promise<NoShowDisputeResult> {
   const { data, error } = await client.functions.invoke("no-show-cancel", {
     body: { gigId },
   });
@@ -600,7 +601,7 @@ export async function noShowCancel(
     try {
       const context = (error as { context?: Response }).context;
       if (context) {
-        const body = (await context.json()) as { code?: NoShowCancelResult };
+        const body = (await context.json()) as { code?: NoShowDisputeResult };
         if (body.code) return body.code;
       }
     } catch {
@@ -608,7 +609,7 @@ export async function noShowCancel(
     }
     return "network_error";
   }
-  return (data as { code?: NoShowCancelResult })?.code ?? "network_error";
+  return (data as { code?: NoShowDisputeResult })?.code ?? "network_error";
 }
 
 export type CreateGigResult =

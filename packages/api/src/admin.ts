@@ -41,6 +41,8 @@ interface QueueRow {
   status: Dispute["status"];
   refund_cents: number | null;
   resolution_note: string | null;
+  worker_response: string | null;
+  worker_responded_at: string | null;
   created_at: string;
   resolved_at: string | null;
   gig: {
@@ -66,6 +68,8 @@ function mapQueueRow(row: QueueRow): DisputeQueueItem {
     status: row.status,
     refundCents: row.refund_cents,
     resolutionNote: row.resolution_note,
+    workerResponse: row.worker_response,
+    workerRespondedAt: row.worker_responded_at,
     createdAt: row.created_at,
     resolvedAt: row.resolved_at,
     gigTitle: row.gig?.title ?? "Serviço",

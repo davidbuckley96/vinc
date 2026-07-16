@@ -29,7 +29,7 @@ import { LocationModal } from '@/components/location-map';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useDispute } from '@/features/disputes/hooks';
 import { CandidateList } from '@/features/gigs/components/candidate-list';
-import { useCancelGig, useCandidates, useDeleteGig, useNoShowCancel } from '@/features/gigs/hooks';
+import { useCancelGig, useCandidates, useDeleteGig, useNoShowDispute } from '@/features/gigs/hooks';
 import { useUnreadCount } from '@/features/messages/hooks';
 import { useHasReviewed } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
@@ -160,7 +160,7 @@ export function ServiceDetailScreen() {
   const reviewed = useHasReviewed(id);
   const deletion = useDeleteGig();
   const cancellation = useCancelGig();
-  const noShow = useNoShowCancel();
+  const noShow = useNoShowDispute();
   const dispute = useDispute(id);
   // Sending ends with the service (D-026); on completed the button only
   // opens the history.
@@ -227,7 +227,7 @@ export function ServiceDetailScreen() {
     }
   };
 
-  const cancelNoShow = async () => {
+  const reportNoShow = async () => {
     if (!service.data) return;
     if (!noShowArmed) {
       setNoShowArmed(true);
@@ -236,16 +236,16 @@ export function ServiceDetailScreen() {
     setError(null);
     const result = await noShow.mutateAsync(service.data.id);
     setNoShowArmed(false);
-    if (result === 'cancelled') {
-      const refund = computeNoShowRefund(service.data.priceCents);
+    if (result === 'opened') {
       setNoShowNote(
-        `Serviço cancelado sem custo. ${formatBRL(refund.posterRefundCents)} voltaram para a sua carteira (o valor do serviço e a taxa). O prestador que faltou fica devendo a taxa.`,
+        'Abrimos uma disputa. O prestador vai poder se defender e o suporte decide. Se a falta for confirmada, você é reembolsado integralmente (valor + taxa).',
       );
-      setTimeout(() => router.back(), 2200);
+    } else if (result === 'already_disputed') {
+      setError('Este serviço já está em disputa.');
     } else if (result === 'not_eligible' || result === 'state_changed') {
-      setError('Não é possível marcar falta agora — talvez o prestador já tenha iniciado. Atualize e tente de novo.');
+      setError('Não é possível registrar a falta agora — talvez o prestador já tenha iniciado. Atualize e tente de novo.');
     } else {
-      setError('Não foi possível cancelar agora. Tente de novo.');
+      setError('Não foi possível abrir a disputa agora. Tente de novo.');
     }
   };
 
@@ -446,8 +446,29 @@ export function ServiceDetailScreen() {
 
             {error && <Text style={[styles.error, { color: theme.danger }]}>{error}</Text>}
 
-            {/* D-071: transparência do débito para o prestador que faltou +
-                caminho de contestação (vai para o suporte/disputas). */}
+            {/* D-073: durante a disputa de falta, o prestador se defende. */}
+            {data.role === 'worker' && data.status === 'disputed' && data.workerNoShow && (
+              <View style={[styles.noShowBox, { backgroundColor: theme.dangerSoft }]}>
+                <Text style={[styles.noShowTitle, { color: theme.danger }]}>
+                  O anunciante diz que você não apareceu
+                </Text>
+                <Text style={[styles.noShowBody, { color: theme.danger }]}>
+                  Abriu uma disputa. Se você foi mas não pôde iniciar (por exemplo, não
+                  recebeu o código de início), conte a sua versão — o suporte vai analisar
+                  antes de qualquer cobrança.
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => router.push(`/defend/${data.id}`)}
+                  style={[styles.noShowContest, { borderColor: theme.danger }]}>
+                  <Text style={[styles.noShowContestLabel, { color: theme.danger }]}>
+                    Me defender
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+
+            {/* D-071/D-073: transparência do débito após o suporte confirmar a falta. */}
             {data.role === 'worker' &&
               data.status === 'cancelled_by_worker' &&
               data.workerNoShow && (
@@ -609,16 +630,17 @@ export function ServiceDetailScreen() {
               <View style={styles.cancelBlock}>
                 {noShowArmed && (
                   <Text style={[styles.fineWarning, { color: theme.textSecondary }]}>
-                    Use isto só se o prestador realmente não apareceu. O cancelamento é
-                    sem custo e você recebe de volta{' '}
+                    Use isto só se o prestador realmente não apareceu. Isto abre uma
+                    disputa: o prestador poderá se defender e o suporte decide. Se a falta
+                    for confirmada, você recebe de volta{' '}
                     {formatBRL(computeNoShowRefund(data.priceCents).posterRefundCents)} (o
-                    valor do serviço e a taxa). O prestador que faltou fica devendo a taxa.
+                    valor do serviço e a taxa).
                   </Text>
                 )}
                 <Pressable
                   accessibilityRole="button"
                   disabled={noShow.isPending}
-                  onPress={cancelNoShow}
+                  onPress={reportNoShow}
                   style={[
                     styles.action,
                     styles.refuseButton,

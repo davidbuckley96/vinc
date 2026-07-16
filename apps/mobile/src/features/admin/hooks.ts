@@ -21,6 +21,7 @@ import {
   type PanelActionResult,
   type ProfileStats,
   type ReportItem,
+  type DisputeOutcome,
   type ResolveDisputeResult,
   type TicketItem,
   type TicketMessage,
@@ -86,11 +87,16 @@ export function useResolveDispute() {
   return useMutation({
     mutationFn: async (input: {
       disputeId: string;
-      refundCents: number;
+      refundCents?: number;
+      outcome?: DisputeOutcome;
       note?: string;
     }): Promise<ResolveDisputeResult> => {
       if (!supabase) return 'resolved'; // demo mode: pretend success
-      return resolveDispute(supabase, input.disputeId, input.refundCents, input.note);
+      return resolveDispute(supabase, input.disputeId, {
+        refundCents: input.refundCents,
+        outcome: input.outcome,
+        note: input.note,
+      });
     },
     onSuccess: (result) => {
       if (result === 'resolved') {

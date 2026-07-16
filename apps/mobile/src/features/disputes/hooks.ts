@@ -4,9 +4,11 @@ import { Buffer } from 'buffer';
 import {
   fetchDispute,
   openDispute,
+  respondDispute,
   uploadDisputePhoto,
   type Dispute,
   type OpenDisputeResult,
+  type RespondDisputeResult,
 } from '@vinc/api';
 
 import { useSession } from '@/features/auth/session-context';
@@ -61,6 +63,38 @@ export function useOpenDispute(gigId: string) {
         queryClient.invalidateQueries({ queryKey: ['service', gigId] });
         queryClient.invalidateQueries({ queryKey: ['agenda'] });
         queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      }
+    },
+  });
+}
+
+/**
+ * The worker submits their defense on a no-show dispute (respond-dispute —
+ * D-073): uploads photos then posts the written response.
+ */
+export function useRespondDispute(gigId: string) {
+  const queryClient = useQueryClient();
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
+
+  return useMutation({
+    mutationFn: async (input: {
+      response: string;
+      photos: DisputePhoto[];
+    }): Promise<RespondDisputeResult> => {
+      if (!supabase) return 'responded'; // demo mode: pretend success
+      if (!userId) return 'unauthorized';
+      const paths: string[] = [];
+      for (const [index, photo] of input.photos.entries()) {
+        const bytes = Buffer.from(photo.base64, 'base64');
+        paths.push(await uploadDisputePhoto(supabase, userId, gigId, index, bytes));
+      }
+      return respondDispute(supabase, gigId, input.response, paths);
+    },
+    onSuccess: (result) => {
+      if (result === 'responded') {
+        queryClient.invalidateQueries({ queryKey: ['dispute', gigId] });
+        queryClient.invalidateQueries({ queryKey: ['service', gigId] });
       }
     },
   });

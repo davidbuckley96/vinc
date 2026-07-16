@@ -17,7 +17,7 @@ import {
   withdrawCandidacy,
   fetchOpenGigs,
   hasPriorityForPeriod,
-  noShowCancel,
+  openNoShowDispute,
   updateGig,
   type ApplyGigResult,
   type CancelGigResult,
@@ -26,7 +26,7 @@ import {
   type DecideCandidacyOutcome,
   type DeleteGigResult,
   type MyCandidacyStatus,
-  type NoShowCancelResult,
+  type NoShowDisputeResult,
   type WithdrawCandidacyResult,
   type RegionFilter,
   type TimeSlotFilter,
@@ -235,20 +235,20 @@ export function useCancelGig() {
   });
 }
 
-/** Poster free-cancels a worker no-show (D-071): full refund + worker debt. */
-export function useNoShowCancel() {
+/** Poster reports a worker no-show (D-073): opens a refund dispute (no money moves). */
+export function useNoShowDispute() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (gigId: string): Promise<NoShowCancelResult> => {
-      if (!supabase) return 'cancelled'; // demo mode: pretend success
-      return noShowCancel(supabase, gigId);
+    mutationFn: async (gigId: string): Promise<NoShowDisputeResult> => {
+      if (!supabase) return 'opened'; // demo mode: pretend success
+      return openNoShowDispute(supabase, gigId);
     },
     onSuccess: (result) => {
-      if (result === 'cancelled') {
+      if (result === 'opened') {
         queryClient.invalidateQueries({ queryKey: ['gigs'] });
         queryClient.invalidateQueries({ queryKey: ['agenda'] });
-        queryClient.invalidateQueries({ queryKey: ['wallet'] });
         queryClient.invalidateQueries({ queryKey: ['service'] });
+        queryClient.invalidateQueries({ queryKey: ['dispute'] });
       }
     },
   });

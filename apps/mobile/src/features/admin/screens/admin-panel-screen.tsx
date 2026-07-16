@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { DisputeQueueItem } from '@vinc/api';
+import type { DisputeOutcome, DisputeQueueItem } from '@vinc/api';
 import { formatBRL } from '@vinc/core';
 
 import { Radius, Spacing } from '@/constants/theme';
@@ -42,6 +42,7 @@ const TABS: { key: PanelTab; label: string; icon: keyof typeof Ionicons.glyphMap
 const KIND_LABELS = {
   pre_release: 'PRÉ-LIBERAÇÃO',
   post_release: 'REEMBOLSO',
+  no_show: 'FALTA',
 } as const;
 
 function timeAgo(iso: string): string {
@@ -69,7 +70,7 @@ function parseReais(text: string): number | null {
   return Math.round(value * 100);
 }
 
-type Decision = { refundCents: number; label: string };
+type Decision = { refundCents?: number; outcome?: DisputeOutcome; label: string };
 
 /**
  * Dispute panel — round 11, option A (docs/02 §6 — D-028): queue on the
@@ -285,12 +286,18 @@ function CaseFile({ item, wide }: { item: DisputeQueueItem; wide: boolean }) {
     setDecision({ refundCents, label });
   };
 
+  const armOutcome = (outcome: DisputeOutcome, label: string) => {
+    setError(null);
+    setDecision({ outcome, label });
+  };
+
   const confirm = async () => {
     if (!decision) return;
     setError(null);
     const result = await resolve.mutateAsync({
       disputeId: item.id,
       refundCents: decision.refundCents,
+      outcome: decision.outcome,
     });
     if (result !== 'resolved') {
       setError(
@@ -337,9 +344,11 @@ function CaseFile({ item, wide }: { item: DisputeQueueItem; wide: boolean }) {
           <Text style={[styles.caseTitle, { color: theme.text }]}>{item.gigTitle}</Text>
           <Text style={[styles.caseMeta, { color: theme.textSecondary }]}>
             {start.getDate()}/{start.getMonth() + 1} ·{' '}
-            {item.kind === 'pre_release'
-              ? 'contestada em vez de confirmar (pagamento congelado)'
-              : 'pedido de reembolso após a liberação (valor congelado na carteira)'}
+            {item.kind === 'no_show'
+              ? 'anunciante diz que o prestador não apareceu (pagamento congelado)'
+              : item.kind === 'pre_release'
+                ? 'contestada em vez de confirmar (pagamento congelado)'
+                : 'pedido de reembolso após a liberação (valor congelado na carteira)'}
           </Text>
         </View>
         <Text style={[styles.caseMoney, { color: theme.primary }]}>
@@ -375,10 +384,21 @@ function CaseFile({ item, wide }: { item: DisputeQueueItem; wide: boolean }) {
             </View>
             <View style={[styles.box, { borderColor: '#CFE8DD', backgroundColor: '#ECFDF5' }]}>
               <Text style={[styles.boxHeader, { color: theme.success }]}>
-                PROVA DE {item.workerName.split(' ')[0]?.toUpperCase()} (PRESTADOR)
+                {item.kind === 'no_show' ? 'DEFESA' : 'PROVA'} DE{' '}
+                {item.workerName.split(' ')[0]?.toUpperCase()} (PRESTADOR)
                 {data.completionReportedAt ? ` · ${clock(data.completionReportedAt)}, na conclusão` : ''}
               </Text>
-              {data.completionReport || data.completionPhotoUrls.length > 0 ? (
+              {/* No_show defense (D-073): the worker's written response. */}
+              {item.workerResponse && (
+                <Text style={[styles.boxText, { color: theme.text }]}>“{item.workerResponse}”</Text>
+              )}
+              {item.kind === 'no_show' && !item.workerResponse && (
+                <Text style={[styles.boxText, { color: theme.textSecondary }]}>
+                  O prestador ainda não se defendeu.
+                </Text>
+              )}
+              {item.kind !== 'no_show' &&
+              (data.completionReport || data.completionPhotoUrls.length > 0) ? (
                 <>
                   {data.completionReport && (
                     <Text style={[styles.boxText, { color: theme.text }]}>
@@ -439,9 +459,13 @@ function CaseFile({ item, wide }: { item: DisputeQueueItem; wide: boolean }) {
         <View style={[styles.resolved, { backgroundColor: theme.backgroundElement }]}>
           <Text style={[styles.resolvedText, { color: theme.success }]}>
             Resolvida {item.resolvedAt ? timeAgo(item.resolvedAt) : ''}:{' '}
-            {item.refundCents
-              ? `reembolso de ${formatBRL(item.refundCents)} ao anunciante; o restante foi do prestador.`
-              : 'improcedente — pagamento liberado integralmente ao prestador.'}
+            {item.kind === 'no_show'
+              ? item.refundCents
+                ? `furo confirmado — reembolso de ${formatBRL(item.refundCents)} ao anunciante e dívida da taxa ao prestador.`
+                : 'anunciante em falta — pagamento liberado ao prestador, sem dívida.'
+              : item.refundCents
+                ? `reembolso de ${formatBRL(item.refundCents)} ao anunciante; o restante foi do prestador.`
+                : 'improcedente — pagamento liberado integralmente ao prestador.'}
           </Text>
           {item.resolutionNote && (
             <Text style={[styles.resolvedNote, { color: theme.textSecondary }]}>
@@ -470,6 +494,38 @@ function CaseFile({ item, wide }: { item: DisputeQueueItem; wide: boolean }) {
             onPress={() => setDecision(null)}
             style={[styles.btn, styles.btnGhost, { borderColor: theme.line }]}>
             <Text style={[styles.btnLabel, { color: theme.textSecondary }]}>Cancelar</Text>
+          </Pressable>
+        </View>
+      ) : item.kind === 'no_show' ? (
+        <View style={[styles.decide, { borderTopColor: theme.line }]}>
+          <Text style={[styles.confirmText, { color: theme.textSecondary }]}>
+            Falta contestada — quem tem razão?
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() =>
+              armOutcome(
+                'worker_fault',
+                'Furo confirmado — reembolso integral ao anunciante e dívida da taxa ao prestador',
+              )
+            }
+            style={[styles.btn, { backgroundColor: theme.danger }]}>
+            <Text style={[styles.btnLabel, { color: theme.onPrimary }]}>
+              Furo confirmado (trabalhador faltou)
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() =>
+              armOutcome(
+                'poster_fault',
+                'Anunciante em falta — pagar o prestador, sem dívida',
+              )
+            }
+            style={[styles.btn, styles.btnGhost, { borderColor: theme.success }]}>
+            <Text style={[styles.btnLabel, { color: theme.success }]}>
+              Anunciante em falta (pagar prestador)
+            </Text>
           </Pressable>
         </View>
       ) : (
