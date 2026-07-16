@@ -18,7 +18,7 @@ import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
 import { useTheme } from '@/hooks/use-theme';
 
-import { usePayoutAccount, useWallet, useWithdraw } from '../hooks';
+import { usePayoutAccount, useWallet, useWithdraw, useWorkerDebts } from '../hooks';
 import { chargedLabel, entryLabel, receivedLabel, releaseLabel } from '../labels';
 
 type Tab = 'available' | 'processing';
@@ -36,6 +36,9 @@ export function WalletScreen() {
   const wallet = useWallet();
   const withdrawal = useWithdraw();
   const payout = usePayoutAccount();
+  const debts = useWorkerDebts();
+  const openDebts = (debts.data ?? []).filter((d) => d.status === 'open');
+  const owedCents = openDebts.reduce((sum, d) => sum + d.remainingCents, 0);
 
   const [tab, setTab] = useState<Tab>('available');
   const [withdrawArmed, setWithdrawArmed] = useState(false);
@@ -130,6 +133,36 @@ export function WalletScreen() {
                 recebido desde o seu último saque
               </Text>
             </View>
+
+            {/* D-071: dívida por furo — transparente, com link pra vaga de origem. */}
+            {owedCents > 0 && (
+              <View style={[styles.debtCard, { backgroundColor: theme.dangerSoft }]}>
+                <View style={styles.debtHeader}>
+                  <Ionicons name="alert-circle" size={16} color={theme.danger} />
+                  <Text style={[styles.debtTitle, { color: theme.danger }]}>
+                    Você deve {formatBRL(owedCents)} por falta
+                  </Text>
+                </View>
+                <Text style={[styles.debtBody, { color: theme.danger }]}>
+                  Isto é descontado dos seus próximos serviços (até metade de cada um, então
+                  você sempre recebe pelo menos a outra metade).
+                </Text>
+                {openDebts.map((debt) => (
+                  <Pressable
+                    key={debt.id}
+                    accessibilityRole="button"
+                    onPress={() => router.push(`/service/${debt.gigId}`)}
+                    style={styles.debtRow}>
+                    <Text style={[styles.debtGig, { color: theme.text }]} numberOfLines={1}>
+                      {debt.gigTitle ?? 'Serviço'} — ver motivo ›
+                    </Text>
+                    <Text style={[styles.debtAmount, { color: theme.danger }]}>
+                      {formatBRL(debt.remainingCents)}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
 
             <View style={[styles.tabs, { backgroundColor: theme.backgroundElement }]}>
               <Pressable
@@ -375,6 +408,43 @@ const styles = StyleSheet.create({
   },
   balanceCaption: {
     fontSize: 11.5,
+  },
+  debtCard: {
+    marginHorizontal: Spacing.three,
+    marginBottom: Spacing.two,
+    borderRadius: Radius.medium,
+    padding: Spacing.two + 2,
+    gap: 5,
+  },
+  debtHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  debtTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  debtBody: {
+    fontSize: 12,
+    lineHeight: 16.5,
+    opacity: 0.9,
+  },
+  debtRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: Spacing.two,
+    marginTop: 3,
+  },
+  debtGig: {
+    flex: 1,
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
+  debtAmount: {
+    fontSize: 13,
+    fontWeight: '800',
   },
   tabs: {
     flexDirection: 'row',

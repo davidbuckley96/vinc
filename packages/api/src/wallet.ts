@@ -119,6 +119,52 @@ export function buildWallet(
   return { availableCents, processingCents, availableEntries, processingEntries, entries };
 }
 
+/** A no-show debt the worker owes (D-071), for the wallet + contest. */
+export interface WorkerDebt {
+  id: string;
+  gigId: string;
+  gigTitle: string | null;
+  amountCents: number;
+  remainingCents: number;
+  status: "open" | "settled" | "voided";
+  createdAt: string;
+}
+
+/**
+ * The worker's no-show debts (D-071). Open ones still garnish future payouts;
+ * settled/voided are kept for transparency. RLS scopes to the caller.
+ */
+export async function fetchWorkerDebts(
+  client: SupabaseClient,
+  userId: string,
+): Promise<WorkerDebt[]> {
+  const { data, error } = await client
+    .from("worker_debts")
+    .select("id, gig_id, amount_cents, remaining_cents, status, created_at, gig:gig_id (title)")
+    .eq("worker_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (
+    data as unknown as Array<{
+      id: string;
+      gig_id: string;
+      amount_cents: number;
+      remaining_cents: number;
+      status: WorkerDebt["status"];
+      created_at: string;
+      gig: { title: string } | null;
+    }>
+  ).map((row) => ({
+    id: row.id,
+    gigId: row.gig_id,
+    gigTitle: row.gig?.title ?? null,
+    amountCents: row.amount_cents,
+    remainingCents: row.remaining_cents,
+    status: row.status,
+    createdAt: row.created_at,
+  }));
+}
+
 export type WithdrawResult =
   | "withdrawn"
   | "nothing_to_withdraw"

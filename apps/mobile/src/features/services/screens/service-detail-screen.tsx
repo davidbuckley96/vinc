@@ -446,6 +446,32 @@ export function ServiceDetailScreen() {
 
             {error && <Text style={[styles.error, { color: theme.danger }]}>{error}</Text>}
 
+            {/* D-071: transparência do débito para o prestador que faltou +
+                caminho de contestação (vai para o suporte/disputas). */}
+            {data.role === 'worker' &&
+              data.status === 'cancelled_by_worker' &&
+              data.workerNoShow && (
+                <View style={[styles.noShowBox, { backgroundColor: theme.dangerSoft }]}>
+                  <Text style={[styles.noShowTitle, { color: theme.danger }]}>
+                    Você não iniciou este serviço
+                  </Text>
+                  <Text style={[styles.noShowBody, { color: theme.danger }]}>
+                    O anunciante marcou falta e foi reembolsado. Você ficou devendo a taxa
+                    de {formatBRL(computeNoShowRefund(data.priceCents).workerDebtCents)}, que
+                    é descontada dos seus próximos serviços (até metade de cada um). Se você
+                    acha que isto está errado, fale com o suporte para contestar.
+                  </Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => router.push('/vi?escalate=1')}
+                    style={[styles.noShowContest, { borderColor: theme.danger }]}>
+                    <Text style={[styles.noShowContestLabel, { color: theme.danger }]}>
+                      Contestar este débito
+                    </Text>
+                  </Pressable>
+                </View>
+              )}
+
             {deletedNote && (
               <Text style={[styles.error, { color: theme.success }]}>{deletedNote}</Text>
             )}
@@ -860,6 +886,33 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: Spacing.one,
     paddingHorizontal: Spacing.two,
+  },
+  noShowBox: {
+    borderRadius: Radius.medium,
+    padding: Spacing.two + 4,
+    marginTop: Spacing.two,
+    gap: 6,
+  },
+  noShowTitle: {
+    fontSize: 14.5,
+    fontWeight: '800',
+  },
+  noShowBody: {
+    fontSize: 12.5,
+    lineHeight: 17.5,
+    opacity: 0.95,
+  },
+  noShowContest: {
+    alignSelf: 'flex-start',
+    borderWidth: 1.5,
+    borderRadius: Radius.medium,
+    paddingHorizontal: Spacing.two + 2,
+    paddingVertical: 8,
+    marginTop: 2,
+  },
+  noShowContestLabel: {
+    fontSize: 13,
+    fontWeight: '800',
   },
   decideButton: {
     flex: 1,

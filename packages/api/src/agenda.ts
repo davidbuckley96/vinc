@@ -52,6 +52,8 @@ export interface ServiceDetail {
   counterpartName: string | null;
   /** Check-in code (D-028) — only the POSTER receives it (RLS). */
   checkinCode?: string | null;
+  /** Cancelled because the worker did not show up (D-071). */
+  workerNoShow: boolean;
 }
 
 export async function fetchServiceDetail(
@@ -63,7 +65,7 @@ export async function fetchServiceDetail(
     client
       .from("gigs")
       .select(
-        "id, title, description, status, starts_at, ends_at, price_cents, area, approx_lat, approx_lng, poster_id, worker_id, poster:poster_id (name), worker:worker_id (name)",
+        "id, title, description, status, starts_at, ends_at, price_cents, area, approx_lat, approx_lng, worker_no_show, poster_id, worker_id, poster:poster_id (name), worker:worker_id (name)",
       )
       .eq("id", gigId)
       .maybeSingle(),
@@ -77,6 +79,7 @@ export async function fetchServiceDetail(
     area: string;
     approx_lat: number | null;
     approx_lng: number | null;
+    worker_no_show: boolean | null;
   };
   const exact = addressResult.data as { address: string; lat: number | null; lng: number | null } | null;
   const role = row.poster_id === userId ? "poster" : "worker";
@@ -110,6 +113,7 @@ export async function fetchServiceDetail(
     counterpartName:
       firstName(role === "poster" ? row.worker?.name : row.poster?.name) || null,
     checkinCode,
+    workerNoShow: row.worker_no_show ?? false,
   };
 }
 

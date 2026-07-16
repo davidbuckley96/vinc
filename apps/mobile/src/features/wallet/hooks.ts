@@ -4,12 +4,14 @@ import {
   buildWallet,
   fetchPayoutAccount,
   fetchWallet,
+  fetchWorkerDebts,
   savePayoutAccount,
   withdraw,
   type PayoutAccount,
   type SavePayoutResult,
   type Wallet,
   type WithdrawResult,
+  type WorkerDebt,
 } from '@vinc/api';
 import type { PixKeyType } from '@vinc/core';
 
@@ -30,6 +32,19 @@ export function useWallet() {
       return fetchWallet(supabase, userId);
     },
     enabled: status !== 'loading',
+  });
+}
+
+/** Worker no-show debts (D-071) — shown on the wallet, links to origin gigs. */
+export function useWorkerDebts() {
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
+  return useQuery({
+    queryKey: ['worker-debts', userId ?? 'anonymous'],
+    queryFn: async (): Promise<WorkerDebt[]> => {
+      if (!supabase || !userId) return [];
+      return fetchWorkerDebts(supabase, userId);
+    },
   });
 }
 

@@ -26,6 +26,7 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     lng: -34.872,
     counterpartId: 'demo-ana',
     counterpartName: 'Ana Souza',
+    workerNoShow: false,
   },
   '2': {
     id: '2',
@@ -44,6 +45,7 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     lng: -34.8829,
     counterpartId: 'demo-ana',
     counterpartName: 'Ana Souza',
+    workerNoShow: false,
   },
   '4': {
     id: '4',
@@ -62,6 +64,7 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     lng: -34.8952,
     counterpartId: 'demo-joao',
     counterpartName: 'João Pedro',
+    workerNoShow: false,
   },
   '3': {
     id: '3',
@@ -80,6 +83,7 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     lng: -34.877,
     counterpartId: 'demo-paulo',
     counterpartName: 'Paulo Dias',
+    workerNoShow: false,
   },
   '5': {
     id: '5',
@@ -98,6 +102,7 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     lng: -34.8987,
     counterpartId: null,
     counterpartName: null,
+    workerNoShow: false,
   },
   '6': {
     id: '6',
@@ -117,5 +122,6 @@ export const DEMO_SERVICES: Record<string, ServiceDetail> = {
     lng: -34.8945,
     counterpartId: 'demo-joao',
     counterpartName: 'João Pedro',
+    workerNoShow: false,
   },
 };
