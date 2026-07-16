@@ -17,6 +17,7 @@ import {
   withdrawCandidacy,
   fetchOpenGigs,
   hasPriorityForPeriod,
+  noShowCancel,
   updateGig,
   type ApplyGigResult,
   type CancelGigResult,
@@ -25,6 +26,7 @@ import {
   type DecideCandidacyOutcome,
   type DeleteGigResult,
   type MyCandidacyStatus,
+  type NoShowCancelResult,
   type WithdrawCandidacyResult,
   type RegionFilter,
   type TimeSlotFilter,
@@ -228,6 +230,25 @@ export function useCancelGig() {
         queryClient.invalidateQueries({ queryKey: ['gigs'] });
         queryClient.invalidateQueries({ queryKey: ['agenda'] });
         queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      }
+    },
+  });
+}
+
+/** Poster free-cancels a worker no-show (D-071): full refund + worker debt. */
+export function useNoShowCancel() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (gigId: string): Promise<NoShowCancelResult> => {
+      if (!supabase) return 'cancelled'; // demo mode: pretend success
+      return noShowCancel(supabase, gigId);
+    },
+    onSuccess: (result) => {
+      if (result === 'cancelled') {
+        queryClient.invalidateQueries({ queryKey: ['gigs'] });
+        queryClient.invalidateQueries({ queryKey: ['agenda'] });
+        queryClient.invalidateQueries({ queryKey: ['wallet'] });
+        queryClient.invalidateQueries({ queryKey: ['service'] });
       }
     },
   });

@@ -15,8 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ServiceDetail } from '@vinc/api';
 import {
   allowedLifecycleAction,
+  canDeclareNoShow,
   computeCancellationFine,
   computeGigPricing,
+  computeNoShowRefund,
   formatBRL,
   posterCanEdit,
   posterCancellationIncursFine,
@@ -27,7 +29,7 @@ import { LocationModal } from '@/components/location-map';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useDispute } from '@/features/disputes/hooks';
 import { CandidateList } from '@/features/gigs/components/candidate-list';
-import { useCancelGig, useCandidates, useDeleteGig } from '@/features/gigs/hooks';
+import { useCancelGig, useCandidates, useDeleteGig, useNoShowCancel } from '@/features/gigs/hooks';
 import { useUnreadCount } from '@/features/messages/hooks';
 import { useHasReviewed } from '@/features/reviews/hooks';
 import { useTheme } from '@/hooks/use-theme';
@@ -158,6 +160,7 @@ export function ServiceDetailScreen() {
   const reviewed = useHasReviewed(id);
   const deletion = useDeleteGig();
   const cancellation = useCancelGig();
+  const noShow = useNoShowCancel();
   const dispute = useDispute(id);
   // Sending ends with the service (D-026); on completed the button only
   // opens the history.
@@ -174,11 +177,24 @@ export function ServiceDetailScreen() {
   const isPosterOpen = service.data?.role === 'poster' && service.data.status === 'open';
   const candidates = useCandidates(id, isPosterOpen);
   const hasCandidates = (candidates.data?.length ?? 0) > 0;
+  // D-071: o dono pode marcar falta (cancelar sem custo) quando o prestador
+  // aceito não iniciou o serviço até 30 min depois do horário. `accepted` já
+  // implica não iniciado (iniciar move para in_progress), então started_at=null.
+  const canNoShow =
+    service.data?.role === 'poster' &&
+    canDeclareNoShow({
+      status: (service.data.status ?? 'accepted') as GigStatus,
+      startsAt: service.data.startsAt,
+      startedAt: null,
+      now: new Date(),
+    });
   const [error, setError] = useState<string | null>(null);
   const [deleteArmed, setDeleteArmed] = useState(false);
   const [deletedNote, setDeletedNote] = useState<string | null>(null);
   const [cancelArmed, setCancelArmed] = useState(false);
   const [cancelledNote, setCancelledNote] = useState<string | null>(null);
+  const [noShowArmed, setNoShowArmed] = useState(false);
+  const [noShowNote, setNoShowNote] = useState<string | null>(null);
   const [mapOpen, setMapOpen] = useState(false);
   // Check-in by code (D-028): tapping "Iniciar serviço" reveals the input.
   const [startArmed, setStartArmed] = useState(false);
@@ -206,6 +222,28 @@ export function ServiceDetailScreen() {
       setTimeout(() => router.back(), 1800);
     } else if (result === 'not_cancellable' || result === 'state_changed') {
       setError('Este serviço não pode mais ser cancelado — atualize e tente de novo.');
+    } else {
+      setError('Não foi possível cancelar agora. Tente de novo.');
+    }
+  };
+
+  const cancelNoShow = async () => {
+    if (!service.data) return;
+    if (!noShowArmed) {
+      setNoShowArmed(true);
+      return;
+    }
+    setError(null);
+    const result = await noShow.mutateAsync(service.data.id);
+    setNoShowArmed(false);
+    if (result === 'cancelled') {
+      const refund = computeNoShowRefund(service.data.priceCents);
+      setNoShowNote(
+        `Serviço cancelado sem custo. ${formatBRL(refund.posterRefundCents)} voltaram para a sua carteira (o valor do serviço e a taxa). O prestador que faltou fica devendo a taxa.`,
+      );
+      setTimeout(() => router.back(), 2200);
+    } else if (result === 'not_eligible' || result === 'state_changed') {
+      setError('Não é possível marcar falta agora — talvez o prestador já tenha iniciado. Atualize e tente de novo.');
     } else {
       setError('Não foi possível cancelar agora. Tente de novo.');
     }
@@ -481,7 +519,8 @@ export function ServiceDetailScreen() {
               <Text style={[styles.error, { color: theme.success }]}>{cancelledNote}</Text>
             )}
             {posterCancellationIncursFine(data.status as GigStatus) &&
-              !cancelledNote && (
+              !cancelledNote &&
+              !canNoShow && (
                 <View style={styles.cancelBlock}>
                   {cancelArmed && (
                     <Text style={[styles.fineWarning, { color: theme.danger }]}>
@@ -533,6 +572,49 @@ export function ServiceDetailScreen() {
                   Mostre este código ao prestador quando ele chegar — é assim que o serviço
                   começa.
                 </Text>
+              </View>
+            )}
+            {/* D-071: prestador não apareceu (furo). Cancela sem custo, com
+                reembolso integral; o prestador que faltou passa a dever a taxa. */}
+            {noShowNote && (
+              <Text style={[styles.error, { color: theme.success }]}>{noShowNote}</Text>
+            )}
+            {canNoShow && !noShowNote && (
+              <View style={styles.cancelBlock}>
+                {noShowArmed && (
+                  <Text style={[styles.fineWarning, { color: theme.textSecondary }]}>
+                    Use isto só se o prestador realmente não apareceu. O cancelamento é
+                    sem custo e você recebe de volta{' '}
+                    {formatBRL(computeNoShowRefund(data.priceCents).posterRefundCents)} (o
+                    valor do serviço e a taxa). O prestador que faltou fica devendo a taxa.
+                  </Text>
+                )}
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={noShow.isPending}
+                  onPress={cancelNoShow}
+                  style={[
+                    styles.action,
+                    styles.refuseButton,
+                    {
+                      borderColor: theme.danger,
+                      backgroundColor: noShowArmed ? theme.danger : theme.background,
+                    },
+                  ]}>
+                  {noShow.isPending ? (
+                    <ActivityIndicator color={theme.danger} />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.actionLabel,
+                        { color: noShowArmed ? theme.onPrimary : theme.danger },
+                      ]}>
+                      {noShowArmed
+                        ? 'Confirmar — o prestador não apareceu'
+                        : 'Prestador não apareceu'}
+                    </Text>
+                  )}
+                </Pressable>
               </View>
             )}
             {/* F-04 (docs/14): antes da janela de 30 min o código nem vem do

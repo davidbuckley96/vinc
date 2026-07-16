@@ -574,6 +574,43 @@ export async function cancelGig(
   return (data as { code?: CancelGigResult })?.code ?? "network_error";
 }
 
+export type NoShowCancelResult =
+  | "cancelled"
+  | "unauthorized"
+  | "not_found"
+  | "forbidden"
+  | "not_eligible"
+  | "state_changed"
+  | "invalid_request"
+  | "network_error";
+
+/**
+ * The poster free-cancels because the chosen worker never showed up
+ * (no-show-cancel Edge Function — D-071): full refund to the poster (net +
+ * fee) and the refunded fee becomes the no-show worker's debt.
+ */
+export async function noShowCancel(
+  client: SupabaseClient,
+  gigId: string,
+): Promise<NoShowCancelResult> {
+  const { data, error } = await client.functions.invoke("no-show-cancel", {
+    body: { gigId },
+  });
+  if (error) {
+    try {
+      const context = (error as { context?: Response }).context;
+      if (context) {
+        const body = (await context.json()) as { code?: NoShowCancelResult };
+        if (body.code) return body.code;
+      }
+    } catch {
+      // fall through
+    }
+    return "network_error";
+  }
+  return (data as { code?: NoShowCancelResult })?.code ?? "network_error";
+}
+
 export type CreateGigResult =
   | "created"
   | "contact_in_text"
