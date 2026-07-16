@@ -50,10 +50,8 @@ function ThemedApp() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="auth" />
             <Stack.Screen name="welcome" />
-            <Stack.Screen name="gig/[id]" />
-            <Stack.Screen name="service/[id]" />
+            {/* gig/service/user/chat moved under (tabs) so the bar stays (G-02). */}
             <Stack.Screen name="review/[gigId]" />
-            <Stack.Screen name="user/[id]" />
           </Stack>
         </ThemeProvider>
       </SessionProvider>

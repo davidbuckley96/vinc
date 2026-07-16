@@ -113,14 +113,17 @@ com o G-07 (virar `Pressable`) e o G-08. — **S**
 > **Configurações**. Câmera: chooser nativo (`lib/photo-picker.ts`) em
 > perfil/conclusão/disputa. G-02 (barra sempre visível) fica pra fase dedicada.
 
-### G-02 · Abas de baixo sempre visíveis
-Hoje as telas de detalhe (vaga, serviço, chat, perfil…) são **irmãs** das abas no
-Stack raiz, então cobrem a barra. Pra manter a barra sempre visível é preciso
-**reestruturar as rotas dentro das abas** (um Stack aninhado por aba). É o item
-mais pesado e mexe na árvore de rotas do app todo. 🟠 **Decisão:** (a) fazer a
-reestruturação completa agora (melhor navegação, mais risco/tempo); (b) só
-corrigir os "becos sem saída" (G-01 + garantir que todo detalhe tem voltar) e
-deixar a barra-sempre-visível pra uma fase dedicada. — **L**
+### G-02 · Abas de baixo sempre visíveis — ✅ Feito (David pediu "sempre visível")
+As telas de detalhe eram **irmãs** das abas no Stack raiz, então cobriam a barra.
+**Correção:** movi as telas de **navegação** (`gig/[id]`, `gig/edit/[id]`,
+`service/[id]`, `user/[id]`, `chat/[gigId]`) para **dentro do grupo `(tabs)`** como
+telas `href: null` (sem botão de aba, mas dentro do navegador de abas → a barra
+continua visível). `backBehavior="history"` faz o voltar retornar à tela anterior.
+As URLs não mudam (`(tabs)` é grupo invisível). Fluxos de formulário/checkout
+(`pay`, `dispute`, `defend`, `review`, `complete`, `alerts`, `help`, editar perfil,
+Configurações, perfil) seguem no raiz cobrindo a barra — é o padrão pra tarefas
+focadas. **Precisa de build pra validar** (não dá pra testar navegação RN aqui);
+ponto de atenção: chat com a barra + teclado. — **L**
 
 ### G-05 · Câmera estilo WhatsApp em tudo que usa foto
 Hoje: conclusão de serviço tem um menu "Tirar foto / Galeria" (que eu adicionei),
