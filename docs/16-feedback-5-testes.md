@@ -108,6 +108,11 @@ com o G-07 (virar `Pressable`) e o G-08. — **S**
 
 ## Precisam da sua decisão 🟠
 
+> **Rodada 23 (D-072):** G-08 ✅, G-05 ✅, G-02 adiado. Perfil sai da barra (5
+> abas), abre pelo avatar do topo; perfil enxuto + engrenagem → nova tela
+> **Configurações**. Câmera: chooser nativo (`lib/photo-picker.ts`) em
+> perfil/conclusão/disputa. G-02 (barra sempre visível) fica pra fase dedicada.
+
 ### G-02 · Abas de baixo sempre visíveis
 Hoje as telas de detalhe (vaga, serviço, chat, perfil…) são **irmãs** das abas no
 Stack raiz, então cobrem a barra. Pra manter a barra sempre visível é preciso

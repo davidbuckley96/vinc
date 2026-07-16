@@ -1,16 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
-import { signOut } from '@/features/auth/auth-actions';
 import { useSession } from '@/features/auth/session-context';
-import { pushSelfTest } from '@/features/notifications/push';
 import { useProfileStats } from '@/features/reviews/hooks';
-import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/hooks/use-theme';
 
 import { MyActivity } from '../components/my-activity';
@@ -18,8 +14,11 @@ import { ProfileView } from '../components/profile-view';
 import { useMyProfile } from '../hooks';
 
 /**
- * Own profile tab. The platform picks which version to show (D-011): the
- * role with more completed services; tie goes to prestador.
+ * Own profile (G-08 / D-072, opção A): opened from the top avatar, not a tab.
+ * Kept "enxuto" — reputation + my gigs/candidacies + quick edit/alerts; a gear
+ * in the header opens Configurações (Pix, help, sign out…). The platform picks
+ * which reputation version to show (D-011): the role with more completed
+ * services; tie goes to prestador.
  */
 export function ProfileScreen() {
   const theme = useTheme();
@@ -40,22 +39,33 @@ export function ProfileScreen() {
   const avatarUrl = stats.data?.avatarUrl ?? null;
   const city = stats.data?.city ?? null;
   const signedOut = status === 'signedOut';
-  const [testingPush, setTestingPush] = useState(false);
-
-  // Diagnóstico de push (V-08): roda o fluxo e mostra o resultado/erro exato.
-  const testPush = async () => {
-    setTestingPush(true);
-    const result = await pushSelfTest(supabase, userId);
-    setTestingPush(false);
-    Alert.alert('Notificações push', result);
-  };
 
   return (
     <View style={[styles.root, { backgroundColor: theme.background }]}>
       <View style={styles.column}>
         <View style={[styles.header, { backgroundColor: theme.primary }]}>
           <SafeAreaView edges={['top']}>
-            <Text style={[styles.headerTitle, { color: theme.onPrimary }]}>Perfil</Text>
+            <View style={styles.headerRow}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Voltar"
+                onPress={() => router.back()}
+                hitSlop={12}>
+                <Ionicons name="chevron-back" size={24} color={theme.onPrimary} />
+              </Pressable>
+              <Text style={[styles.headerTitle, { color: theme.onPrimary }]}>Perfil</Text>
+              {status === 'signedIn' ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Configurações"
+                  onPress={() => router.push('/settings')}
+                  hitSlop={12}>
+                  <Ionicons name="settings-outline" size={21} color={theme.onPrimary} />
+                </Pressable>
+              ) : (
+                <View style={styles.headerSpacer} />
+              )}
+            </View>
           </SafeAreaView>
         </View>
 
@@ -134,52 +144,17 @@ export function ProfileScreen() {
                   <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
                 </Pressable>
               )}
+              {/* Demais opções (Pix, ajuda, sair…) moram em Configurações (D-072). */}
               {status === 'signedIn' && (
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => router.push('/payout')}
+                  onPress={() => router.push('/settings')}
                   style={[styles.payoutEntry, { borderColor: theme.line }]}>
-                  <Ionicons name="key-outline" size={17} color={theme.primary} />
+                  <Ionicons name="settings-outline" size={17} color={theme.primary} />
                   <Text style={[styles.payoutEntryLabel, { color: theme.text }]}>
-                    Minha chave Pix
+                    Configurações
                   </Text>
                   <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
-                </Pressable>
-              )}
-              {status === 'signedIn' && (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => router.push('/help')}
-                  style={[styles.payoutEntry, { borderColor: theme.line }]}>
-                  <Ionicons name="help-circle-outline" size={17} color={theme.primary} />
-                  <Text style={[styles.payoutEntryLabel, { color: theme.text }]}>
-                    Central de Ajuda
-                  </Text>
-                  <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
-                </Pressable>
-              )}
-              {status === 'signedIn' && (
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={testingPush}
-                  onPress={testPush}
-                  style={[styles.payoutEntry, { borderColor: theme.line }]}>
-                  <Ionicons name="notifications-circle-outline" size={17} color={theme.primary} />
-                  <Text style={[styles.payoutEntryLabel, { color: theme.text }]}>
-                    {testingPush ? 'Testando…' : 'Testar notificações push'}
-                  </Text>
-                  <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
-                </Pressable>
-              )}
-              {status === 'signedIn' && (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => signOut()}
-                  style={[styles.signOut, { borderColor: theme.danger }]}>
-                  <Ionicons name="log-out-outline" size={16} color={theme.danger} />
-                  <Text style={[styles.signOutLabel, { color: theme.danger }]}>
-                    Sair da conta
-                  </Text>
                 </Pressable>
               )}
             </>
@@ -207,12 +182,20 @@ const styles = StyleSheet.create({
     // so the photo can overlap it.
     paddingBottom: Spacing.four,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  headerSpacer: {
+    width: 21,
   },
   scroll: {
     flex: 1,
@@ -297,20 +280,6 @@ const styles = StyleSheet.create({
   },
   payoutEntryLabel: {
     flex: 1,
-    fontSize: 13.5,
-    fontWeight: '700',
-  },
-  signOut: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    borderWidth: 1.5,
-    borderRadius: Radius.medium,
-    paddingVertical: 11,
-    marginTop: Spacing.three,
-  },
-  signOutLabel: {
     fontSize: 13.5,
     fontWeight: '700',
   },

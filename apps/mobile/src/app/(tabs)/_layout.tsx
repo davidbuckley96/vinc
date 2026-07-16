@@ -14,7 +14,7 @@ const TABS: { name: string; title: string; icon: IconName; iconActive: IconName 
   { name: 'post', title: 'Anunciar', icon: 'add-circle-outline', iconActive: 'add-circle' },
   { name: 'messages', title: 'Mensagens', icon: 'chatbubble-outline', iconActive: 'chatbubble' },
   { name: 'wallet', title: 'Carteira', icon: 'wallet-outline', iconActive: 'wallet' },
-  { name: 'profile', title: 'Perfil', icon: 'person-outline', iconActive: 'person' },
+  // "Perfil" saiu da barra (G-08/D-072): abre pelo avatar do topo → /profile.
 ];
 
 export default function TabsLayout() {

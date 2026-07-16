@@ -110,7 +110,7 @@ export function PostScreen() {
         {limitHit && (
           <Pressable
             accessibilityRole="button"
-            onPress={() => router.push('/(tabs)/profile')}
+            onPress={() => router.push('/profile')}
             style={[styles.limitLink, { backgroundColor: theme.dangerSoft }]}>
             <Text style={[styles.limitLinkText, { color: theme.danger }]}>
               Ver e excluir minhas vagas abertas ›
