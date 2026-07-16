@@ -126,10 +126,22 @@ export function ViChatScreen() {
         {waiting && (
           <View style={[styles.banner, { backgroundColor: theme.primarySoft }]}>
             <Ionicons name="people" size={15} color={theme.primarySoftText} />
-            <Text style={[styles.bannerText, { color: theme.primarySoftText }]}>
-              Você está na fila para falar com a equipe. Pode escrever aqui mesmo — a gente
-              responde por aqui.
-            </Text>
+            <View style={styles.bannerBody}>
+              <Text style={[styles.bannerText, { color: theme.primarySoftText }]}>
+                Você está na fila para falar com a equipe. Pode escrever aqui mesmo — a Vi
+                continua ajudando enquanto isso.
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Sair da fila e encerrar o atendimento"
+                disabled={vi.isLeavingQueue}
+                onPress={vi.leaveQueue}
+                style={styles.leaveQueue}>
+                <Text style={[styles.leaveQueueText, { color: theme.primarySoftText }]}>
+                  {vi.isLeavingQueue ? 'Encerrando…' : 'Já resolvi / sair da fila'}
+                </Text>
+              </Pressable>
+            </View>
           </View>
         )}
 
@@ -257,7 +269,10 @@ const styles = StyleSheet.create({
     padding: Spacing.two + 2,
     borderRadius: Radius.medium,
   },
-  bannerText: { flex: 1, fontSize: 12, lineHeight: 16 },
+  bannerBody: { flex: 1, gap: 6 },
+  bannerText: { fontSize: 12, lineHeight: 16 },
+  leaveQueue: { alignSelf: 'flex-start' },
+  leaveQueueText: { fontSize: 12, fontWeight: '800', textDecorationLine: 'underline' },
   inputBar: {
     flexDirection: 'row',
     alignItems: 'flex-end',

@@ -93,17 +93,25 @@ Deno.serve(async (request) => {
 
   let ticketId: unknown;
   let message: unknown;
+  let action: unknown;
   try {
-    ({ ticketId, message } = await request.json());
+    ({ ticketId, message, action } = await request.json());
   } catch {
     return fail("invalid_request", 400);
   }
-  if (typeof message !== "string" || message.trim().length === 0) {
+  if (action !== undefined && action !== "resolve") {
     return fail("invalid_request", 400);
   }
-  if (message.length > 2000) return fail("invalid_request", 400);
   if (ticketId !== undefined && typeof ticketId !== "string") {
     return fail("invalid_request", 400);
+  }
+  // "resolve" fecha o ticket (G-12: sair da fila / marcar resolvido) e não
+  // exige mensagem; o envio normal exige uma mensagem não-vazia.
+  if (action !== "resolve") {
+    if (typeof message !== "string" || message.trim().length === 0) {
+      return fail("invalid_request", 400);
+    }
+    if (message.length > 2000) return fail("invalid_request", 400);
   }
 
   const admin = createClient(
@@ -114,6 +122,22 @@ Deno.serve(async (request) => {
   const { data: userData, error: userError } = await admin.auth.getUser(jwt);
   if (userError || !userData.user) return fail("unauthorized", 401);
   const userId = userData.user.id;
+
+  // ----------------------------------------------- resolver (fechar) ticket
+  if (action === "resolve") {
+    if (typeof ticketId !== "string") return fail("invalid_request", 400);
+    const { data: t } = await admin
+      .from("support_tickets")
+      .select("id, user_id")
+      .eq("id", ticketId)
+      .maybeSingle();
+    if (!t || t.user_id !== userId) return fail("not_found", 404);
+    await admin
+      .from("support_tickets")
+      .update({ status: "resolved", updated_at: new Date().toISOString() })
+      .eq("id", ticketId);
+    return ok({ ticketId, reply: null, status: "resolved" });
+  }
 
   // ----------------------------------------------- ticket (get or create)
   let ticket: { id: string; status: string; user_id: string } | null = null;
@@ -151,14 +175,12 @@ Deno.serve(async (request) => {
     body: message,
   });
 
-  // Já está com humano? A Vi não responde por cima — só registra e sai.
-  if (ticket.status === "waiting_support") {
-    await admin
-      .from("support_tickets")
-      .update({ updated_at: new Date().toISOString() })
-      .eq("id", ticket.id);
-    return ok({ ticketId: ticket.id, reply: null, status: "waiting_support" });
-  }
+  // G-12 (docs/16): mesmo na fila do humano (`waiting_support`) a Vi CONTINUA
+  // respondendo — antes ela devolvia vazio e o usuário ficava travado sem
+  // resposta (e sem humano de plantão no MVP). Ela segue ajudando; o ticket
+  // permanece na fila para um humano assumir, e o usuário pode "sair da fila"
+  // (action: resolve) quando quiser. Só não rebaixa o status automaticamente.
+  const queued = ticket.status === "waiting_support";
 
   // ----------------------------------------------- base + contexto + IA
   const { data: faqRows } = await admin
@@ -189,7 +211,10 @@ Deno.serve(async (request) => {
     body: result.reply,
   });
 
-  const nextStatus = result.escalate ? "waiting_support" : "ai";
+  // Um ticket que já estava na fila do humano PERMANECE na fila mesmo com a Vi
+  // respondendo (ela só preenche a espera); um ticket em atendimento da Vi vai
+  // pra fila se ela decidir escalar.
+  const nextStatus = queued || result.escalate ? "waiting_support" : "ai";
   await admin
     .from("support_tickets")
     .update({ status: nextStatus, updated_at: new Date().toISOString() })
@@ -199,6 +224,6 @@ Deno.serve(async (request) => {
     ticketId: ticket.id,
     reply: result.reply,
     status: nextStatus,
-    escalated: result.escalate,
+    escalated: nextStatus === "waiting_support",
   });
 });

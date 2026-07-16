@@ -98,3 +98,19 @@ export async function sendToVi(
   if (error) return { ok: false, error: "network_error" };
   return { ok: true, data: data as AssistantResponse };
 }
+
+/**
+ * Closes a ticket (G-12): the user leaves the human queue / marks it solved.
+ * The Edge Function validates the ticket belongs to the caller. (Named
+ * `closeMyTicket` to avoid clashing with the admin-side `resolveTicket`.)
+ */
+export async function closeMyTicket(
+  client: SupabaseClient,
+  ticketId: string,
+): Promise<SendToViResult> {
+  const { data, error } = await client.functions.invoke("support-assistant", {
+    body: { ticketId, action: "resolve" },
+  });
+  if (error) return { ok: false, error: "network_error" };
+  return { ok: true, data: data as AssistantResponse };
+}

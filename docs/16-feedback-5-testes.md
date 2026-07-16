@@ -169,6 +169,10 @@ para de responder (`support-assistant/index.ts:154-161` devolve vazio) e o app
 reabre sempre esse ticket travado → Vi muda em todo lugar. **Correção:** (a) deixar
 a Vi **continuar respondendo** mesmo na fila; (b) botão **"Sair da fila / Resolvido"**
 pro usuário fechar o ticket (novo endpoint que valida que o ticket é dele). — **S-M**
+· ✅ **Feito** (support-assistant v4: sem early-return no `waiting_support`, o
+status só não é rebaixado; `action:"resolve"` fecha o ticket validando o dono;
+app: botão no banner da fila. Testado e2e — Vi responde na fila, resolve fecha,
+resolve alheio dá 404).
 
 ---
 

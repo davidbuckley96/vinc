@@ -5,6 +5,7 @@ import {
   fetchFaq,
   fetchLatestTicket,
   fetchTicketMessages,
+  closeMyTicket,
   sendToVi,
   type FaqArticle,
   type SupportMessage,
@@ -130,6 +131,29 @@ export function useVi() {
     },
   });
 
+  // G-12: sair da fila / marcar resolvido — fecha o ticket e volta a Vi a um
+  // estado limpo (próxima mensagem abre um ticket novo).
+  const resolve = useMutation({
+    mutationFn: async () => {
+      if (!supabase || !ticketId) return null;
+      return closeMyTicket(supabase, ticketId);
+    },
+    onSuccess: (res) => {
+      if (!res || !res.ok) {
+        setSendError('Não foi possível encerrar agora. Verifique sua conexão.');
+        return;
+      }
+      setTicketId(null);
+      setStatus('ai');
+      setOptimistic([]);
+      setSendError(null);
+      queryClient.invalidateQueries({ queryKey: ['support-latest', userId] });
+    },
+    onError: () => {
+      setSendError('Não foi possível encerrar agora. Verifique sua conexão.');
+    },
+  });
+
   // Server rows are the source of truth; drop optimistic once a matching
   // user row has landed.
   const server = messages.data ?? [];
@@ -159,5 +183,9 @@ export function useVi() {
     isLoadingHistory: !!ticketId && messages.isLoading,
     hasTicket: !!ticketId,
     send: (message: string) => send.mutate(message),
+    // G-12: só faz sentido "sair da fila" quando há ticket na fila do humano.
+    canLeaveQueue: !!ticketId && status === 'waiting_support',
+    isLeavingQueue: resolve.isPending,
+    leaveQueue: () => resolve.mutate(),
   };
 }
