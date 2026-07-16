@@ -1065,6 +1065,40 @@ um evento de integridade `no_show` (anti-abuso C); a **reincidência (2º furo e
 30 dias)** suspende a conta por 7 dias, como as demais penalidades. Fecha a
 dúvida 24.
 
+## D-073 — Furo vira DISPUTA real de reembolso (revisa parte do D-071)
+**Data:** 2026-07-16 · **Decidido por:** David
+
+Revê o D-071: como **o serviço já foi pago** (a cobrança acontece na escolha),
+o "furo" **não** pode mais ser um cancelamento com reembolso automático — tem
+que ser uma **disputa real de reembolso**, em que o **trabalhador pode se
+defender** (ex.: provar que o **anunciante não forneceu o código de início**,
+então ele foi mas não pôde começar). Quem decide é o **suporte** (painel de
+disputas).
+
+**Fluxo novo:**
+1. **Anunciante** (vaga `accepted`, não iniciada, +30 min): botão **"Prestador
+   não apareceu"** agora **abre uma disputa** `no_show` — a vaga vai para
+   `disputed`, o dinheiro **congela** (nada é reembolsado ainda) e a vaga é
+   marcada com `worker_no_show` (a **alegação** do anunciante).
+2. **Trabalhador** é avisado e pode **se defender** na vaga: envia uma resposta
+   (texto + fotos), que entra na mesma disputa.
+3. **Suporte** decide no painel:
+   - **Furo confirmado (trabalhador em falta):** reembolso **integral** ao
+     anunciante (líquido + taxa), o trabalhador fica **devendo a taxa**
+     (dívida D-071) e leva o **evento `no_show`** (reincidência suspende); vaga
+     → `cancelled_by_worker`.
+   - **Anunciante em falta** (ex.: não deu o código): o trabalhador **recebe o
+     líquido** (foi mas não pôde iniciar por culpa do anunciante), **sem
+     dívida** e **sem** offense; vaga → `completed`.
+   - Reembolso parcial fica a critério do suporte.
+
+**O que muda do D-071:** o reembolso + dívida + offense **saem do momento do
+cancelamento** e passam a acontecer **na resolução da disputa** (só se o
+suporte der ganho ao anunciante). O modelo monetário da dívida (taxa, abatimento
+≤50% na liberação) e a visibilidade na carteira **continuam** — a dívida só
+nasce quando a disputa é resolvida contra o trabalhador. Em aberto (ajustável): o
+quanto o trabalhador recebe quando ganha (hoje: líquido integral).
+
 ## D-072 — Rodada 23: perfil pelo topo + Configurações (Opção A) e câmera nativa
 **Data:** 2026-07-16 · **Decidido por:** David (rodada 23)
 

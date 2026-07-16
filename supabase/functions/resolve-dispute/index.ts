@@ -19,11 +19,14 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+import { computeNoShowRefund } from "../../../packages/core/src/pricing.ts";
+import { releaseToWorkerWithDebt } from "../_shared/debt.ts";
 import { getPaymentProvider } from "../_shared/payment-provider.ts";
 
 type ResultCode =
   | "resolved"
   | "invalid_refund"
+  | "invalid_outcome"
   | "unauthorized"
   | "not_found"
   | "forbidden"
@@ -50,14 +53,15 @@ Deno.serve(async (request) => {
   const jwt = (request.headers.get("Authorization") ?? "").replace("Bearer ", "");
   if (!jwt) return respond("unauthorized", 401);
 
-  let disputeId: unknown, refundCents: unknown, note: unknown;
+  let disputeId: unknown, refundCents: unknown, note: unknown, outcome: unknown;
   try {
-    ({ disputeId, refundCents, note } = await request.json());
+    ({ disputeId, refundCents, note, outcome } = await request.json());
   } catch {
     return respond("invalid_request", 400);
   }
-  if (typeof disputeId !== "string" || !Number.isInteger(refundCents)) {
-    return respond("invalid_request", 400);
+  if (typeof disputeId !== "string") return respond("invalid_request", 400);
+  if (outcome !== undefined && outcome !== "worker_fault" && outcome !== "poster_fault") {
+    return respond("invalid_outcome", 400);
   }
 
   const admin = createClient(
@@ -90,6 +94,78 @@ Deno.serve(async (request) => {
     .maybeSingle();
   if (!gig || !gig.worker_id) return respond("not_found", 404);
 
+  const provider = getPaymentProvider(admin);
+  const workerId = gig.worker_id;
+
+  // ---------------------------------------------------------- no_show (D-073)
+  // The poster claimed a no-show; support rules who was at fault.
+  if (dispute.kind === "no_show") {
+    if (outcome !== "worker_fault" && outcome !== "poster_fault") {
+      return respond("invalid_outcome", 400);
+    }
+    const { posterRefundCents, workerDebtCents } = computeNoShowRefund(gig.price_cents);
+    const storedRefund = outcome === "worker_fault" ? posterRefundCents : 0;
+
+    const { data: locked } = await admin
+      .from("disputes")
+      .update({
+        status: "resolved",
+        refund_cents: storedRefund,
+        resolution_note: typeof note === "string" && note.trim() ? note.trim() : null,
+        resolved_at: new Date().toISOString(),
+      })
+      .eq("id", dispute.id)
+      .eq("status", "open")
+      .select("id");
+    if (!locked || locked.length === 0) return respond("state_changed", 409);
+
+    if (outcome === "worker_fault") {
+      // Furo confirmado: full refund (net + fee) to the poster; the worker
+      // owes the fee (D-071 debt) and takes a no-show offense; gig cancelled.
+      await admin.from("ledger_entries").insert({
+        user_id: gig.poster_id,
+        gig_id: gig.id,
+        type: "refund",
+        amount_cents: posterRefundCents,
+      });
+      await provider.refundPoster({
+        posterId: gig.poster_id,
+        gigId: gig.id,
+        amountCents: posterRefundCents,
+      });
+      await admin.from("worker_debts").insert({
+        worker_id: workerId,
+        gig_id: gig.id,
+        amount_cents: workerDebtCents,
+        remaining_cents: workerDebtCents,
+        status: "open",
+      });
+      await admin.rpc("record_offense", { p_user: workerId, p_type: "no_show", p_gig: gig.id });
+      await admin
+        .from("gigs")
+        .update({ status: "cancelled_by_worker" })
+        .eq("id", gig.id)
+        .eq("status", "disputed");
+    } else {
+      // Anunciante em falta (ex.: não deu o código): o trabalhador recebe o
+      // líquido (abatendo dívidas anteriores, D-071); sem dívida nova nem
+      // offense; a marca de "furo" é removida e a vaga é concluída.
+      await releaseToWorkerWithDebt(admin, provider, {
+        workerId,
+        gigId: gig.id,
+        netCents: gig.price_cents,
+      });
+      await admin
+        .from("gigs")
+        .update({ status: "completed", worker_no_show: false })
+        .eq("id", gig.id)
+        .eq("status", "disputed");
+    }
+    return respond("resolved", 200);
+  }
+
+  // -------------------------------------------------- pre_release/post_release
+  if (!Number.isInteger(refundCents)) return respond("invalid_request", 400);
   // Capped at the service value — the fee is never refunded (D-028).
   const refund = refundCents as number;
   if (refund < 0 || refund > gig.price_cents) return respond("invalid_refund", 400);
@@ -132,7 +208,6 @@ Deno.serve(async (request) => {
   // External execution (D-035): under model A the payment is still held
   // while a dispute is open (the 7-day window defers the real release),
   // so BOTH kinds resolve as refund + remainder release at the provider.
-  const provider = getPaymentProvider(admin);
   if (refund > 0) {
     await provider.refundPoster({ posterId: gig.poster_id, gigId: gig.id, amountCents: refund });
   }
