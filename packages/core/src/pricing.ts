@@ -59,3 +59,51 @@ export function computeCancellationFine(netCents: number): CancellationFine {
     posterRefundCents: netCents - fineCents,
   };
 }
+
+/**
+ * Worker no-show (D-071). When the chosen worker never shows up, the poster
+ * cancels for free and is refunded IN FULL — the worker amount AND the 10%
+ * fee (normally non-refundable, D-014). Because the platform gives the fee
+ * back, the no-show worker owes exactly that fee as a debt, collected later
+ * from their earnings.
+ */
+export interface NoShowRefund {
+  /** Total returned to the poster's wallet: net + fee. */
+  posterRefundCents: number;
+  /** Debt the no-show worker now owes (= the refunded fee). */
+  workerDebtCents: number;
+}
+
+export function computeNoShowRefund(netCents: number): NoShowRefund {
+  const { feeCents, totalCents } = computeGigPricing(netCents);
+  return { posterRefundCents: totalCents, workerDebtCents: feeCents };
+}
+
+/** At most half of a completed job's net pay may be seized for debts (D-071). */
+export const DEBT_MAX_PAYOUT_SHARE = 0.5;
+
+export interface DebtCollection {
+  /** Amount taken from this payout toward the outstanding debt. */
+  deductedCents: number;
+  /** What the worker actually receives after the deduction (always ≥ 50%). */
+  workerGetsCents: number;
+  /** Debt still owed after this payout. */
+  remainingDebtCents: number;
+}
+
+/**
+ * Applies a worker's accumulated no-show debt against a completed job's net
+ * payout (D-071): seizes at most 50% of the payout so the worker always keeps
+ * at least half, and never more than what is owed. Multiple debts are passed
+ * as their summed `outstandingCents`; the caller settles individual rows with
+ * the returned `deductedCents`.
+ */
+export function applyDebtToPayout(netCents: number, outstandingCents: number): DebtCollection {
+  const cap = Math.floor(netCents * DEBT_MAX_PAYOUT_SHARE);
+  const deductedCents = Math.max(0, Math.min(outstandingCents, cap));
+  return {
+    deductedCents,
+    workerGetsCents: netCents - deductedCents,
+    remainingDebtCents: outstandingCents - deductedCents,
+  };
+}

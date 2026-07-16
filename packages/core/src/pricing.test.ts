@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { computeCancellationFine, computeGigPricing } from "./pricing";
+import {
+  applyDebtToPayout,
+  computeCancellationFine,
+  computeGigPricing,
+  computeNoShowRefund,
+} from "./pricing";
 
 describe("computeGigPricing", () => {
   it("adds the fee on top of the worker amount (example rate 10%)", () => {
@@ -48,3 +53,56 @@ describe("computeCancellationFine (D-018/D-020)", () => {
     expect(fine.posterRefundCents + fine.fineCents).toBe(9999);
   });
 });
+
+describe("computeNoShowRefund (D-071)", () => {
+  it("refunds net + fee in full and makes the fee the worker's debt", () => {
+    expect(computeNoShowRefund(10000)).toEqual({
+      posterRefundCents: 11000, // 10000 net + 1000 fee
+      workerDebtCents: 1000, // the refunded 10% fee
+    });
+  });
+
+  it("scales with the gig price", () => {
+    expect(computeNoShowRefund(5000)).toEqual({
+      posterRefundCents: 5500,
+      workerDebtCents: 500,
+    });
+  });
+});
+
+describe("applyDebtToPayout (D-071)", () => {
+  it("seizes the whole debt when it fits under half the payout", () => {
+    // owes 1000, payout 10000 → cap 5000, takes 1000, worker keeps 9000
+    expect(applyDebtToPayout(10000, 1000)).toEqual({
+      deductedCents: 1000,
+      workerGetsCents: 9000,
+      remainingDebtCents: 0,
+    });
+  });
+
+  it("never takes more than half — worker always keeps at least 50%", () => {
+    // owes 8000, payout 10000 → cap 5000, takes 5000, 3000 stays owed
+    expect(applyDebtToPayout(10000, 8000)).toEqual({
+      deductedCents: 5000,
+      workerGetsCents: 5000,
+      remainingDebtCents: 3000,
+    });
+  });
+
+  it("floors the 50% cap to whole cents", () => {
+    // payout 999 → cap floor(499.5)=499
+    expect(applyDebtToPayout(999, 1000)).toEqual({
+      deductedCents: 499,
+      workerGetsCents: 500,
+      remainingDebtCents: 501,
+    });
+  });
+
+  it("takes nothing when there is no debt", () => {
+    expect(applyDebtToPayout(10000, 0)).toEqual({
+      deductedCents: 0,
+      workerGetsCents: 10000,
+      remainingDebtCents: 0,
+    });
+  });
+})
