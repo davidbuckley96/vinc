@@ -59,13 +59,31 @@ export function useUpdateProfile() {
     },
     onSuccess: (result) => {
       if (result !== 'updated') return;
-      queryClient.invalidateQueries({ queryKey: ['my-profile'] });
-      // A1 (docs/13): a query de stats é ['profile','stats',userId] — invalidar
-      // ['profile-stats'] (uma string só) NÃO casava, então nome/cidade/foto
-      // ficavam velhos até reabrir o app. O prefixo ['profile','stats'] casa.
-      queryClient.invalidateQueries({ queryKey: ['profile', 'stats'] });
+      invalidateProfileSurfaces(queryClient);
     },
   });
+}
+
+/**
+ * G-06 (docs/16): mudar nome/cidade/foto deve refletir em TODA parte que mostra
+ * o usuário, sem reiniciar o app. A saudação/avatar já leem de `['my-profile']`
+ * (fonte única); aqui invalidamos também os lugares onde o nome/foto aparecem
+ * como "a outra pessoa" (vagas, agenda, conversas, candidatos, minhas
+ * atividades). A1 (docs/13): a query de stats é `['profile','stats',userId]` —
+ * o prefixo `['profile','stats']` casa.
+ */
+function invalidateProfileSurfaces(queryClient: ReturnType<typeof useQueryClient>) {
+  for (const key of [
+    ['my-profile'],
+    ['profile', 'stats'],
+    ['gigs'],
+    ['agenda'],
+    ['conversations'],
+    ['candidates'],
+    ['my-activity'],
+  ]) {
+    queryClient.invalidateQueries({ queryKey: key });
+  }
 }
 
 /**
@@ -87,11 +105,7 @@ export function useUploadAvatar() {
     },
     onSuccess: (url) => {
       if (!url) return;
-      queryClient.invalidateQueries({ queryKey: ['my-profile'] });
-      // A1 (docs/13): a query de stats é ['profile','stats',userId] — invalidar
-      // ['profile-stats'] (uma string só) NÃO casava, então nome/cidade/foto
-      // ficavam velhos até reabrir o app. O prefixo ['profile','stats'] casa.
-      queryClient.invalidateQueries({ queryKey: ['profile', 'stats'] });
+      invalidateProfileSurfaces(queryClient);
     },
   });
 }

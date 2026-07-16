@@ -73,11 +73,13 @@ export function PostScreen() {
         });
         return;
       }
-      // Publicou → vai direto para a vaga recém-criada (B-14). O formulário é
-      // remontado para começar limpo na próxima vez que a aba for aberta.
+      // Publicou → vai direto para a vaga recém-criada (B-14). Remonta o
+      // formulário ANTES de navegar (G-01, docs/16): com `push` (não `replace`,
+      // que apagava a pilha e travava o voltar), ao voltar a aba Anunciar já
+      // aparece com o formulário LIMPO, sem os dados da vaga recém-criada.
       setFormKey((key) => key + 1);
       if (outcome.gigId) {
-        router.replace(`/gig/${outcome.gigId}`);
+        router.push(`/gig/${outcome.gigId}`);
         return;
       }
       const pricing = computeGigPricing(draft.priceCents);

@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useSession } from '@/features/auth/session-context';
 import { useUnreadNotifications } from '@/features/notifications/hooks';
+import { useMyProfile } from '@/features/profile/hooks';
 import { useTheme } from '@/hooks/use-theme';
 
 import { DateStrip } from '../components/date-strip';
@@ -26,6 +27,12 @@ export function AgendaScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { userName } = useSession();
+  // G-06/G-14 (docs/16): nome e foto vêm SEMPRE de profiles.name/avatar_url
+  // (fonte única), não do user_metadata do login — assim a saudação e o avatar
+  // refletem edições na hora. `userName` fica só como placeholder até carregar.
+  const profile = useMyProfile();
+  const displayName = profile.data?.name ?? userName ?? null;
+  const avatarUrl = profile.data?.avatarUrl ?? null;
   const [view, setView] = useState<AgendaView>('day');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
 
@@ -51,7 +58,7 @@ export function AgendaScreen() {
             <View style={styles.headerRow}>
               <View>
                 <Text style={[styles.hello, { color: theme.onPrimary }]}>
-                  {userName ? `Olá, ${userName.split(' ')[0]}! 👋` : 'Olá! 👋'}
+                  {displayName ? `Olá, ${displayName.split(' ')[0]}! 👋` : 'Olá! 👋'}
                 </Text>
                 <Text style={[styles.date, { color: theme.onPrimaryMuted }]}>
                   {formatLongDate(selectedDate)}
@@ -73,11 +80,20 @@ export function AgendaScreen() {
                     </View>
                   )}
                 </Pressable>
-                <View style={[styles.avatar, { backgroundColor: theme.background }]}>
-                  <Text style={[styles.avatarLabel, { color: theme.primary }]}>
-                    {(userName ?? 'V').trim().charAt(0).toUpperCase()}
-                  </Text>
-                </View>
+                {/* G-07: abre o perfil · G-14: mostra a foto quando existir. */}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Abrir meu perfil"
+                  onPress={() => router.push('/profile')}
+                  style={[styles.avatar, { backgroundColor: theme.background }]}>
+                  {avatarUrl ? (
+                    <Image source={{ uri: avatarUrl }} style={styles.avatarImg} />
+                  ) : (
+                    <Text style={[styles.avatarLabel, { color: theme.primary }]}>
+                      {(displayName ?? 'V').trim().charAt(0).toUpperCase()}
+                    </Text>
+                  )}
+                </Pressable>
               </View>
             </View>
             <ViewSwitcher value={view} onChange={setView} />
@@ -183,6 +199,12 @@ const styles = StyleSheet.create({
     borderRadius: Radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  avatarImg: {
+    width: 38,
+    height: 38,
+    borderRadius: Radius.pill,
   },
   avatarLabel: {
     fontSize: 14,

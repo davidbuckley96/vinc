@@ -244,6 +244,9 @@ export function useUpdateGig() {
       if (result === 'updated') {
         queryClient.invalidateQueries({ queryKey: ['gigs'] });
         queryClient.invalidateQueries({ queryKey: ['agenda'] });
+        // G-04 (docs/16): a tela do dono lê ['service', gigId] — sem isto o
+        // endereço editado só atualizava ao reiniciar o app.
+        queryClient.invalidateQueries({ queryKey: ['service'] });
       }
     },
   });
