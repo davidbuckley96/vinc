@@ -1,0 +1,254 @@
+<meta charset="utf-8">
+<title>Rodada 23 — Navegação (perfil no topo + configurações) e câmera estilo WhatsApp</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --lilas:#F1EBFD; --lilas2:#FAF7FE; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --ok:#059669; --amarelo:#F59E0B; --azul:#2563EB; --danger:#DC2626; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:36px 24px;margin:0}
+  h1{font-size:22px;margin:0 0 4px}
+  h2{font-size:16px;margin:34px 0 6px;color:var(--roxo-deep)}
+  .sub{color:var(--ink2);font-size:13.5px;margin-bottom:14px;max-width:1000px;line-height:1.55}
+  .row{display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start}
+  .option{width:300px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;margin-bottom:8px;background:var(--lilas);color:var(--roxo)}
+  .tag.rec{background:var(--ok);color:#fff}
+  .option h3{margin:2px 0 4px;font-size:16px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 0 14px;min-height:64px}
+  .phone{width:300px;height:600px;border-radius:34px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .top{background:var(--roxo);color:#fff;padding:14px 15px 12px;display:flex;align-items:center;justify-content:space-between}
+  .top .t{font-size:17px;font-weight:800}
+  .top .acts{display:flex;gap:9px;align-items:center}
+  .icobtn{width:33px;height:33px;border-radius:99px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:15px}
+  .avatar{width:37px;height:37px;border-radius:99px;background:#fff;color:var(--roxo);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .avatar img{width:100%;height:100%;object-fit:cover}
+  .body{flex:1;overflow:hidden;background:#fff}
+  .tabbar{height:54px;border-top:1px solid var(--line);display:flex;background:#fff}
+  .tabbar .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9px;color:var(--ink2)}
+  .tabbar .tab .ic{font-size:18px;filter:grayscale(1) opacity(.55)}
+  .tabbar .tab.on{color:var(--roxo);font-weight:800}
+  .tabbar .tab.on .ic{filter:none}
+  .tabbar .tab.gone{opacity:.25;position:relative}
+  .tabbar .tab.gone::after{content:"✕";position:absolute;font-size:20px;color:var(--danger);font-weight:800}
+  /* listas de opções */
+  .rowitem{display:flex;align-items:center;gap:12px;padding:13px 15px;border-bottom:1px solid var(--line);font-size:14px}
+  .rowitem .ic{width:26px;text-align:center;font-size:16px}
+  .rowitem .lab{flex:1;font-weight:600}
+  .rowitem .chev{color:#c3c7cd;font-size:15px}
+  .rowitem .val{color:var(--ink2);font-size:12.5px}
+  .rowitem.danger{color:var(--danger)}
+  .grp{font-size:10.5px;font-weight:800;letter-spacing:.5px;color:var(--ink2);padding:14px 15px 5px;background:var(--lilas2)}
+  /* cabeçalho de perfil */
+  .phead{background:var(--roxo);color:#fff;padding:16px 15px 20px;text-align:center}
+  .phead .pav{width:66px;height:66px;border-radius:99px;background:#fff;color:var(--roxo);font-weight:800;font-size:26px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;overflow:hidden}
+  .phead .pav img{width:100%;height:100%;object-fit:cover}
+  .phead .pn{font-size:18px;font-weight:800}
+  .phead .pr{font-size:12.5px;opacity:.9;margin-top:2px}
+  .note{font-size:12.5px;color:var(--ink2);line-height:1.6;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:22px;max-width:1000px}
+  b{color:var(--ink)}
+  /* câmera */
+  .cam{position:relative;height:100%;background:#0d0d12;display:flex;flex-direction:column}
+  .camview{flex:1;position:relative;background:linear-gradient(160deg,#3a3550,#15131c);display:flex;align-items:center;justify-content:center;color:#8a8698;font-size:12px}
+  .camview .live{position:absolute;top:12px;left:12px;font-size:10.5px;color:#fff;background:rgba(0,0,0,.35);padding:3px 8px;border-radius:99px}
+  .camview .flip{position:absolute;top:10px;right:12px;width:32px;height:32px;border-radius:99px;background:rgba(0,0,0,.4);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px}
+  .camface{font-size:56px;opacity:.5}
+  .strip{background:#17151f;padding:9px 10px;display:flex;gap:7px;align-items:center;overflow:hidden}
+  .strip .g{width:44px;height:44px;border-radius:9px;flex:none;background:linear-gradient(135deg,#4c466a,#2a2738);display:flex;align-items:center;justify-content:center;color:#9a95ad;font-size:16px}
+  .strip .g.first{background:linear-gradient(135deg,#6D28D9,#4C1D95);color:#fff;flex-direction:column;font-size:15px;gap:1px}
+  .strip .g.first small{font-size:8px;font-weight:700}
+  .camctrl{background:#0d0d12;padding:13px 20px 20px;display:flex;align-items:center;justify-content:space-between}
+  .camctrl .side{width:44px;height:44px;border-radius:11px;background:#26232f;display:flex;align-items:center;justify-content:center;color:#cfc9df;font-size:19px}
+  .shutter{width:64px;height:64px;border-radius:99px;background:#fff;border:5px solid rgba(255,255,255,.35)}
+  .camhint{color:#8a8698;font-size:10.5px;text-align:center;padding:0 0 8px;background:#0d0d12}
+</style>
+
+<h1>Rodada 23 — Perfil no topo + Configurações, e câmera estilo WhatsApp</h1>
+<p class="sub">
+Feedbacks <b>G-08</b> (tirar a aba "Perfil" de baixo → abrir pelo avatar do topo, e criar <b>Configurações</b>),
+<b>G-02</b> (barra de baixo) e <b>G-05</b> (câmera com foto ao vivo + recentes + galeria numa tela só).
+Escolha o layout de <b>Perfil × Configurações</b> (Opção A ou B) e confirme a <b>lista de Configurações</b> e a
+<b>câmera</b>.</p>
+
+<!-- ============================ BARRA DE BAIXO ============================ -->
+<h2>1 · Barra de baixo — sai a aba "Perfil" (G-08)</h2>
+<p class="sub">Antes eram <b>6 abas</b> (apertado). Tirando "Perfil", ficam <b>5</b> — mais respiráveis. O perfil
+passa a abrir pelo <b>avatar no canto superior direito</b> (que já mostra sua foto, G-14). A barra fica igual em
+todas as telas principais.</p>
+<div class="row">
+  <div class="option">
+    <span class="tag">antes</span>
+    <div class="tabbar" style="border:1px solid var(--line);border-radius:14px">
+      <div class="tab on"><span class="ic">📅</span>Agenda</div>
+      <div class="tab"><span class="ic">🔍</span>Buscar</div>
+      <div class="tab"><span class="ic">➕</span>Anunciar</div>
+      <div class="tab"><span class="ic">💬</span>Mensagens</div>
+      <div class="tab"><span class="ic">👛</span>Carteira</div>
+      <div class="tab gone"><span class="ic">👤</span>Perfil</div>
+    </div>
+  </div>
+  <div class="option">
+    <span class="tag rec">depois (recomendado)</span>
+    <div class="tabbar" style="border:1px solid var(--line);border-radius:14px">
+      <div class="tab on"><span class="ic">📅</span>Agenda</div>
+      <div class="tab"><span class="ic">🔍</span>Buscar</div>
+      <div class="tab"><span class="ic">➕</span>Anunciar</div>
+      <div class="tab"><span class="ic">💬</span>Mensagens</div>
+      <div class="tab"><span class="ic">👛</span>Carteira</div>
+    </div>
+    <p style="min-height:0;margin-top:10px">O avatar do topo abre o Perfil →</p>
+    <div style="display:flex;justify-content:flex-end;background:var(--roxo);border-radius:12px;padding:9px 12px">
+      <div class="acts"><div class="icobtn" style="color:#fff">🔔</div><div class="avatar">D</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ PERFIL × CONFIGURAÇÕES ============================ -->
+<h2>2 · Perfil e Configurações (G-08) — escolha A ou B</h2>
+<p class="sub">Hoje tudo mora como linhas soltas no Perfil. Você pediu uma tela de <b>Configurações</b>. Duas
+formas de dividir:</p>
+<div class="row">
+
+  <!-- Opção A -->
+  <div class="option">
+    <span class="tag rec">Opção A (recomendada)</span>
+    <h3>Perfil enxuto + engrenagem</h3>
+    <p>O Perfil mostra sua <b>reputação e suas vagas/candidaturas</b> (o que é "sobre você"). Uma <b>engrenagem</b>
+    no topo abre <b>Configurações</b>, onde ficam conta, preferências, ajuda e sair. Separa bem "quem eu sou" de
+    "ajustes do app".</p>
+    <div class="phone">
+      <div class="phead">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div class="icobtn" style="background:rgba(255,255,255,.16)">‹</div>
+          <div class="icobtn" style="background:rgba(255,255,255,.16)">⚙️</div>
+        </div>
+        <div class="pav">D</div>
+        <div class="pn">David</div>
+        <div class="pr">★ 5,0 · membro desde jul/2026</div>
+      </div>
+      <div class="body">
+        <div class="grp">MINHAS VAGAS E CANDIDATURAS</div>
+        <div class="rowitem"><span class="ic">📋</span><span class="lab">2 vagas abertas</span><span class="chev">›</span></div>
+        <div class="rowitem"><span class="ic">✋</span><span class="lab">1 candidatura enviada</span><span class="chev">›</span></div>
+        <div class="grp">CONTA</div>
+        <div class="rowitem"><span class="ic">✏️</span><span class="lab">Editar perfil</span><span class="chev">›</span></div>
+        <div class="rowitem"><span class="ic">🔔</span><span class="lab">Alertas de vagas</span><span class="chev">›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Opção B -->
+  <div class="option">
+    <span class="tag">Opção B</span>
+    <h3>Tudo em Configurações</h3>
+    <p>O Perfil vira só a <b>vitrine da reputação</b> (foto, nota, sobre). <b>Todo o resto</b> — editar, Pix,
+    alertas, ajuda, tema, sair — mora dentro de <b>Configurações</b>. Perfil bem limpo, mas exige um toque a mais
+    pra chegar nas ações do dia a dia.</p>
+    <div class="phone">
+      <div class="phead">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div class="icobtn" style="background:rgba(255,255,255,.16)">‹</div>
+          <div class="icobtn" style="background:rgba(255,255,255,.16)">⚙️</div>
+        </div>
+        <div class="pav">D</div>
+        <div class="pn">David</div>
+        <div class="pr">★ 5,0 · 12 serviços concluídos</div>
+      </div>
+      <div class="body">
+        <div class="grp">SOBRE</div>
+        <div class="rowitem"><span class="lab" style="font-weight:600;color:var(--ink2)">Ajudo com faxina e pequenos reparos. Pontual e caprichoso.</span></div>
+        <div class="grp">ATIVIDADE</div>
+        <div class="rowitem"><span class="ic">📋</span><span class="lab">2 vagas abertas</span><span class="chev">›</span></div>
+        <div class="rowitem"><span class="ic">✋</span><span class="lab">1 candidatura</span><span class="chev">›</span></div>
+        <div class="rowitem" style="justify-content:center;color:var(--roxo);font-weight:800"><span class="lab" style="flex:0">⚙️ Abrir configurações</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tela de Configurações (comum às duas) -->
+  <div class="option">
+    <span class="tag">tela de Configurações</span>
+    <h3>O que proponho ter aqui</h3>
+    <p>Mesma tela nas duas opções. <b>Confirme/edite a lista</b> — dá pra tirar, acrescentar ou renomear qualquer
+    item (ex.: idioma, excluir conta…).</p>
+    <div class="phone">
+      <div class="top"><div class="t">Configurações</div><div class="acts"><div class="icobtn">‹</div></div></div>
+      <div class="body" style="overflow:auto">
+        <div class="grp">CONTA</div>
+        <div class="rowitem"><span class="ic">✏️</span><span class="lab">Editar perfil</span><span class="chev">›</span></div>
+        <div class="rowitem"><span class="ic">🔑</span><span class="lab">Minha chave Pix</span><span class="chev">›</span></div>
+        <div class="grp">PREFERÊNCIAS</div>
+        <div class="rowitem"><span class="ic">🌓</span><span class="lab">Tema</span><span class="val">Automático ›</span></div>
+        <div class="rowitem"><span class="ic">🔔</span><span class="lab">Notificações</span><span class="chev">›</span></div>
+        <div class="rowitem"><span class="ic">📣</span><span class="lab">Alertas de vagas</span><span class="chev">›</span></div>
+        <div class="grp">AJUDA</div>
+        <div class="rowitem"><span class="ic">💜</span><span class="lab">Falar com a Vi</span><span class="chev">›</span></div>
+        <div class="rowitem"><span class="ic">❓</span><span class="lab">Central de Ajuda</span><span class="chev">›</span></div>
+        <div class="grp">SOBRE</div>
+        <div class="rowitem"><span class="ic">📄</span><span class="lab">Termos e Privacidade</span><span class="chev">›</span></div>
+        <div class="rowitem"><span class="ic">ℹ️</span><span class="lab">Versão</span><span class="val">1.0.0</span></div>
+        <div class="rowitem danger"><span class="ic">↩︎</span><span class="lab">Sair da conta</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ CÂMERA ============================ -->
+<h2>3 · Câmera estilo WhatsApp (G-05) — em todo lugar que envia foto</h2>
+<p class="sub">Uma <b>tela só</b>: câmera ao vivo em cima, <b>tira de fotos recentes</b> logo abaixo do botão de
+captura, e atalho pra <b>Galeria</b> inteira. Usada no <b>perfil</b>, na <b>conclusão de serviço</b> e na
+<b>disputa/reembolso</b>. (É a Opção A que você já tinha pedido — mando esta captura como combinado.)</p>
+<div class="row">
+  <div class="option">
+    <span class="tag rec">tela única (câmera + recentes + galeria)</span>
+    <div class="phone">
+      <div class="cam">
+        <div class="camview">
+          <span class="live">● câmera ao vivo</span>
+          <span class="flip">🔄</span>
+          <span class="camface">😊</span>
+        </div>
+        <div class="camhint">toque no botão pra tirar · ou escolha uma foto recente abaixo</div>
+        <div class="strip">
+          <div class="g first">🖼️<small>Galeria</small></div>
+          <div class="g">🏞️</div>
+          <div class="g">🌆</div>
+          <div class="g">🐕</div>
+          <div class="g">🍽️</div>
+          <div class="g">🚗</div>
+        </div>
+        <div class="camctrl">
+          <div class="side">🖼️</div>
+          <div class="shutter"></div>
+          <div class="side">⚡</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="option" style="width:360px">
+    <h3 style="margin-top:6px">Como funciona</h3>
+    <p style="min-height:0">
+      • <b>Visor ao vivo</b> ocupa o topo — já dá pra enquadrar e tirar na hora.<br>
+      • <b>Botão branco</b> = tirar foto. O <b>🔄</b> troca frente/trás.<br>
+      • A <b>tira de recentes</b> deixa mandar uma foto que você já tem sem sair da tela; o 1º quadrado roxo
+      <b>"Galeria"</b> abre o rolo inteiro.<br>
+      • Mesmo componente nos 3 lugares de foto — comportamento idêntico ao WhatsApp.<br><br>
+      <b>Técnico:</b> precisa de <code>expo-camera</code> (visor) + <code>expo-media-library</code> (recentes/galeria) e
+      da permissão de câmera. É o caminho que você pediu; um pouco mais de trabalho, mas é a experiência certa.
+    </p>
+  </div>
+</div>
+
+<!-- ============================ G-02 ============================ -->
+<h2>4 · G-02 · Barra de baixo "sempre visível" nas telas de detalhe</h2>
+<div class="note">
+  Hoje as telas de <b>detalhe</b> (vaga, serviço, chat, perfil…) cobrem a barra de baixo — elas não são "dentro"
+  de uma aba, são irmãs. Deixar a barra <b>sempre visível</b> exige <b>reestruturar as rotas</b> (um fluxo
+  aninhado por aba) e mexe na navegação do app inteiro (item pesado, mais risco). <b>Recomendo separar do resto:</b>
+  faço agora o <b>G-08</b> (tirar Perfil + Configurações) e garanto que <b>toda tela de detalhe tem "voltar"</b>
+  funcionando (já fiz o G-01); a <b>barra-sempre-visível</b> fica pra uma fase dedicada de navegação. Se preferir,
+  faço a reestruturação completa agora — só me diz.
+</div>
+
+<div class="note">
+  <b>Preciso de você:</b> (1) Perfil × Configurações — <b>Opção A ou B?</b> · (2) a <b>lista de Configurações</b>
+  acima está boa? tirar/adicionar algo (idioma, excluir conta, convidar amigos…)? · (3) confirma a <b>câmera</b>
+  como na tela única? · (4) G-02: <b>adiar</b> a barra-sempre-visível (recomendo) ou <b>fazer agora</b>?
+</div>
