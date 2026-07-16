@@ -97,6 +97,26 @@ export function posterCanEdit(status: GigStatus): boolean {
   return status === "open";
 }
 
+/** Tolerance after the scheduled start before a no-show can be declared (D-071). */
+export const NO_SHOW_GRACE_MS = 30 * 60 * 1000;
+
+/**
+ * Whether the POSTER may free-cancel for a worker no-show (D-071): a candidate
+ * was chosen and paid (`accepted`) but never started the service
+ * (`startedAt` null) and the 30-minute tolerance past the scheduled start has
+ * elapsed. Same code runs in the app (to show the button) and in the Edge
+ * Function (authoritative).
+ */
+export function canDeclareNoShow(input: {
+  status: GigStatus;
+  startsAt: string;
+  startedAt: string | null;
+  now: Date;
+}): boolean {
+  if (input.status !== "accepted" || input.startedAt) return false;
+  return input.now.getTime() >= new Date(input.startsAt).getTime() + NO_SHOW_GRACE_MS;
+}
+
 /** Which lifecycle action each role may perform at a given status. */
 export function allowedLifecycleAction(
   status: GigStatus,

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { canTransition, posterCanDelete, posterCanEdit } from "./gig";
+import {
+  canDeclareNoShow,
+  canTransition,
+  NO_SHOW_GRACE_MS,
+  posterCanDelete,
+  posterCanEdit,
+} from "./gig";
 
 describe("deletion transitions (docs/02 §5.1)", () => {
   it("allows deleting before anyone is approved", () => {
@@ -44,3 +50,49 @@ describe("posterCanEdit", () => {
     expect(posterCanEdit("accepted")).toBe(false);
   });
 });
+
+describe("canDeclareNoShow (D-071)", () => {
+  const startsAt = "2026-07-16T09:00:00.000Z";
+  const after = (ms: number) => new Date(new Date(startsAt).getTime() + ms);
+
+  it("allows the poster once the 30-min tolerance passed and nobody started", () => {
+    expect(
+      canDeclareNoShow({
+        status: "accepted",
+        startsAt,
+        startedAt: null,
+        now: after(NO_SHOW_GRACE_MS),
+      }),
+    ).toBe(true);
+  });
+
+  it("blocks before the tolerance elapses", () => {
+    expect(
+      canDeclareNoShow({
+        status: "accepted",
+        startsAt,
+        startedAt: null,
+        now: after(NO_SHOW_GRACE_MS - 1),
+      }),
+    ).toBe(false);
+  });
+
+  it("blocks once the worker has started (started_at set)", () => {
+    expect(
+      canDeclareNoShow({
+        status: "accepted",
+        startsAt,
+        startedAt: after(5 * 60 * 1000).toISOString(),
+        now: after(NO_SHOW_GRACE_MS),
+      }),
+    ).toBe(false);
+  });
+
+  it("only applies to accepted gigs", () => {
+    for (const status of ["in_progress", "open", "completed"] as const) {
+      expect(
+        canDeclareNoShow({ status, startsAt, startedAt: null, now: after(NO_SHOW_GRACE_MS) }),
+      ).toBe(false);
+    }
+  });
+})
