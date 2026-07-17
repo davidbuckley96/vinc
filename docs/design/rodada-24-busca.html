@@ -1,0 +1,222 @@
+<meta charset="utf-8">
+<title>Rodada 24 — Busca: vagas primeiro + filtrar (H-03)</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --lilas:#F1EBFD; --lilas2:#FAF7FE; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --ok:#059669; --amarelo:#F59E0B; --azul:#2563EB; --danger:#DC2626; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:36px 24px;margin:0}
+  h1{font-size:22px;margin:0 0 4px}
+  h2{font-size:16px;margin:34px 0 6px;color:var(--roxo-deep)}
+  .sub{color:var(--ink2);font-size:13.5px;margin-bottom:14px;max-width:1040px;line-height:1.55}
+  .row{display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start}
+  .option{width:300px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;margin-bottom:8px;background:var(--lilas);color:var(--roxo)}
+  .tag.rec{background:var(--ok);color:#fff}
+  .tag.now{background:#eef0f3;color:var(--ink2)}
+  .option h3{margin:2px 0 4px;font-size:16px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 0 14px;min-height:78px}
+  .phone{width:300px;height:600px;border-radius:34px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .top{background:var(--roxo);color:#fff;padding:15px 15px 13px}
+  .top .t{font-size:17px;font-weight:800}
+  .body{flex:1;overflow:hidden;background:#fff;display:flex;flex-direction:column}
+  .tabbar{height:50px;border-top:1px solid var(--line);display:flex;background:#fff}
+  .tabbar .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:8.5px;color:var(--ink2)}
+  .tabbar .tab .ic{font-size:16px;filter:grayscale(1) opacity(.55)}
+  .tabbar .tab.on{color:var(--roxo);font-weight:800}
+  .tabbar .tab.on .ic{filter:none}
+  /* region bar */
+  .region{display:flex;align-items:center;gap:6px;background:var(--lilas);color:var(--roxo-deep);margin:10px 12px 0;padding:8px 11px;border-radius:11px;font-size:11.5px;font-weight:700}
+  .region .chev{margin-left:auto;color:#a99fc7}
+  /* filtrar button + chips */
+  .filtbar{display:flex;align-items:center;gap:8px;padding:10px 12px 4px;flex-wrap:wrap}
+  .filtbtn{display:flex;align-items:center;gap:6px;border:1.5px solid var(--roxo);color:var(--roxo);background:#fff;border-radius:99px;padding:7px 13px;font-size:12.5px;font-weight:800}
+  .filtbtn .badge{background:var(--roxo);color:#fff;border-radius:99px;font-size:10px;min-width:17px;height:17px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+  .fchip{display:flex;align-items:center;gap:5px;background:var(--roxo);color:#fff;border-radius:99px;padding:6px 10px;font-size:11.5px;font-weight:700}
+  .fchip .x{opacity:.8;font-size:12px}
+  .chip{border:1.5px solid var(--line);border-radius:99px;padding:6px 11px;font-size:11.5px;font-weight:700;color:var(--ink2);background:#fff;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+  .chip.on{background:var(--roxo);border-color:var(--roxo);color:#fff}
+  .scrollx{display:flex;gap:7px;overflow:hidden;padding:8px 12px 4px}
+  .count{font-size:11px;font-weight:800;letter-spacing:.3px;color:var(--ink2);padding:8px 14px 2px}
+  /* gig list */
+  .list{flex:1;overflow:hidden;padding:4px 12px 10px}
+  .gig{border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:9px}
+  .gig .gt{font-size:13.5px;font-weight:800;margin-bottom:3px}
+  .gig .gm{font-size:11px;color:var(--ink2);display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px}
+  .gig .gm .cat{color:var(--roxo);font-weight:700}
+  .gig .gf{display:flex;align-items:center;justify-content:space-between}
+  .gig .price{font-size:15px;font-weight:900;color:var(--ok)}
+  .gig .dist{font-size:10.5px;color:var(--ink2)}
+  /* search field (option C) */
+  .searchf{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);border-radius:11px;padding:9px 12px;margin-top:11px;color:#e9e2fb;font-size:13px}
+  .searchf .fi{margin-left:auto;background:rgba(255,255,255,.22);width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px}
+  /* bottom sheet */
+  .sheet{position:relative;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.12);margin-top:auto;padding:6px 15px 15px}
+  .grab{width:38px;height:4px;border-radius:99px;background:#d8dae0;margin:6px auto 12px}
+  .sheet h4{font-size:12px;font-weight:800;color:var(--ink2);letter-spacing:.3px;margin:12px 0 7px}
+  .sheet .wrapc{display:flex;flex-wrap:wrap;gap:7px}
+  .cta{background:var(--roxo);color:#fff;text-align:center;font-weight:800;font-size:14px;border-radius:13px;padding:13px;margin-top:16px}
+  .catgrid{display:flex;flex-wrap:wrap;gap:7px}
+  .catmini{display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font-size:11.5px;font-weight:700;color:var(--ink)}
+  .catmini.on{border-color:var(--roxo);background:var(--lilas)}
+  .dim{background:rgba(20,18,30,.34)}
+  .note{font-size:12.5px;color:var(--ink2);line-height:1.6;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:22px;max-width:1040px}
+  b{color:var(--ink)}
+  /* "antes" tiles */
+  .tiles{display:flex;flex-wrap:wrap;gap:9px;padding:12px}
+  .tile{width:calc(50% - 5px);background:var(--lilas);border-radius:14px;padding:18px 8px;text-align:center;font-size:11.5px;font-weight:700;color:var(--roxo-deep)}
+  .tile .ti{font-size:22px;display:block;margin-bottom:5px}
+  .allb{margin:0 12px;background:var(--roxo);color:#fff;text-align:center;font-weight:800;font-size:13px;border-radius:11px;padding:11px}
+</style>
+
+<h1>Rodada 24 — Busca: mostrar as vagas primeiro (H-03)</h1>
+<p class="sub">
+Feedback do David: hoje a busca abre com <b>cards de categoria grandes</b> e é preciso <b>rolar pra baixo</b> pra
+começar a ver vagas. Ele sugeriu: <b>mostrar por padrão as vagas de todas as categorias</b> e ter só um
+<b>botão "Filtrar"</b> em cima (dia, hora e categoria). Abaixo, 3 formas de fazer isso. Escolha <b>A, B ou C</b>
+(dá pra misturar detalhes).</p>
+
+<!-- ANTES -->
+<h2>Como está hoje</h2>
+<div class="row">
+  <div class="option">
+    <span class="tag now">antes</span>
+    <h3>Categorias primeiro</h3>
+    <p>Tiles grandes ocupam a tela inteira; as vagas ("Vagas recentes") só aparecem <b>depois de rolar</b>. Vir de
+    um horário da agenda já filtra, mas mesmo assim a lista começa longe do topo.</p>
+    <div class="phone">
+      <div class="top"><div class="t">Procurar trabalhos</div></div>
+      <div class="body">
+        <div class="region">📍 Meu bairro · até 10 km <span class="chev">›</span></div>
+        <div class="scrollx"><span class="chip on">Qualquer dia</span><span class="chip">Hoje</span><span class="chip">Amanhã</span><span class="chip">📅 Datas</span></div>
+        <div class="allb">▦ Ver todas as vagas</div>
+        <div class="tiles">
+          <div class="tile"><span class="ti">🧹</span>Serviços domésticos</div>
+          <div class="tile"><span class="ti">👶</span>Cuidados</div>
+          <div class="tile"><span class="ti">🎉</span>Eventos</div>
+          <div class="tile"><span class="ti">🔧</span>Reparos</div>
+        </div>
+        <div class="count">↓ VAGAS RECENTES (rolar pra ver)</div>
+      </div>
+      <div class="tabbar"><div class="tab"><span class="ic">📅</span>Agenda</div><div class="tab on"><span class="ic">🔍</span>Buscar</div><div class="tab"><span class="ic">➕</span>Anunciar</div><div class="tab"><span class="ic">💬</span>Mensagens</div><div class="tab"><span class="ic">👛</span>Carteira</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- OPÇÕES -->
+<h2>Opções novas — vagas logo de cara</h2>
+<div class="row">
+
+  <!-- OPÇÃO A -->
+  <div class="option">
+    <span class="tag rec">Opção A (recomendada)</span>
+    <h3>Vagas + botão "Filtrar"</h3>
+    <p>Exatamente sua ideia: a lista de <b>todas as vagas</b> abre já no topo. Um único botão <b>Filtrar</b> (com o
+    número de filtros ativos) abre uma <b>gaveta</b> com dia, hora e categoria. Os filtros ativos viram
+    <b>chips removíveis</b> ao lado do botão. Sem tiles grandes na frente.</p>
+    <div class="phone">
+      <div class="top"><div class="t">Procurar trabalhos</div></div>
+      <div class="body">
+        <div class="region">📍 Meu bairro · até 10 km <span class="chev">›</span></div>
+        <div class="filtbar">
+          <div class="filtbtn">🎚️ Filtrar <span class="badge">2</span></div>
+          <div class="fchip">ter 21 <span class="x">✕</span></div>
+          <div class="fchip">15h <span class="x">✕</span></div>
+        </div>
+        <div class="count">32 VAGAS PERTO DE VOCÊ</div>
+        <div class="list">
+          <div class="gig"><div class="gt">Faxina em apartamento 2 quartos</div><div class="gm"><span class="cat">Serviços domésticos</span> · ter 21, 15h–18h</div><div class="gf"><span class="price">R$ 120</span><span class="dist">a 1,2 km</span></div></div>
+          <div class="gig"><div class="gt">Garçom para festa de aniversário</div><div class="gm"><span class="cat">Eventos</span> · ter 21, 19h–23h</div><div class="gf"><span class="price">R$ 180</span><span class="dist">a 2,0 km</span></div></div>
+          <div class="gig"><div class="gt">Montar guarda-roupa</div><div class="gm"><span class="cat">Reparos</span> · ter 21, 15h–16h</div><div class="gf"><span class="price">R$ 90</span><span class="dist">a 3,4 km</span></div></div>
+        </div>
+      </div>
+      <div class="tabbar"><div class="tab"><span class="ic">📅</span>Agenda</div><div class="tab on"><span class="ic">🔍</span>Buscar</div><div class="tab"><span class="ic">➕</span>Anunciar</div><div class="tab"><span class="ic">💬</span>Mensagens</div><div class="tab"><span class="ic">👛</span>Carteira</div></div>
+    </div>
+    <p style="min-height:0;margin-top:12px"><b>A gaveta de filtros</b> (ao tocar "Filtrar"):</p>
+    <div class="phone">
+      <div class="top"><div class="t">Procurar trabalhos</div></div>
+      <div class="body dim" style="justify-content:flex-end">
+        <div class="sheet">
+          <div class="grab"></div>
+          <h4>DIA</h4>
+          <div class="wrapc"><span class="chip">Qualquer</span><span class="chip">Hoje</span><span class="chip on">ter 21</span><span class="chip">📅 Escolher</span></div>
+          <h4>HORA</h4>
+          <div class="wrapc"><span class="chip">Qualquer</span><span class="chip on">15h</span><span class="chip">16h</span><span class="chip">17h</span><span class="chip">18h</span></div>
+          <h4>CATEGORIA</h4>
+          <div class="catgrid"><span class="catmini on">🧹 Domésticos</span><span class="catmini">👶 Cuidados</span><span class="catmini">🎉 Eventos</span><span class="catmini">🔧 Reparos</span></div>
+          <div class="cta">Ver 32 vagas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPÇÃO B -->
+  <div class="option">
+    <span class="tag">Opção B</span>
+    <h3>Barra de filtros sempre visível</h3>
+    <p>Sem gaveta: uma <b>linha compacta</b> de filtros fica sempre no topo — <b>Dia ▾ · Hora ▾ · Categoria ▾</b> —
+    e as vagas vêm logo abaixo. Tocar num filtro abre um menu curtinho. Tudo cabe acima da dobra, sem esconder
+    nada, mas ocupa uma faixa fixa de espaço.</p>
+    <div class="phone">
+      <div class="top"><div class="t">Procurar trabalhos</div></div>
+      <div class="body">
+        <div class="region">📍 Meu bairro · até 10 km <span class="chev">›</span></div>
+        <div class="scrollx" style="padding-bottom:2px"><span class="chip on">📅 ter 21 ▾</span><span class="chip on">🕒 15h ▾</span><span class="chip">▦ Categoria ▾</span></div>
+        <div class="count">32 VAGAS PERTO DE VOCÊ</div>
+        <div class="list">
+          <div class="gig"><div class="gt">Faxina em apartamento 2 quartos</div><div class="gm"><span class="cat">Serviços domésticos</span> · ter 21, 15h–18h</div><div class="gf"><span class="price">R$ 120</span><span class="dist">a 1,2 km</span></div></div>
+          <div class="gig"><div class="gt">Garçom para festa de aniversário</div><div class="gm"><span class="cat">Eventos</span> · ter 21, 19h–23h</div><div class="gf"><span class="price">R$ 180</span><span class="dist">a 2,0 km</span></div></div>
+          <div class="gig"><div class="gt">Montar guarda-roupa</div><div class="gm"><span class="cat">Reparos</span> · ter 21, 15h–16h</div><div class="gf"><span class="price">R$ 90</span><span class="dist">a 3,4 km</span></div></div>
+        </div>
+      </div>
+      <div class="tabbar"><div class="tab"><span class="ic">📅</span>Agenda</div><div class="tab on"><span class="ic">🔍</span>Buscar</div><div class="tab"><span class="ic">➕</span>Anunciar</div><div class="tab"><span class="ic">💬</span>Mensagens</div><div class="tab"><span class="ic">👛</span>Carteira</div></div>
+    </div>
+    <p style="min-height:0;margin-top:12px">Tocar <b>Categoria ▾</b> abre um menu curto (sem sair da lista):</p>
+    <div class="phone">
+      <div class="top"><div class="t">Procurar trabalhos</div></div>
+      <div class="body dim" style="justify-content:flex-end">
+        <div class="sheet">
+          <div class="grab"></div>
+          <h4>CATEGORIA</h4>
+          <div class="catgrid"><span class="catmini on">Todas</span><span class="catmini">🧹 Domésticos</span><span class="catmini">👶 Cuidados</span><span class="catmini">🎉 Eventos</span><span class="catmini">🔧 Reparos</span></div>
+          <div class="cta">Aplicar</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPÇÃO C -->
+  <div class="option">
+    <span class="tag">Opção C</span>
+    <h3>Campo de busca + filtro</h3>
+    <p>Mais parecido com iFood/OLX: um <b>campo de texto</b> ("Buscar serviço…") no topo com um <b>ícone de
+    filtro</b> ao lado (dia/hora/categoria na gaveta). Abaixo, chips de categoria pequenos pra atalho rápido e as
+    vagas logo em seguida. Bom se quisermos <b>busca por palavra</b> no futuro.</p>
+    <div class="phone">
+      <div class="top">
+        <div class="t" style="margin-bottom:2px">Procurar trabalhos</div>
+        <div class="searchf">🔍 Buscar serviço… <span class="fi">🎚️</span></div>
+      </div>
+      <div class="body">
+        <div class="region">📍 Meu bairro · até 10 km <span class="chev">›</span></div>
+        <div class="scrollx"><span class="chip on">Todas</span><span class="chip">🧹 Domésticos</span><span class="chip">👶 Cuidados</span><span class="chip">🎉 Eventos</span></div>
+        <div class="count">32 VAGAS PERTO DE VOCÊ</div>
+        <div class="list">
+          <div class="gig"><div class="gt">Faxina em apartamento 2 quartos</div><div class="gm"><span class="cat">Serviços domésticos</span> · ter 21, 15h–18h</div><div class="gf"><span class="price">R$ 120</span><span class="dist">a 1,2 km</span></div></div>
+          <div class="gig"><div class="gt">Garçom para festa de aniversário</div><div class="gm"><span class="cat">Eventos</span> · ter 21, 19h–23h</div><div class="gf"><span class="price">R$ 180</span><span class="dist">a 2,0 km</span></div></div>
+          <div class="gig"><div class="gt">Montar guarda-roupa</div><div class="gm"><span class="cat">Reparos</span> · ter 21, 15h–16h</div><div class="gf"><span class="price">R$ 90</span><span class="dist">a 3,4 km</span></div></div>
+        </div>
+      </div>
+      <div class="tabbar"><div class="tab"><span class="ic">📅</span>Agenda</div><div class="tab on"><span class="ic">🔍</span>Buscar</div><div class="tab"><span class="ic">➕</span>Anunciar</div><div class="tab"><span class="ic">💬</span>Mensagens</div><div class="tab"><span class="ic">👛</span>Carteira</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+<b>Recomendo a Opção A.</b> É a que você descreveu: as vagas abrem no topo, e um único botão <b>Filtrar</b> junta
+dia, hora e categoria numa gaveta — telas simples, poucos toques (nossa regra de simplicidade). Os <b>chips
+removíveis</b> deixam claro o que está filtrando e permitem tirar um filtro com um toque. Vindo de um horário da
+agenda (H-03), a gaveta já vem com o dia+hora marcados e a lista filtrada. As <b>categorias não somem</b> — passam
+a morar dentro do filtro (grade pequena), resolvendo o "cards grandes demais". A Opção B evita a gaveta mas gasta
+uma faixa fixa de tela; a C adiciona busca por texto (mais poderosa, porém mais "app grande" — talvez demais pro
+público de baixa escolaridade). Me diz qual seguir que eu implemento.
+</div>

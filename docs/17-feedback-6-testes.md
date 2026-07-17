@@ -37,7 +37,8 @@ Clicar num dia (semana/mês) ou num horário (diária) e escolher "Anunciar vaga
 deve levar aquele dia+hora para o formulário, em vez do padrão (amanhã, 14h).
 **Correção:** a timeline manda `day`/`hour` no `router.push('/post?...')`; a tela
 de anúncio monta um `GigDraft` inicial com o `startsAt` no dia/hora marcados
-(duração padrão de 2h) e o `GigForm` semeia os campos. Como o form só semeia na
+(duração padrão de 1h — igual ao form normal, `startHour → startHour+1`; David
+apontou que o padrão é 1h, não 2h) e o `GigForm` semeia os campos. Como só semeia na
 montagem, remontamos (bump de `key`) quando chega um novo horário; tocar de novo
 na aba "Anunciar" limpa os params e volta ao padrão. — **M** · ✅ **Feito**
 (verificado: slot 15h → "seg, 20 jul" + "15:00 até 17:00").

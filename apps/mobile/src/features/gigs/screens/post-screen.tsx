@@ -38,7 +38,8 @@ export function PostScreen() {
     if (!y || !m || !d) return undefined;
     const h = params.hour != null && params.hour !== '' ? Number(params.hour) : 14;
     const start = new Date(y, m - 1, d, h, 0, 0, 0);
-    const end = new Date(start.getTime() + 2 * 3_600_000);
+    // Duração padrão de 1h (igual ao form normal: startHour → startHour+1).
+    const end = new Date(start.getTime() + 3_600_000);
     return {
       categoryId: '',
       title: '',

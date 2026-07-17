@@ -137,12 +137,24 @@ export function DayTimeline({
     const { y } = e.nativeEvent.layout;
     for (let h = startHour; h < startHour + span; h += 1) hourY.current[h] = y;
   };
+  // O scroll é só um POSICIONAMENTO INICIAL (David): rola uma vez para a hora do
+  // deep-link e não prende o usuário ali. Sem isto, cada refetch da agenda (o
+  // react-query devolve um novo array `commitments`) redispararia o efeito e
+  // puxaria a tela de volta mesmo depois de a pessoa ter rolado para outra hora.
+  const scrolledFor = useRef<number | null>(null);
   useEffect(() => {
-    if (scrollToHour == null) return;
+    if (scrollToHour == null) {
+      scrolledFor.current = null; // reset para um próximo deep-link
+      return;
+    }
+    if (scrolledFor.current === scrollToHour) return; // já posicionou nesta hora
     // Let the rows lay out first, then scroll a touch above the target hour.
     const timer = setTimeout(() => {
       const y = hourY.current[scrollToHour];
-      if (y != null) scrollRef.current?.scrollTo({ y: Math.max(0, y - 12), animated: true });
+      if (y != null) {
+        scrollRef.current?.scrollTo({ y: Math.max(0, y - 12), animated: true });
+        scrolledFor.current = scrollToHour; // marca como feito só ao rolar de fato
+      }
     }, 350);
     return () => clearTimeout(timer);
   }, [scrollToHour, commitments]);
