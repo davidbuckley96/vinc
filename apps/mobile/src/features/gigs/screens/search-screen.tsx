@@ -9,6 +9,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -33,6 +34,12 @@ function startOfDay(d: Date): Date {
   const c = new Date(d);
   c.setHours(0, 0, 0, 0);
   return c;
+}
+
+/** Sem acentos + minúsculas, para casar "pintor" com "pintura" etc. */
+const DIACRITICS = /[̀-ͯ]/g;
+function normalize(s: string): string {
+  return s.normalize('NFD').replace(DIACRITICS, '').toLowerCase();
 }
 
 function sameDay(a: Date, b: Date): boolean {
@@ -87,6 +94,8 @@ export function SearchScreen() {
     initialDay && params.hour ? Number(params.hour) : null,
   );
   const [category, setCategory] = useState<Category | null>(null);
+  // Busca por texto (rodada 25, Opção A): digitar "pintor" sem saber a categoria.
+  const [query, setQuery] = useState('');
 
   // Modais
   const [filterOpen, setFilterOpen] = useState(false);
@@ -105,6 +114,7 @@ export function SearchScreen() {
       setRange(null);
       setHour(null);
       setCategory(null);
+      setQuery('');
       setFilterOpen(false);
     });
     return unsubscribe;
@@ -119,17 +129,18 @@ export function SearchScreen() {
           setFilterOpen(false);
           return true;
         }
-        if (range || hour !== null || category) {
+        if (range || hour !== null || category || query) {
           setRange(null);
           setHour(null);
           setCategory(null);
+          setQuery('');
           return true;
         }
         return false;
       };
       const sub = BackHandler.addEventListener('hardwareBackPress', onBack);
       return () => sub.remove();
-    }, [filterOpen, range, hour, category]),
+    }, [filterOpen, range, hour, category, query]),
   );
 
   // Vir de um horário da agenda (docs/17): a aba já está montada, então o
@@ -236,11 +247,6 @@ export function SearchScreen() {
       : undefined,
   );
 
-  // Esconde vagas que denunciei (B-23).
-  const reported = useMyReportedGigs();
-  const visibleGigs = (gigs.data ?? []).filter((gig) => !reported.data?.includes(gig.id));
-  const resultCount = visibleGigs.length;
-
   const categoryName = (id: string) => {
     const item = categories.data?.find((entry) => entry.id === id);
     if (!item) return undefined;
@@ -249,6 +255,25 @@ export function SearchScreen() {
       : null;
     return parent ? `${parent.name} › ${item.name}` : item.name;
   };
+
+  // Esconde vagas que denunciei (B-23).
+  const reported = useMyReportedGigs();
+  const notReported = (gigs.data ?? []).filter((gig) => !reported.data?.includes(gig.id));
+
+  // Busca por texto (rodada 25, Opção A): cada palavra digitada precisa aparecer
+  // no título, na descrição ou na categoria — assim "pintor" acha a vaga mesmo
+  // sem saber em que categoria ela está.
+  const queryTokens = normalize(query.trim()).split(/\s+/).filter(Boolean);
+  const visibleGigs =
+    queryTokens.length === 0
+      ? notReported
+      : notReported.filter((gig) => {
+          const hay = normalize(
+            `${gig.title} ${gig.description} ${categoryName(gig.categoryId) ?? ''}`,
+          );
+          return queryTokens.every((token) => hay.includes(token));
+        });
+  const resultCount = visibleGigs.length;
 
   // Chips removíveis dos filtros ativos (dia, hora, categoria).
   const dayChipLabel = isToday
@@ -272,6 +297,29 @@ export function SearchScreen() {
               <Text style={[styles.headerTitle, { color: theme.onPrimary }]}>
                 Procurar trabalhos
               </Text>
+              {/* Busca por texto (rodada 25, Opção A): sempre visível no topo. */}
+              <View style={[styles.searchField, { backgroundColor: 'rgba(255,255,255,0.16)' }]}>
+                <Ionicons name="search" size={17} color={theme.onPrimaryMuted} />
+                <TextInput
+                  value={query}
+                  onChangeText={setQuery}
+                  placeholder="Buscar serviço (ex.: pintor)"
+                  placeholderTextColor={theme.onPrimaryMuted}
+                  returnKeyType="search"
+                  accessibilityLabel="Buscar vaga por palavra"
+                  style={[styles.searchInput, { color: theme.onPrimary }]}
+                />
+                {query.length > 0 && (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Limpar busca"
+                    onPress={() => setQuery('')}
+                    hitSlop={8}
+                    style={[styles.searchClear, { backgroundColor: 'rgba(255,255,255,0.28)' }]}>
+                    <Ionicons name="close" size={13} color={theme.onPrimary} />
+                  </Pressable>
+                )}
+              </View>
             </View>
           </SafeAreaView>
         </View>
@@ -333,9 +381,11 @@ export function SearchScreen() {
           </ScrollView>
         </View>
 
-        <Text style={[styles.count, { color: theme.textSecondary }]}>
+        <Text style={[styles.count, { color: theme.textSecondary }]} numberOfLines={1}>
           {gigs.isSuccess
-            ? `${resultCount === 1 ? '1 VAGA' : `${resultCount} VAGAS`}${region ? ' PERTO DE VOCÊ' : ''}`
+            ? `${resultCount === 1 ? '1 VAGA' : `${resultCount} VAGAS`}${
+                query.trim() ? ` PARA “${query.trim().toUpperCase()}”` : region ? ' PERTO DE VOCÊ' : ''
+              }`
             : 'BUSCANDO VAGAS…'}
         </Text>
 
@@ -349,11 +399,16 @@ export function SearchScreen() {
           {gigs.isSuccess && resultCount === 0 && (
             <View style={styles.empty}>
               <Text style={[styles.feedback, { color: theme.textSecondary }]}>
-                Nenhuma vaga aberta
+                {query.trim() ? `Nenhuma vaga para “${query.trim()}”` : 'Nenhuma vaga aberta'}
                 {category ? ' nesta categoria' : ''}
                 {range !== null ? ' nesse período' : ''}
                 {region ? ` até ${region.radiusKm} km de ${region.label}` : ''}. Volte mais tarde!
               </Text>
+              {query.trim().length > 0 && (
+                <Pressable accessibilityRole="button" onPress={() => setQuery('')}>
+                  <Text style={[styles.emptyLink, { color: theme.primary }]}>Limpar a busca ›</Text>
+                </Pressable>
+              )}
               {region && (
                 <Pressable accessibilityRole="button" onPress={() => setFilterOpen(true)}>
                   <Text style={[styles.emptyLink, { color: theme.primary }]}>
@@ -667,10 +722,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.two,
     paddingBottom: Spacing.three,
+    gap: Spacing.two,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '800',
+  },
+  searchField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: Radius.medium,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 9,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    padding: 0,
+  },
+  searchClear: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterBar: {
     flexDirection: 'row',

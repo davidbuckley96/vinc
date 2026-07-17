@@ -1152,9 +1152,11 @@ do raio). A localização só filtra a busca — **nunca é mostrada a terceiros
 busca ele abre **só para escolher o centro** (`RegionModal showRadius={false}`),
 já que o raio vive no slider.
 
-**Follow-up:** o campo de **busca por texto** (digitar "pintor" sem saber a
-categoria) foi pedido pelo David e está em **rodada 25** (design) para escolha
-antes de implementar.
+**Follow-up — busca por texto (rodada 25, Opção A, implementado):** campo de
+busca **fixo no cabeçalho** para digitar o nome do serviço ("pintor") sem saber
+a categoria. Casa **sem acento, por palavra**, contra **título + descrição +
+categoria** da vaga; filtro no cliente sobre as vagas já carregadas (suficiente
+no MVP; migra para o servidor quando o volume crescer). Convive com o Filtrar.
 
 ## D-070 — Aba de mensagens (inbox) com retenção + push de mensagem
 **Data:** 2026-07-15 · **Decidido por:** David (rodada 22, opção B + regra de retenção)

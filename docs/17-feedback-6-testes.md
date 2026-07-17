@@ -63,8 +63,16 @@ slider de distância "Até 50 km de você").
   `components/radius-slider.tsx` (novo), `region.ts` (raio padrão 50 km + auto-locate),
   `components/region-modal.tsx` (`showRadius`). Detalhes e distância em **D-074**.
 
-**Follow-up pedido pelo David:** **busca por texto** (digitar "pintor" sem saber
-a categoria) → **rodada 25** (design) para escolha antes de implementar.
+**Follow-up — busca por texto (rodada 25, Opção A):** ✅ **Feito.** Um campo de
+busca **fixo no cabeçalho** filtra a lista digitando o nome do serviço (ex.:
+"pintor") — sem precisar saber a categoria. O casamento é **sem acento e por
+palavra**, contra **título + descrição + categoria** (cada palavra digitada
+precisa aparecer em algum desses campos). Botão de limpar (✕), contador
+"N VAGAS PARA 'X'" e estado vazio com "Limpar a busca". Convive com o Filtrar
+(o texto estreita; dia/hora/categoria/distância refinam). Filtro **no cliente**
+sobre as vagas já carregadas (basta para o MVP; dá para levar ao servidor quando
+o volume crescer). Verificado (demo): "cuidador" → 1 vaga.
+- `search-screen.tsx` (campo no header + `normalize` + filtro por tokens).
 
 ### H-04 · Notificações → "Falar com a Vi" dava Unmatched Route
 O botão apontava para `/vi`, rota inexistente (tela "Unmatched Route"). Como a
