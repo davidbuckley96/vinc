@@ -17,8 +17,14 @@ export interface Region {
   radiusKm: number;
 }
 
-export const DEFAULT_RADIUS_KM = 30;
+// Raio padrão generoso (H-03 / D-074): principalmente no início há poucas vagas,
+// então um raio pequeno faria o app parecer "morto". 50 km mostra bastante e o
+// usuário ajusta de 10 a 100 km pelo slider na busca.
+export const DEFAULT_RADIUS_KM = 50;
 export const RADIUS_OPTIONS_KM = [5, 10, 30, 50, 100];
+/** Limites do slider de distância na busca (H-03). */
+export const MIN_RADIUS_KM = 10;
+export const MAX_RADIUS_KM = 100;
 
 const STORAGE_KEY = 'vinc.region';
 

@@ -1131,6 +1131,31 @@ tema via `useTheme`); desligar Notificações remove o token de push do
 dispositivo (o servidor deixa de ter para onde enviar) e religar registra de
 novo.
 
+## D-074 — Busca "resultados primeiro" + filtro único + distância padrão 50 km
+**Data:** 2026-07-17 · **Decidido por:** David (rodada 24, Opção A + H-03, docs/17)
+
+A tela de **Buscar** deixa de abrir com os **cards grandes de categoria** (que
+empurravam as vagas para baixo da dobra) e passa a mostrar **a lista de vagas já
+no topo**. Um único botão **"Filtrar"** abre uma **gaveta** com **dia, hora,
+categoria e distância**; os filtros ativos viram **chips removíveis** ao lado do
+botão. Escolhido o layout **Opção A** (rodada 24).
+
+**Distância (David):** o raio padrão sobe de 30 para **50 km** ao redor do
+usuário. Motivo: principalmente no início há **poucas vagas**, e um raio curto
+faria o app parecer "morto/vazio". O usuário ajusta de **10 a 100 km** por um
+**slider** dentro do filtro (a distância saiu da barra separada do topo e passou
+para dentro do filtro). No **primeiro uso sem região definida**, a busca tenta a
+**localização do aparelho** e assume 50 km; se o usuário **negar**, a região fica
+nula e a busca mostra **vagas de qualquer lugar** (nunca uma lista vazia por causa
+do raio). A localização só filtra a busca — **nunca é mostrada a terceiros**
+(mantém D-029). O seletor de **local** (mapa/GPS) continua existindo; no fluxo da
+busca ele abre **só para escolher o centro** (`RegionModal showRadius={false}`),
+já que o raio vive no slider.
+
+**Follow-up:** o campo de **busca por texto** (digitar "pintor" sem saber a
+categoria) foi pedido pelo David e está em **rodada 25** (design) para escolha
+antes de implementar.
+
 ## D-070 — Aba de mensagens (inbox) com retenção + push de mensagem
 **Data:** 2026-07-15 · **Decidido por:** David (rodada 22, opção B + regra de retenção)
 

@@ -31,6 +31,10 @@ até 02:00). — **M** · ✅ **Feito**
 - `day-timeline.tsx`: novo prop `scrollToHour`; como as linhas têm alturas
   diferentes (livre ~52px vs. bloco de compromisso `span×48px`), capturamos o `y`
   real de cada hora via `onLayout` (em vez de estimar) e rolamos um pouco acima.
+- **Refinamento (David):** o scroll é só um **posicionamento inicial** — rola uma
+  vez e deixa o usuário livre. Um `ref` marca a hora já rolada, senão cada refetch
+  da agenda (novo array `commitments`) redispararia o efeito e puxaria a tela de
+  volta depois que a pessoa tivesse rolado para outra hora.
 
 ### H-02 · Criar vaga a partir de um dia/horário pré-preenche dia+hora
 Clicar num dia (semana/mês) ou num horário (diária) e escolher "Anunciar vaga"
@@ -47,14 +51,20 @@ na aba "Anunciar" limpa os params e volta ao padrão. — **M** · ✅ **Feito**
 ### H-03 · "Buscar serviços" a partir de um horário já aplica o filtro
 Clicar num horário e escolher "Buscar serviços" deve mostrar direto os
 resultados já filtrados pelo dia+hora, ainda permitindo refinar por categoria.
-**Correção:** a timeline manda `day`/`hour` para a busca; a tela de busca
-sincroniza o range de datas + a hora, entra em modo "todas as vagas" (mostra
-resultados direto) e exibe uma faixa de chips de categoria acima dos resultados
-para refinar. Como a aba de busca já está montada, um efeito reaplica os params
-novos (o `useState` inicial não pega). — **M** · ✅ **Feito** (verificado: filtro
-dia/hora + chips de categoria + estado vazio correto quando não há vagas no
-período).
-- `agenda-screen.tsx` (`onSearchSlot`), `search-screen.tsx` (efeito de sync + chips de refino).
+Isso evoluiu, no feedback seguinte do David, para o **redesenho completo da
+busca** (rodada 24, Opção A → **D-074**): a busca passou a ser
+**"resultados primeiro"** — a lista abre no topo e um único botão **"Filtrar"**
+(gaveta) reúne **dia, hora, categoria e distância**; os filtros ativos viram
+**chips removíveis**. Vindo de um horário da agenda, a busca já abre com o
+dia+hora aplicados e a lista filtrada. — **L** · ✅ **Feito** (verificado por
+screenshot: lista no topo, "N vagas perto de você", gaveta com as 4 seções e o
+slider de distância "Até 50 km de você").
+- `agenda-screen.tsx` (`onSearchSlot`), `search-screen.tsx` (reescrita p/ Opção A),
+  `components/radius-slider.tsx` (novo), `region.ts` (raio padrão 50 km + auto-locate),
+  `components/region-modal.tsx` (`showRadius`). Detalhes e distância em **D-074**.
+
+**Follow-up pedido pelo David:** **busca por texto** (digitar "pintor" sem saber
+a categoria) → **rodada 25** (design) para escolha antes de implementar.
 
 ### H-04 · Notificações → "Falar com a Vi" dava Unmatched Route
 O botão apontava para `/vi`, rota inexistente (tela "Unmatched Route"). Como a

@@ -29,6 +29,12 @@ interface RegionModalProps {
   region: Region | null;
   onChange: (region: Region | null) => void;
   onClose: () => void;
+  /**
+   * Show the radius chips (default true). The search screen sets this to false
+   * (H-03): there the radius lives in the filter's distance slider, so this
+   * modal only picks the LOCATION. Alerts keep the chips.
+   */
+  showRadius?: boolean;
 }
 
 /** Prefer the neighbourhood part; keep the full label when there is none. */
@@ -42,7 +48,13 @@ function regionLabel(full: string): string {
  * adjustable radius (default 30 km). The location only filters the
  * search — it is never shown to other users.
  */
-export function RegionModal({ visible, region, onChange, onClose }: RegionModalProps) {
+export function RegionModal({
+  visible,
+  region,
+  onChange,
+  onClose,
+  showRadius = true,
+}: RegionModalProps) {
   const theme = useTheme();
   const [mapOpen, setMapOpen] = useState(false);
   const [locating, setLocating] = useState(false);
@@ -192,40 +204,44 @@ export function RegionModal({ visible, region, onChange, onClose }: RegionModalP
 
           {error && <Text style={[styles.error, { color: theme.danger }]}>{error}</Text>}
 
-          <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>
-            RAIO DA BUSCA
-          </Text>
-          <View style={styles.chips}>
-            {RADIUS_OPTIONS_KM.map((value) => {
-              const selected = radiusKm === value;
-              return (
-                <Pressable
-                  key={value}
-                  accessibilityRole="button"
-                  onPress={() => region && onChange({ ...region, radiusKm: value })}
-                  style={[
-                    styles.chip,
-                    {
-                      backgroundColor: selected ? theme.primary : theme.background,
-                      borderColor: selected ? theme.primary : theme.line,
-                      opacity: region ? 1 : 0.5,
-                    },
-                  ]}>
-                  <Text
-                    style={[
-                      styles.chipLabel,
-                      { color: selected ? theme.onPrimary : theme.textSecondary },
-                    ]}>
-                    {value} km
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          {!region && (
-            <Text style={[styles.hint, { color: theme.textSecondary }]}>
-              Defina o local primeiro; o raio padrão é {DEFAULT_RADIUS_KM} km.
-            </Text>
+          {showRadius && (
+            <>
+              <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+                RAIO DA BUSCA
+              </Text>
+              <View style={styles.chips}>
+                {RADIUS_OPTIONS_KM.map((value) => {
+                  const selected = radiusKm === value;
+                  return (
+                    <Pressable
+                      key={value}
+                      accessibilityRole="button"
+                      onPress={() => region && onChange({ ...region, radiusKm: value })}
+                      style={[
+                        styles.chip,
+                        {
+                          backgroundColor: selected ? theme.primary : theme.background,
+                          borderColor: selected ? theme.primary : theme.line,
+                          opacity: region ? 1 : 0.5,
+                        },
+                      ]}>
+                      <Text
+                        style={[
+                          styles.chipLabel,
+                          { color: selected ? theme.onPrimary : theme.textSecondary },
+                        ]}>
+                        {value} km
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              {!region && (
+                <Text style={[styles.hint, { color: theme.textSecondary }]}>
+                  Defina o local primeiro; o raio padrão é {DEFAULT_RADIUS_KM} km.
+                </Text>
+              )}
+            </>
           )}
 
           <View style={styles.footer}>
