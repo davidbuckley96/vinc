@@ -1,0 +1,159 @@
+<meta charset="utf-8">
+<title>Rodada 25 — Busca por texto ("pintor") na busca</title>
+<style>
+  :root{ --roxo:#6D28D9; --roxo-deep:#4C1D95; --lilas:#F1EBFD; --lilas2:#FAF7FE; --ink:#17141F; --ink2:#6B7280; --line:#E7EAEE; --ok:#059669; }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:#f4f5f7;color:var(--ink);padding:36px 24px;margin:0}
+  h1{font-size:22px;margin:0 0 4px}
+  h2{font-size:16px;margin:30px 0 6px;color:var(--roxo-deep)}
+  .sub{color:var(--ink2);font-size:13.5px;margin-bottom:14px;max-width:1040px;line-height:1.55}
+  .row{display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start}
+  .option{width:300px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;margin-bottom:8px;background:var(--lilas);color:var(--roxo)}
+  .tag.rec{background:var(--ok);color:#fff}
+  .option h3{margin:2px 0 4px;font-size:16px}
+  .option p{font-size:12.5px;color:var(--ink2);line-height:1.5;margin:0 0 14px;min-height:92px}
+  .phone{width:300px;height:600px;border-radius:34px;overflow:hidden;box-shadow:0 10px 34px rgba(17,20,24,.13),0 0 0 9px #1c1f24;background:#fff;display:flex;flex-direction:column}
+  .top{background:var(--roxo);color:#fff;padding:14px 15px 13px}
+  .top .t{font-size:17px;font-weight:800}
+  .body{flex:1;overflow:hidden;background:#fff;display:flex;flex-direction:column}
+  .tabbar{height:50px;border-top:1px solid var(--line);display:flex;background:#fff}
+  .tabbar .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:8.5px;color:var(--ink2)}
+  .tabbar .tab .ic{font-size:16px;filter:grayscale(1) opacity(.55)}
+  .tabbar .tab.on{color:var(--roxo);font-weight:800}
+  .tabbar .tab.on .ic{filter:none}
+  .searchf{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);border-radius:11px;padding:10px 12px;margin-top:10px;color:#fff;font-size:13.5px;font-weight:600}
+  .searchf .ph{color:#e9e2fb;opacity:.85;font-weight:500}
+  .searchf .clr{margin-left:auto;width:20px;height:20px;border-radius:99px;background:rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:12px}
+  .filtrow{display:flex;align-items:center;gap:8px;padding:11px 12px 4px}
+  .filtbtn{display:flex;align-items:center;gap:6px;border:1.5px solid var(--roxo);color:var(--roxo);background:#fff;border-radius:99px;padding:7px 13px;font-size:12.5px;font-weight:800}
+  .fchip{display:flex;align-items:center;gap:5px;background:var(--roxo);color:#fff;border-radius:99px;padding:6px 10px;font-size:11.5px;font-weight:700}
+  .count{font-size:11px;font-weight:800;letter-spacing:.3px;color:var(--ink2);padding:8px 14px 2px}
+  .list{flex:1;overflow:hidden;padding:4px 12px 10px}
+  .gig{border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:9px}
+  .gig .gt{font-size:13.5px;font-weight:800;margin-bottom:3px}
+  .gig .gt em{font-style:normal;background:#fde68a;border-radius:3px;padding:0 2px}
+  .gig .gm{font-size:11px;color:var(--ink2);margin-bottom:6px}
+  .gig .gm .cat{color:var(--roxo);font-weight:700}
+  .gig .price{font-size:15px;font-weight:900;color:var(--ok)}
+  .icon-inline{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:15px}
+  /* sheet */
+  .sheet{margin-top:auto;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.12);padding:6px 15px 15px}
+  .grab{width:38px;height:4px;border-radius:99px;background:#d8dae0;margin:6px auto 12px}
+  .sheet h4{font-size:11.5px;font-weight:800;color:var(--ink2);letter-spacing:.3px;margin:12px 0 7px}
+  .kw{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:11px;padding:11px 12px;font-size:13.5px;color:var(--ink);font-weight:600}
+  .kw .ph{color:var(--ink2);font-weight:500}
+  .chip{border:1.5px solid var(--line);border-radius:99px;padding:6px 11px;font-size:11.5px;font-weight:700;color:var(--ink2);display:inline-flex;align-items:center;gap:5px}
+  .chip.on{background:var(--roxo);border-color:var(--roxo);color:#fff}
+  .wrapc{display:flex;flex-wrap:wrap;gap:7px}
+  .cta{background:var(--roxo);color:#fff;text-align:center;font-weight:800;font-size:14px;border-radius:13px;padding:13px;margin-top:16px}
+  .dim{background:rgba(20,18,30,.34)}
+  /* overlay (option C) */
+  .ov{position:relative;height:100%;display:flex;flex-direction:column;background:#fff}
+  .ovtop{background:var(--roxo);padding:14px 12px;display:flex;align-items:center;gap:9px}
+  .ovtop .back{color:#fff;font-size:18px}
+  .ovtop .f{flex:1;background:#fff;border-radius:10px;padding:9px 12px;font-size:13.5px;color:var(--ink);font-weight:600}
+  .rec{padding:12px 15px}
+  .rec .h{font-size:11px;font-weight:800;color:var(--ink2);letter-spacing:.3px;margin-bottom:8px}
+  .rec .item{display:flex;align-items:center;gap:10px;padding:10px 2px;font-size:14px;border-bottom:1px solid var(--line)}
+  .rec .item .ic{color:var(--ink2);font-size:15px}
+  .rec .sug{color:var(--roxo);font-weight:700}
+  .note{font-size:12.5px;color:var(--ink2);line-height:1.6;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:22px;max-width:1040px}
+  b{color:var(--ink)}
+</style>
+
+<h1>Rodada 25 — Buscar digitando o nome da vaga ("pintor")</h1>
+<p class="sub">
+Pedido do David: poder <b>digitar o nome do serviço</b> (ex.: "pintor") sem precisar saber em qual categoria ele
+está. Isto entra <b>por cima</b> do redesenho da busca (rodada 24, Opção A — vagas primeiro + botão Filtrar).
+Abaixo, 3 formas de encaixar o campo de texto. Escolha <b>A, B ou C</b>.</p>
+
+<div class="row">
+
+  <!-- OPÇÃO A -->
+  <div class="option">
+    <span class="tag rec">Opção A (recomendada)</span>
+    <h3>Campo fixo no topo</h3>
+    <p>Um <b>campo de busca sempre visível</b> no cabeçalho roxo. A pessoa digita "pintor" e a lista filtra na hora
+    (por título, descrição e categoria) — <b>sem precisar saber a categoria</b>. O botão <b>Filtrar</b> (dia/hora/
+    categoria/distância) continua logo abaixo, e funciona junto com o texto. É o padrão que todo mundo reconhece
+    (iFood, OLX) e o mais <b>descoberto</b> — o campo está à vista.</p>
+    <div class="phone">
+      <div class="top">
+        <div class="t" style="margin-bottom:2px">Procurar trabalhos</div>
+        <div class="searchf">🔍 <span>pintor</span><span class="clr">✕</span></div>
+      </div>
+      <div class="body">
+        <div class="filtrow">
+          <div class="filtbtn">🎚️ Filtrar</div>
+          <div class="fchip">📍 até 50 km</div>
+        </div>
+        <div class="count">3 VAGAS PARA “PINTOR”</div>
+        <div class="list">
+          <div class="gig"><div class="gt">Pintar parede da sala</div><div class="gm"><span class="cat">Reparos e montagem</span> · sáb 18 · a 2,1 km</div><div class="price">R$ 200</div></div>
+          <div class="gig"><div class="gt"><em>Pintor</em> para quarto pequeno</div><div class="gm"><span class="cat">Reparos e montagem</span> · dom 19 · a 3,4 km</div><div class="price">R$ 150</div></div>
+          <div class="gig"><div class="gt">Pintura de portão</div><div class="gm"><span class="cat">Reparos e montagem</span> · seg 20 · a 5,0 km</div><div class="price">R$ 120</div></div>
+        </div>
+      </div>
+      <div class="tabbar"><div class="tab"><span class="ic">📅</span>Agenda</div><div class="tab on"><span class="ic">🔍</span>Buscar</div><div class="tab"><span class="ic">➕</span>Anunciar</div><div class="tab"><span class="ic">💬</span>Mensagens</div><div class="tab"><span class="ic">👛</span>Carteira</div></div>
+    </div>
+  </div>
+
+  <!-- OPÇÃO B -->
+  <div class="option">
+    <span class="tag">Opção B</span>
+    <h3>Palavra-chave dentro do Filtrar</h3>
+    <p>A tela principal fica <b>mais limpa</b> (só a lista + botão Filtrar). O campo de texto é a <b>primeira linha
+    da gaveta</b> de filtros, junto de dia/hora/categoria/distância. Vantagem: nada de novo no topo. Desvantagem:
+    a busca por palavra fica <b>escondida</b> atrás do botão — menos gente descobre.</p>
+    <div class="phone">
+      <div class="top"><div class="t">Procurar trabalhos</div></div>
+      <div class="body dim" style="justify-content:flex-end">
+        <div class="sheet">
+          <div class="grab"></div>
+          <h4>O QUE VOCÊ PROCURA</h4>
+          <div class="kw">🔍 <span>pintor</span></div>
+          <h4>DIA</h4>
+          <div class="wrapc"><span class="chip on">Qualquer</span><span class="chip">Hoje</span><span class="chip">Amanhã</span><span class="chip">📅 Escolher</span></div>
+          <h4>CATEGORIA</h4>
+          <div class="wrapc"><span class="chip on">Todas</span><span class="chip">🏠 Domésticos</span><span class="chip">🔧 Reparos</span></div>
+          <div class="cta">Ver 3 vagas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPÇÃO C -->
+  <div class="option">
+    <span class="tag">Opção C</span>
+    <h3>Toque abre busca em tela cheia</h3>
+    <p>No topo, um campo "atalho" que, ao tocar, abre uma <b>tela de busca dedicada</b> com <b>buscas recentes</b> e
+    <b>sugestões</b> ("pintor", "faxineira", "eletricista") enquanto digita. Ao confirmar, volta para a lista já
+    filtrada. É o mais <b>poderoso</b> (histórico, sugestões), porém o mais "app grande" — talvez demais para o
+    nosso público de baixa escolaridade.</p>
+    <div class="phone">
+      <div class="ov">
+        <div class="ovtop"><span class="back">‹</span><div class="f">pint|</div></div>
+        <div class="rec">
+          <div class="h">SUGESTÕES</div>
+          <div class="item"><span class="ic">🔍</span><span class="sug">pint<b>or</b></span></div>
+          <div class="item"><span class="ic">🔍</span><span class="sug">pint<b>ura de parede</b></span></div>
+          <div class="item"><span class="ic">🔍</span><span class="sug">pint<b>ar portão</b></span></div>
+          <div class="h" style="margin-top:16px">BUSCAS RECENTES</div>
+          <div class="item"><span class="ic">🕘</span>faxineira</div>
+          <div class="item"><span class="ic">🕘</span>eletricista</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+<b>Recomendo a Opção A.</b> O campo fica <b>à vista</b> no topo (o público de baixa escolaridade não precisa
+adivinhar onde buscar), resolve exatamente o problema — digitar "pintor" sem saber a categoria — e convive bem com
+o botão <b>Filtrar</b> da rodada 24 (o texto estreita a lista; dia/hora/categoria/distância refinam). A busca casa
+título + descrição + categoria, então "pintor" acha vagas de "Pintura" mesmo sem a palavra exata. A Opção B deixa o
+topo mais limpo, mas esconde a busca; a C é mais poderosa (histórico/sugestões), porém mais pesada do que
+precisamos agora — dá para evoluir para ela depois se o volume de vagas justificar. Me diz qual seguir.
+</div>
