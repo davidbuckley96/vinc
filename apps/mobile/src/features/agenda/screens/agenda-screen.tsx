@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -35,6 +35,19 @@ export function AgendaScreen() {
   const avatarUrl = profile.data?.avatarUrl ?? null;
   const [view, setView] = useState<AgendaView>('day');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [scrollToHour, setScrollToHour] = useState<number | null>(null);
+
+  // Deep-link "ver na minha agenda" (docs/17): abre no dia certo e rola até a
+  // hora do serviço. `router.replace('/?day=YYYY-MM-DD&hour=HH')`.
+  const params = useLocalSearchParams<{ day?: string; hour?: string }>();
+  useEffect(() => {
+    if (!params.day) return;
+    const [y, m, d] = params.day.split('-').map(Number);
+    if (!y || !m || !d) return;
+    setSelectedDate(new Date(y, m - 1, d));
+    setView('day');
+    setScrollToHour(params.hour != null ? Number(params.hour) : null);
+  }, [params.day, params.hour]);
 
   const agenda = useMyAgenda();
   const unread = useUnreadNotifications();
@@ -45,8 +58,14 @@ export function AgendaScreen() {
   startOfToday.setHours(0, 0, 0, 0);
   const isPastDay = selectedDate < startOfToday && !isSameDay(selectedDate, startOfToday);
 
-  const openDay = (date: Date) => {
+  // Trocar de dia manualmente cancela o scroll do deep-link (senão ele voltaria
+  // a rolar para a hora antiga ao mudar de dia).
+  const pickDate = (date: Date) => {
     setSelectedDate(date);
+    setScrollToHour(null);
+  };
+  const openDay = (date: Date) => {
+    pickDate(date);
     setView('day');
   };
 
@@ -100,12 +119,13 @@ export function AgendaScreen() {
           </SafeAreaView>
         </View>
 
-        {view === 'day' && <DateStrip selected={selectedDate} onSelect={setSelectedDate} />}
+        {view === 'day' && <DateStrip selected={selectedDate} onSelect={pickDate} />}
 
         {view === 'day' && (
           <DayTimeline
             commitments={dayCommitments}
             readOnly={isPastDay}
+            scrollToHour={scrollToHour}
             onSearchSlot={(hour) => {
               const day = new Date(selectedDate);
               const pad = (n: number) => String(n).padStart(2, '0');
@@ -113,7 +133,15 @@ export function AgendaScreen() {
                 `/search?day=${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}&hour=${hour}`,
               );
             }}
-            onPostSlot={() => router.push('/post')}
+            // Criar vaga a partir de um horário (docs/17): leva o dia+hora
+            // marcados para o formulário já pré-preenchido.
+            onPostSlot={(hour) => {
+              const day = new Date(selectedDate);
+              const pad = (n: number) => String(n).padStart(2, '0');
+              router.push(
+                `/post?day=${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}&hour=${hour}`,
+              );
+            }}
             onOpenCommitment={(commitment) =>
               router.push(
                 commitment.kind === 'candidacy'

@@ -293,7 +293,15 @@ export function GigDetailScreen() {
                 )}
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => router.replace('/')}
+                  onPress={() => {
+                    // Abre a agenda no DIA e rola até a HORA do serviço (docs/17),
+                    // em vez de cair no dia de hoje e o user ter que procurar.
+                    const s = gig.data ? new Date(gig.data.startsAt) : new Date();
+                    const pad = (n: number) => String(n).padStart(2, '0');
+                    router.replace(
+                      `/?day=${s.getFullYear()}-${pad(s.getMonth() + 1)}-${pad(s.getDate())}&hour=${s.getHours()}`,
+                    );
+                  }}
                   style={[styles.accept, { backgroundColor: theme.success }]}>
                   <Text style={[styles.acceptLabel, { color: theme.onPrimary }]}>
                     Ver na minha agenda

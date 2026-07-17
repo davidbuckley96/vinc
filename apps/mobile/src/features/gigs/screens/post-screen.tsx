@@ -1,5 +1,5 @@
-import { useNavigation, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -30,9 +30,36 @@ export function PostScreen() {
   // stays intact (form isn't reset), so voltar do perfil não perde nada.
   const [limitHit, setLimitHit] = useState(false);
 
+  // Criar vaga a partir de um horário da agenda (docs/17): pré-preenche dia+hora.
+  const params = useLocalSearchParams<{ day?: string; hour?: string }>();
+  const slotInitial = useMemo((): GigDraft | undefined => {
+    if (!params.day) return undefined;
+    const [y, m, d] = params.day.split('-').map(Number);
+    if (!y || !m || !d) return undefined;
+    const h = params.hour != null && params.hour !== '' ? Number(params.hour) : 14;
+    const start = new Date(y, m - 1, d, h, 0, 0, 0);
+    const end = new Date(start.getTime() + 2 * 3_600_000);
+    return {
+      categoryId: '',
+      title: '',
+      description: '',
+      startsAt: start.toISOString(),
+      endsAt: end.toISOString(),
+      priceCents: 0,
+      address: '',
+    };
+  }, [params.day, params.hour]);
+
+  // Remonta o formulário quando chega um novo horário (o GigForm semeia os
+  // campos só na montagem), pra aplicar o dia/hora pré-selecionados.
+  useEffect(() => {
+    if (params.day) setFormKey((key) => key + 1);
+  }, [params.day, params.hour]);
+
   // Tapping the "Anunciar" tab always opens a FRESH form (B-15): the old
   // state (a filled-in location, a previous success message) shouldn't come
-  // back when returning to the tab from Carteira etc.
+  // back when returning to the tab from Carteira etc. Também limpa o dia/hora
+  // pré-selecionados, pra abrir a aba sempre em branco (padrão amanhã 14h).
   useEffect(() => {
     const tabNav = navigation as unknown as {
       addListener: (event: 'tabPress', cb: () => void) => () => void;
@@ -40,10 +67,11 @@ export function PostScreen() {
     const unsubscribe = tabNav.addListener('tabPress', () => {
       setFeedback(null);
       setLimitHit(false);
+      if (params.day || params.hour) router.setParams({ day: '', hour: '' });
       setFormKey((key) => key + 1);
     });
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, params.day, params.hour, router]);
 
   const publish = async (draft: GigDraft) => {
     setFeedback(null);
@@ -120,6 +148,7 @@ export function PostScreen() {
 
         <GigForm
           key={formKey}
+          initial={slotInitial}
           submitLabel="Publicar vaga"
           pending={createGig.isPending}
           feedback={feedback}

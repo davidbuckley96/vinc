@@ -1,6 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  type LayoutChangeEvent,
+} from 'react-native';
 
 import { formatBRL } from '@vinc/core';
 
@@ -24,6 +31,8 @@ interface Props {
   onOpenCommitment: (commitment: AgendaCommitment) => void;
   /** Past day (B-27): só visualização — não dá para buscar/anunciar no passado. */
   readOnly?: boolean;
+  /** Scroll the timeline so this hour is visible (deep-link from a service). */
+  scrollToHour?: number | null;
 }
 
 /** A commitment placed on the hour grid (start inclusive, end exclusive). */
@@ -114,13 +123,32 @@ export function DayTimeline({
   onPostSlot,
   onOpenCommitment,
   readOnly = false,
+  scrollToHour = null,
 }: Props) {
   const theme = useTheme();
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const segments = buildDaySegments(commitments);
 
+  // Deep-link scroll (H-01, docs/17): rows are ~52px (free) vs span×48px (cluster),
+  // so we capture each hour's real y via onLayout instead of estimating.
+  const scrollRef = useRef<ScrollView>(null);
+  const hourY = useRef<Record<number, number>>({});
+  const registerRow = (startHour: number, span: number) => (e: LayoutChangeEvent) => {
+    const { y } = e.nativeEvent.layout;
+    for (let h = startHour; h < startHour + span; h += 1) hourY.current[h] = y;
+  };
+  useEffect(() => {
+    if (scrollToHour == null) return;
+    // Let the rows lay out first, then scroll a touch above the target hour.
+    const timer = setTimeout(() => {
+      const y = hourY.current[scrollToHour];
+      if (y != null) scrollRef.current?.scrollTo({ y: Math.max(0, y - 12), animated: true });
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [scrollToHour, commitments]);
+
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+    <ScrollView ref={scrollRef} style={styles.scroll} contentContainerStyle={styles.content}>
       {segments.map((seg) => {
         if (seg.kind === 'cluster') {
           const { cluster, span, hour } = seg;
@@ -129,7 +157,7 @@ export function DayTimeline({
           // (overlapping candidacies) share the width side by side (B-26).
           const single = cluster.columns.length === 1;
           return (
-            <View key={seg.key} style={styles.row}>
+            <View key={seg.key} style={styles.row} onLayout={registerRow(hour, span)}>
               <Text style={[styles.hour, { color: theme.textSecondary }]}>
                 {String(hour).padStart(2, '0')}:00
               </Text>
@@ -203,7 +231,7 @@ export function DayTimeline({
         // Past day (B-27): free hours are just shown, not actionable.
         if (readOnly) {
           return (
-            <View key={seg.key} style={styles.row}>
+            <View key={seg.key} style={styles.row} onLayout={registerRow(hour, 1)}>
               <Text style={[styles.hour, { color: theme.textSecondary }]}>
                 {String(hour).padStart(2, '0')}:00
               </Text>
@@ -214,7 +242,7 @@ export function DayTimeline({
           );
         }
         return (
-          <View key={seg.key} style={styles.row}>
+          <View key={seg.key} style={styles.row} onLayout={registerRow(hour, 1)}>
             <Text style={[styles.hour, { color: theme.textSecondary }]}>
               {String(hour).padStart(2, '0')}:00
             </Text>

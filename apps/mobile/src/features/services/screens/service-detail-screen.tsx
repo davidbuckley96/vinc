@@ -484,7 +484,7 @@ export function ServiceDetailScreen() {
                   </Text>
                   <Pressable
                     accessibilityRole="button"
-                    onPress={() => router.push('/vi?escalate=1')}
+                    onPress={() => router.push('/help/vi?escalate=1')}
                     style={[styles.noShowContest, { borderColor: theme.danger }]}>
                     <Text style={[styles.noShowContestLabel, { color: theme.danger }]}>
                       Contestar este débito

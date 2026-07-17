@@ -64,8 +64,9 @@ export function SettingsScreen() {
     { icon: 'person-outline', label: 'Editar perfil', onPress: () => router.push('/edit-profile') },
     { icon: 'key-outline', label: 'Minha chave Pix', onPress: () => router.push('/payout') },
   ];
+  // "Falar com a Vi" saiu (feedback do David): a Central de Ajuda já leva à Vi,
+  // e o link direto apontava para uma rota inexistente (Unmatched Route).
   const help: Row[] = [
-    { icon: 'heart-outline', label: 'Falar com a Vi', onPress: () => router.push('/vi') },
     { icon: 'help-circle-outline', label: 'Central de Ajuda', onPress: () => router.push('/help') },
   ];
 

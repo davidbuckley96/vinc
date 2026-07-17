@@ -116,6 +116,21 @@ export function SearchScreen() {
   );
   const [calOpen, setCalOpen] = useState(false);
 
+  // Vir de um horário da agenda (docs/17): a aba de busca já está montada, então
+  // o useState inicial não pega os params novos. Aqui aplicamos o filtro de
+  // dia/hora ao chegar e voltamos para a lista de categorias (cards para refinar)
+  // com as VAGAS filtradas já aparecendo abaixo.
+  useEffect(() => {
+    const day = parseDayParam(params.day);
+    if (!day) return;
+    setRange({ start: day, end: day });
+    setHour(params.hour != null && params.hour !== '' ? Number(params.hour) : null);
+    setCategory(null);
+    // Mostra os RESULTADOS filtrados direto (David), com os chips de categoria
+    // logo acima para refinar ainda mais.
+    setBrowseAll(true);
+  }, [params.day, params.hour]);
+
   const singleDay = range !== null && sameDay(range.start, range.end);
 
   const today = startOfDay(new Date());
@@ -369,6 +384,23 @@ export function SearchScreen() {
         </View>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+          {/* Na visão de resultados (ex.: vindo de um horário da agenda), chips
+              de categoria para refinar sem sair da lista (David, docs/17). */}
+          {browseAll && !category && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.refineRow}>
+              <View style={styles.chipRow}>
+                {categories.data?.filter((item) => !item.parentId).map((item) => (
+                  <Pressable
+                    key={item.id}
+                    accessibilityRole="button"
+                    onPress={() => setCategory(item)}
+                    style={[styles.chip, { backgroundColor: theme.background, borderColor: theme.line }]}>
+                    <Text style={[styles.chipLabel, { color: theme.textSecondary }]}>{item.name}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </ScrollView>
+          )}
           {!category && !browseAll && (
             <>
               {categories.isLoading && <ActivityIndicator color={theme.primary} />}
@@ -533,6 +565,9 @@ const styles = StyleSheet.create({
   chipRow: {
     flexDirection: 'row',
     gap: Spacing.one + 2,
+  },
+  refineRow: {
+    marginBottom: Spacing.two,
   },
   chip: {
     borderWidth: 1.5,

@@ -24,6 +24,7 @@ conversas.
 | 14 | [feedback-4-testes.md](14-feedback-4-testes.md) | 4º ciclo: feedback do David (F-01…F-12) — bugs, features, regras | Ao trabalhar nos itens F-01…F-12 |
 | 15 | [checklist-build.md](15-checklist-build.md) | Checklist de teste no aparelho (build acumulado) + cobertura de testes | Antes/depois de cada build de teste |
 | 16 | [feedback-5-testes.md](16-feedback-5-testes.md) | 5º ciclo: feedback do David (G-01…G-14) — navegação, mapa, foto, Vi, furo | Ao trabalhar nos itens G-01…G-14 |
+| 17 | [feedback-6-testes.md](17-feedback-6-testes.md) | 6º ciclo: feedback do David (H-01…H-04) — deep-link da agenda, pré-preencher vaga, filtro da busca, Vi | Ao trabalhar nos itens H-01…H-04 |
 
 ## Regras de manutenção
 
